@@ -266,6 +266,20 @@ export default function Home() {
                </div>
             </section>
 
+            {/* Free Career Tools Section */}
+            <section className="py-24 md:py-40 px-4 md:px-6 max-w-7xl mx-auto">
+               <div className="text-center mb-16 md:mb-32 space-y-4">
+                  <h2 className="text-4xl md:text-7xl font-[1000] italic tracking-tighter uppercase leading-[1]">Free <span className="text-blue-500">Career Tools.</span></h2>
+                  <p className="text-white/20 font-bold uppercase tracking-[0.3em] text-[10px]">Neural-powered aids for your placement journey</p>
+               </div>
+               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                  <ToolCard icon={IndianRupee} title="Salary Estimator" desc="Check your market value in top Indian tech hubs." link="/salary-estimator" />
+                  <ToolCard icon={FileSignature} title="Cover Letter Gen" desc="Generate ATS-friendly cover letters in seconds." link="/cover-letter" />
+                  <ToolCard icon={Linkedin} title="LinkedIn Analyzer" desc="Audit your profile for maximum recruiter reach." link="/linkedin-analyzer" />
+                  <ToolCard icon={Building2} title="Company Score" desc="Benchmark your resume for TCS, Infosys, and more." link="/company-score/tcs" />
+               </div>
+            </section>
+
             {/* Steps */}
             <section id="features" className="py-24 md:py-40 px-4 md:px-6 max-w-7xl mx-auto scroll-mt-32">
                <h2 className="text-4xl md:text-6xl font-[1000] text-center mb-16 md:mb-32 italic tracking-tighter uppercase leading-[1]">3 Steps to Success</h2>
@@ -636,6 +650,22 @@ const TrustBadge = ({ icon: Icon, title }: any) => (
       <Icon className="text-blue-500 w-3 h-3" />
       <span className="text-[9px] font-black uppercase tracking-widest text-white/30">{title}</span>
    </div>
+);
+
+const ToolCard = ({ icon: Icon, title, desc, link }: any) => (
+   <Link href={link}>
+      <motion.div whileHover={{ y: -5 }} className="p-8 bg-[#0A0A0A] rounded-[40px] border border-white/5 hover:border-blue-500/30 transition-all h-full space-y-6 group shadow-2xl relative overflow-hidden">
+         <div className="absolute top-0 right-0 p-6 opacity-0 group-hover:opacity-5 transition-opacity"><Icon className="w-20 h-20" /></div>
+         <div className="w-14 h-14 bg-blue-600/10 rounded-2xl flex items-center justify-center text-blue-500 group-hover:bg-blue-600 group-hover:text-white transition-all shadow-xl shadow-blue-500/5"><Icon className="w-6 h-6" /></div>
+         <div className="space-y-2">
+            <h4 className="text-xl font-black italic uppercase tracking-tighter">{title}</h4>
+            <p className="text-xs text-white/30 font-medium leading-relaxed">{desc}</p>
+         </div>
+         <div className="pt-2 flex items-center gap-2 text-[10px] font-black uppercase text-blue-500 tracking-widest opacity-0 group-hover:opacity-100 transition-all">
+            Launch Tool <ChevronRight className="w-3 h-3" />
+         </div>
+      </motion.div>
+   </Link>
 );
 
 const CaseStudyCard = ({ name, college, before, after, result, quote }: any) => (

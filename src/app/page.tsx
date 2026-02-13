@@ -229,7 +229,7 @@ export default function Home() {
              <button onClick={() => scrollToSection('pricing')} className="text-2xl font-black italic">Pricing</button>
              <button onClick={() => { setView('blog'); setIsMenuOpen(false); }} className="text-2xl font-black italic">Blog</button>
              <button onClick={() => scrollToSection('faq')} className="text-2xl font-black italic">FAQ</button>
-             {user && (
+             {session?.user && (
                <button onClick={() => { window.location.href='/expert-resume-builder'; setIsMenuOpen(false); }} className="text-2xl font-black italic text-blue-500 flex items-center gap-2">
                  AI Builder <Sparkles className="w-5 h-5" />
                </button>

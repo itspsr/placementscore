@@ -1,12 +1,13 @@
 import { MetadataRoute } from 'next';
 import { getBlogs } from '@/lib/blog';
+import { getProgrammaticPages } from '@/lib/programmatic';
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl = 'https://placementscore.online';
   const blogs = getBlogs();
+  const pages = getProgrammaticPages();
   
-  // Base static routes
-  const routes = [
+  const staticRoutes = [
     '',
     '/blog',
     '/contact',
@@ -20,7 +21,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: route === '' ? 1 : 0.8,
   }));
 
-  // Dynamic blog routes
   const blogRoutes = blogs.map((blog: any) => ({
     url: `${baseUrl}/blog/${blog.slug}`,
     lastModified: new Date(blog.createdAt),
@@ -28,5 +28,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.9,
   }));
 
-  return [...routes, ...blogRoutes];
+  const dynamicRoutes = pages.map((page: any) => ({
+    url: `${baseUrl}/${page.slug}`,
+    lastModified: new Date(page.createdAt),
+    changeFrequency: 'monthly' as const,
+    priority: 0.7,
+  }));
+
+  return [...staticRoutes, ...blogRoutes, ...dynamicRoutes];
 }

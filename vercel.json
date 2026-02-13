@@ -3,6 +3,10 @@
     {
       "path": "/api/cron/generate-blog?key=YOUR_CRON_SECRET",
       "schedule": "0 2 * * *"
+    },
+    {
+      "path": "/api/cron/generate-programmatic?key=YOUR_CRON_SECRET",
+      "schedule": "0 3 * * *"
     }
   ]
 }

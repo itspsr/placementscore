@@ -1,0 +1,28 @@
+[
+  {
+    "title": "ATS Score for BTech CSE Fresher 2026: The Ultimate Guide",
+    "slug": "ats-score-for-btech-cse-2026",
+    "metaDescription": "Discover the ideal ATS score for BTech CSE freshers in 2026. Learn how to optimize your resume for TCS, Google, and Amazon campus placements.",
+    "type": "ats-score",
+    "content": "## Introduction\nIn the competitive landscape of 2026, an ATS score is the most critical metric for any BTech CSE student. Most companies receive thousands of applications, and a human only sees about 20% of them. If your score is below 85, you are likely in the rejection pile.\n\n## Why ATS Matters for CSE\nComputer Science engineering is high in demand but also high in volume. Algorithms look for specific technical strings like 'distributed systems', 'microservices', and 'latency optimization'.\n\n## How to Improve Your Score\n1. Use a single column layout.\n2. Include technical skills at the top.\n3. Mention project impact with numbers.\n\n## FAQ\n**What is a good score?**\nAnything above 85 is excellent.\n\n**Does layout matter?**\nYes, tables and columns often break scanners.",
+    "createdAt": "2026-02-13T10:00:00Z",
+    "schema": {
+      "@context": "https://schema.org",
+      "@type": "Article",
+      "headline": "ATS Score for BTech CSE Fresher 2026"
+    }
+  },
+  {
+    "title": "Resume Format for TCS Campus Placement 2026",
+    "slug": "resume-format-for-tcs-campus-placement",
+    "metaDescription": "Download the best resume format for TCS campus placements 2026. Optimized for the TCS iON ATS algorithm and HR requirements.",
+    "type": "resume-format",
+    "content": "## TCS Recruitment Standards 2026\nTCS uses the iON platform for initial screening. Their algorithm is designed to prioritize students from recognized institutes with a strong CGPA and verified skills.\n\n## Best Format\nThe best format for TCS is the reverse-chronological template. It clearly shows your progress from first year to final year.\n\n## Must-Have Skills for TCS\n- Java / Python / C++\n- Database Management\n- Software Development Life Cycle (SDLC)\n- Agile Methodologies\n\n## FAQ\n**Can I use colors?**\nIt's better to keep it black and white for higher parse accuracy.",
+    "createdAt": "2026-02-13T11:00:00Z",
+    "schema": {
+      "@context": "https://schema.org",
+      "@type": "Article",
+      "headline": "Resume Format for TCS Campus Placement 2026"
+    }
+  }
+]

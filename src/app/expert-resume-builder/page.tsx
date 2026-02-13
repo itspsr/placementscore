@@ -106,7 +106,8 @@ export default function ExpertResumeBuilder() {
       }
 
       const pdfBytes = await pdfDoc.save();
-      const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+      // Use the underlying buffer directly to avoid Uint8Array/ArrayBufferLike TS conflicts
+      const blob = new Blob([pdfBytes.buffer], { type: 'application/pdf' });
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;

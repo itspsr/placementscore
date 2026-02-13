@@ -1,14 +1,17 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-
 import { Providers } from "@/components/Providers";
+import Script from "next/script";
 
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-// ... existing metadata
-  title: "PlacementScore.online | #1 AI ATS Resume Checker for Indian Placements",
+  metadataBase: new URL("https://placementscore.online"),
+  title: {
+    default: "PlacementScore.online | #1 AI ATS Resume Checker for Indian Placements",
+    template: "%s | PlacementScore.online"
+  },
   description: "Get your ATS score instantly. Optimized for Indian students at IIT, NIT, VIT, and SRM. Land top MNC jobs at TCS, Google, and Amazon with AI-powered resume rewriting.",
   keywords: [
     "ATS resume checker India",
@@ -63,7 +66,7 @@ export const metadata: Metadata = {
     },
   },
   verification: {
-    google: "google-site-verification-id", // User should replace this with their actual ID
+    google: "YOUR_GOOGLE_SEARCH_CONSOLE_ID", 
   },
 };
 
@@ -76,33 +79,21 @@ export default function RootLayout({
     <html lang="en" className="scroll-smooth">
       <head>
         <link rel="canonical" href="https://placementscore.online" />
-        {/* Structured Data for Google (SEO) */}
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
-              "@context": "https://schema.org",
-              "@type": "WebApplication",
-              "name": "PlacementScore",
-              "url": "https://placementscore.online",
-              "description": "AI-powered ATS Resume Checker for Indian students and freshers.",
-              "applicationCategory": "EducationalApplication",
-              "operatingSystem": "All",
-              "offers": {
-                "@type": "Offer",
-                "price": "99.00",
-                "priceCurrency": "INR"
-              },
-              "aggregateRating": {
-                "@type": "AggregateRating",
-                "ratingValue": "4.9",
-                "reviewCount": "50000"
-              }
-            }),
-          }}
+        {/* Google Analytics 4 */}
+        <Script
+          src={`https://www.googletagmanager.com/gtag/js?id=G-YOUR_GA4_ID`}
+          strategy="afterInteractive"
         />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-YOUR_GA4_ID');
+          `}
+        </Script>
       </head>
-      <body className={inter.className}>
+      <body className={`${inter.className} bg-[#050505] antialiased selection:bg-blue-500/30`}>
         <Providers>{children}</Providers>
       </body>
     </html>

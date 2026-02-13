@@ -37,6 +37,25 @@ export default function Home() {
   const [scrolled, setScrolled] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
 
+  // --- Persistence & Query Params ---
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const planParam = params.get('plan');
+    const viewParam = params.get('view');
+    
+    // Check if user already paid in this session
+    const savedPaidStatus = localStorage.getItem('ps_is_paid_expert');
+    if (savedPaidStatus === 'true') {
+      setIsPaid(true);
+      setSelectedPlan({ tier: 'EXPERT', price: 399 });
+    }
+
+    if (viewParam === 'payment' && planParam === 'expert') {
+      setSelectedPlan({ tier: 'EXPERT', price: 399 });
+      setView('payment');
+    }
+  }, []);
+
   // --- Scroll & Sticky Nav ---
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 50);
@@ -150,7 +169,13 @@ export default function Home() {
     if (!/^\d{12}$/.test(utr)) return setPaymentError("Invalid UTR (12 digits required)");
     if (!/^T\d{18,}$/.test(transactionId)) return setPaymentError("Invalid Transaction ID (PhonePe format)");
     setPaymentStep(3);
-    setTimeout(() => { setIsPaid(true); setPaymentStep(4); }, 3000);
+    setTimeout(() => { 
+      setIsPaid(true); 
+      if (selectedPlan?.tier === 'EXPERT') {
+        localStorage.setItem('ps_is_paid_expert', 'true');
+      }
+      setPaymentStep(4); 
+    }, 3000);
   };
 
   const scrollToSection = (id: string) => {

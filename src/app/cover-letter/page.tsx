@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   ArrowLeft, FileText, Send, Building2, Briefcase, 
@@ -20,8 +20,14 @@ export default function CoverLetterGenerator() {
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<any>(null);
   const [isCopied, setIsCopied] = useState(false);
+  const [isExpert, setIsExpert] = useState(false);
 
-  const isExpert = session?.user?.email === "admin@placementscore.online";
+  useEffect(() => {
+    const savedPaidStatus = localStorage.getItem('ps_is_paid_expert');
+    if (savedPaidStatus === 'true' || session?.user?.email === "admin@placementscore.online") {
+      setIsExpert(true);
+    }
+  }, [session]);
 
   const generateLetter = async () => {
     if (!role || !company) return alert("Please fill all fields.");

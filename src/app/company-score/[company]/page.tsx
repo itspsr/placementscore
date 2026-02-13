@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   ArrowLeft, Building2, Upload, FileText, 
@@ -17,8 +17,14 @@ export default function CompanyScore({ params }: { params: { company: string } }
   const [file, setFile] = useState<File | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<any>(null);
+  const [isExpert, setIsExpert] = useState(false);
 
-  const isExpert = session?.user?.email === "admin@placementscore.online";
+  useEffect(() => {
+    const savedPaidStatus = localStorage.getItem('ps_is_paid_expert');
+    if (savedPaidStatus === 'true' || session?.user?.email === "admin@placementscore.online") {
+      setIsExpert(true);
+    }
+  }, [session]);
 
   const handleFile = (e: any) => {
     if (e.target.files?.[0]) setFile(e.target.files[0]);

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   ArrowLeft, IndianRupee, MapPin, Briefcase, 
@@ -12,15 +12,20 @@ import { useSession } from "next-auth/react";
 import { ExpertGate } from "@/components/ExpertGate";
 
 export default function SalaryEstimator() {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const [role, setRole] = useState("Software Engineer");
   const [experience, setExperience] = useState(0);
   const [city, setCity] = useState("Bangalore");
   const [result, setResult] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isExpert, setIsExpert] = useState(false);
 
-  // Placeholder gating logic
-  const isExpert = session?.user?.email === "admin@placementscore.online";
+  useEffect(() => {
+    const savedPaidStatus = localStorage.getItem('ps_is_paid_expert');
+    if (savedPaidStatus === 'true' || session?.user?.email === "admin@placementscore.online") {
+      setIsExpert(true);
+    }
+  }, [session]);
 
   const calculateSalary = async () => {
     setIsLoading(true);

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   ArrowLeft, Linkedin, Search, Target, TrendingUp, 
@@ -16,8 +16,14 @@ export default function LinkedInAnalyzer() {
   const [content, setContent] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<any>(null);
-  
-  const isExpert = session?.user?.email === "admin@placementscore.online";
+  const [isExpert, setIsExpert] = useState(false);
+
+  useEffect(() => {
+    const savedPaidStatus = localStorage.getItem('ps_is_paid_expert');
+    if (savedPaidStatus === 'true' || session?.user?.email === "admin@placementscore.online") {
+      setIsExpert(true);
+    }
+  }, [session]);
 
   const analyzeProfile = async () => {
     if (content.length < 50) return alert("Please paste more profile content.");

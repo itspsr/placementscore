@@ -8,6 +8,8 @@ const DATA_PATH = path.join(process.cwd(), 'src/data/blogs.json');
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
+  
+  // SECURE CRON ACCESS
   if (process.env.NODE_ENV === 'production' && searchParams.get('key') !== process.env.CRON_SECRET) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
@@ -15,57 +17,74 @@ export async function GET(req: Request) {
   try {
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
-    // --- STEP 1: AGENT PROPOSES IDEAS ---
+    // --- PHASE 1: AGENT PROPOSES IDEAS ---
+    // AI analyzes current trends for Indian graduates in 2026/2027
     const proposalPrompt = `
-      You are the PlacementScore Growth Agent. 
-      Analyze current trends for Indian engineering students (TCS NQT 2026, Google Summer Intern 2027, etc.).
-      Propose 3 high-intent, low-competition blog topics.
-      Return JSON only: { "proposals": ["topic 1", "topic 2", "topic 3"] }
+      You are a senior SEO Growth Agent for 'placementscore.online'. 
+      Analyze the current recruitment trends for Indian college students (TCS NQT 2026, Google India Internships, Resume Keywords for SDE-1).
+      Propose a high-intent, low-competition blog topic that will rank on Google India.
+      Return JSON only: { "topic": "Proposed Topic", "keyword": "main keyword" }
     `;
     const proposalResult = await model.generateContent(proposalPrompt);
     const proposalData = JSON.parse(proposalResult.response.text().replace(/```json/g, "").replace(/```/g, "").trim());
-    const selectedTopic = proposalData.proposals[0];
+    const selectedTopic = proposalData.topic;
 
-    // --- STEP 2: AUTO-APPROVAL SYSTEM ---
-    // In this step, we ensure the topic is unique and has high SEO potential.
+    // --- PHASE 2: AUTO-APPROVAL SYSTEM ---
+    // Check against existing database to ensure no duplicates
     const existingBlogs = JSON.parse(fs.readFileSync(DATA_PATH, 'utf8'));
-    const isDuplicate = existingBlogs.some((b: any) => b.title.includes(selectedTopic));
+    const isDuplicate = existingBlogs.some((b: any) => b.title.toLowerCase().includes(selectedTopic.toLowerCase()));
     
     if (isDuplicate) {
-      return NextResponse.json({ message: "Idea rejected: Duplicate detected. Loop restarting." });
+      return NextResponse.json({ message: "Loop Cycle: Idea rejected as duplicate. Restarting tomorrow." });
     }
 
-    // --- STEP 3: TASK EXECUTION (GENERATE CONTENT) ---
+    // --- PHASE 3: TASK EXECUTION (CONTENT GENERATION) ---
     const executionPrompt = `
-      Generate a 2000-word authoritative guide for the approved topic: "${selectedTopic}".
-      Include H1, H2, H3, FAQ, and a CTA for placementscore.online.
-      Return JSON: { "title": "...", "slug": "...", "content": "...", "metaDescription": "..." }
+      Write a 2000-word authoritative SEO blog post for the approved topic: "${selectedTopic}".
+      
+      Requirements:
+      - Title: Max 60 chars, include keyword "${proposalData.keyword}"
+      - Meta Description: Max 155 chars, high CTR for Indian students.
+      - Style: Deeply technical yet encouraging.
+      - Structure: H1, at least 4 H2s, and multiple H3s.
+      - Use the 'XYZ formula' for resume examples.
+      - Include a FAQ section with 5 questions.
+      - Include internal links placeholders like [HOME] and [PRICING].
+
+      Return JSON only:
+      {
+        "title": "...",
+        "slug": "...",
+        "metaDescription": "...",
+        "content": "...",
+        "cluster": "Automated Placement Guide"
+      }
     `;
     const executionResult = await model.generateContent(executionPrompt);
     const finalBlog = JSON.parse(executionResult.response.text().replace(/```json/g, "").replace(/```/g, "").trim());
 
-    // --- STEP 4: TRIGGER NEW REACTIONS (SAVE & INDEX) ---
+    // --- PHASE 4: TRIGGER NEW REACTIONS (SAVE & LOG) ---
     const newEntry = {
       ...finalBlog,
-      createdAt: new Date().toISOString(),
       id: existingBlogs.length + 1,
-      loop_verified: true
+      createdAt: new Date().toISOString(),
+      source: "Self-Improving AI Loop"
     };
 
     existingBlogs.push(newEntry);
     fs.writeFileSync(DATA_PATH, JSON.stringify(existingBlogs, null, 2));
 
-    // Pinging Google Search Console (Simulated placeholder for production)
-    console.log("Loop Complete. Pinging Search Engines for:", finalBlog.slug);
+    console.log("Master Loop Complete: Blog published successfully.", finalBlog.slug);
 
     return NextResponse.json({ 
       success: true, 
-      loop_cycle: "PROPOSED -> APPROVED -> EXECUTED -> INDEXED",
-      topic: selectedTopic 
+      status: "EXECUTED",
+      published_slug: finalBlog.slug,
+      loop_verified: true
     });
 
   } catch (error) {
-    console.error("Master Loop Error:", error);
-    return NextResponse.json({ error: "Loop break" }, { status: 500 });
+    console.error("Master Loop Failure:", error);
+    return NextResponse.json({ error: "Loop break: " + error }, { status: 500 });
   }
 }

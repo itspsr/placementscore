@@ -219,6 +219,11 @@ Workday, Greenhouse, Taleo, and Lever.
           <button onClick={() => scrollToSection('pricing')} className="hover:text-white transition">Pricing</button>
           <button onClick={() => setView('blog')} className="hover:text-white transition">Blog</button>
           <button onClick={() => scrollToSection('faq')} className="hover:text-white transition">FAQ</button>
+          {user && (
+            <button onClick={() => window.location.href='/expert-resume-builder'} className="text-blue-500 hover:text-blue-400 flex items-center gap-2">
+              AI Builder <Sparkles className="w-4 h-4" />
+            </button>
+          )}
           <div className="h-4 w-px bg-white/10" />
           {user ? (
             <div className="flex items-center gap-3 bg-white/5 px-4 py-2 rounded-full border border-white/10">
@@ -247,6 +252,11 @@ Workday, Greenhouse, Taleo, and Lever.
              <button onClick={() => scrollToSection('pricing')} className="text-2xl font-black italic">Pricing</button>
              <button onClick={() => { setView('blog'); setIsMenuOpen(false); }} className="text-2xl font-black italic">Blog</button>
              <button onClick={() => scrollToSection('faq')} className="text-2xl font-black italic">FAQ</button>
+             {user && (
+               <button onClick={() => { window.location.href='/expert-resume-builder'; setIsMenuOpen(false); }} className="text-2xl font-black italic text-blue-500 flex items-center gap-2">
+                 AI Builder <Sparkles className="w-5 h-5" />
+               </button>
+             )}
              <div className="w-full h-px bg-white/5" />
              {user ? (
                <div className="space-y-4">
@@ -607,9 +617,14 @@ Workday, Greenhouse, Taleo, and Lever.
                                </div>
                             )}
                             {isGenerated && (
-                               <button onClick={handleDownload} className="w-full py-6 md:py-7 bg-green-500 text-white rounded-3xl font-[1000] text-xl md:text-2xl hover:bg-green-600 transition-all flex items-center justify-center gap-4 shadow-2xl uppercase italic">
-                                  <CheckCircle className="w-6 h-6" /> Download Optimized PDF
-                               </button>
+                               <div className="flex flex-col sm:flex-row gap-4">
+                                  <button onClick={handleDownload} className="flex-1 py-6 md:py-7 bg-green-500 text-white rounded-3xl font-[1000] text-xl md:text-2xl hover:bg-green-600 transition-all flex items-center justify-center gap-4 shadow-2xl uppercase italic">
+                                     <CheckCircle className="w-6 h-6" /> Download Optimized PDF
+                                  </button>
+                                  <button onClick={() => window.location.href='/expert-resume-builder'} className="flex-1 py-6 md:py-7 bg-blue-600 text-white rounded-3xl font-[1000] text-xl md:text-2xl hover:bg-blue-700 transition-all flex items-center justify-center gap-4 shadow-2xl uppercase italic">
+                                     Advanced AI Builder <Sparkles className="w-6 h-6" />
+                                  </button>
+                               </div>
                             )}
                          </div>
                       </div>

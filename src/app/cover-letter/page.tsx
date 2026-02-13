@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   ArrowLeft, FileText, Send, Building2, Briefcase, 
   Sparkles, Download, Lock, CreditCard, ChevronRight,
-  Copy, Check
+  Copy, Check, Trash2
 } from 'lucide-react';
 import Link from 'next/link';
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';

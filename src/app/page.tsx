@@ -9,7 +9,7 @@ import {
   ChevronRight, Play, Award, BarChart3, Globe, Sparkle, AlertCircle,
   X, Instagram, Twitter, Linkedin, Facebook, Mail, Phone, MapPin, 
   Minus, Plus, Shield, IndianRupee, Heart, Terminal, BookOpen, Scale, FileSignature,
-  FileCode, Briefcase, GraduationCap, Trophy, Verified, Menu
+  FileCode, Briefcase, GraduationCap, Trophy, Verified, Menu, Building2
 } from 'lucide-react';
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
 import { signIn, signOut, useSession } from "next-auth/react";

@@ -1,17 +1,17 @@
 import { NextResponse } from 'next/server';
 import OpenAI from 'openai';
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
-
 export async function POST(req: Request) {
   try {
-    const { role, company, experience, tier } = await req.json();
+    const { role, company, experience } = await req.json();
 
     if (!process.env.OPENAI_API_KEY) {
-      return NextResponse.json({ error: "OpenAI configuration missing" }, { status: 500 });
+      return NextResponse.json({ error: "OpenAI configuration missing. Please add your API key to environment variables." }, { status: 500 });
     }
+
+    const openai = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY,
+    });
 
     const prompt = `Write a highly professional and ATS-friendly cover letter for a ${role} position at ${company}. 
     Experience Level: ${experience}. 
@@ -26,10 +26,6 @@ export async function POST(req: Request) {
 
     const fullText = completion.choices[0].message.content || "";
 
-    // Payment Logic for Preview
-    // Free (tier === null): Blur first 3 paragraphs.
-    // We return full text and handle blurring in UI based on tier
-    
     return NextResponse.json({
       success: true,
       coverLetter: fullText,
@@ -39,6 +35,6 @@ export async function POST(req: Request) {
 
   } catch (error) {
     console.error("Cover Letter Error:", error);
-    return NextResponse.json({ error: "Failed to generate cover letter" }, { status: 500 });
+    return NextResponse.json({ error: "Failed to generate cover letter. Please try again later." }, { status: 500 });
   }
 }

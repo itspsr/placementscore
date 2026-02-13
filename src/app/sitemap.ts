@@ -1,9 +1,11 @@
 import { MetadataRoute } from 'next';
+import { getBlogs } from '@/lib/blog';
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl = 'https://placementscore.online';
+  const blogs = getBlogs();
   
-  // Routes for static pages
+  // Base static routes
   const routes = [
     '',
     '/blog',
@@ -18,5 +20,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: route === '' ? 1 : 0.8,
   }));
 
-  return routes;
+  // Dynamic blog routes
+  const blogRoutes = blogs.map((blog: any) => ({
+    url: `${baseUrl}/blog/${blog.slug}`,
+    lastModified: new Date(blog.createdAt),
+    changeFrequency: 'weekly' as const,
+    priority: 0.9,
+  }));
+
+  return [...routes, ...blogRoutes];
 }

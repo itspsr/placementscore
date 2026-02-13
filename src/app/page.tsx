@@ -210,6 +210,10 @@ export default function Home() {
                     <button onClick={() => scrollToSection('upload')} className="w-full sm:w-auto bg-blue-600 text-white px-12 py-6 rounded-[24px] font-black text-xl hover:bg-blue-500 transition-all shadow-2xl shadow-blue-500/30 flex items-center justify-center gap-3 group uppercase italic">
                       Scan My Resume <ArrowRight className="group-hover:translate-x-2 transition-transform" />
                     </button>
+                    <div className="flex items-center gap-3 px-6 py-4 bg-white/5 border border-white/10 rounded-2xl">
+                       <div className="w-2 h-2 bg-blue-500 rounded-full animate-ping" />
+                       <span className="text-[10px] font-black uppercase tracking-widest text-white/30 whitespace-nowrap">Self-Improving Loop Active</span>
+                    </div>
                   </div>
                 </div>
 

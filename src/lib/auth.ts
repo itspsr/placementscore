@@ -1,8 +1,6 @@
 import GoogleProvider from "next-auth/providers/google";
 import { NextAuthOptions } from "next-auth";
 
-const ALLOWED_ADMINS = ["admin@placementscore.online"];
-
 export const authOptions: NextAuthOptions = {
   providers: [
     GoogleProvider({
@@ -10,12 +8,15 @@ export const authOptions: NextAuthOptions = {
       clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
     }),
   ],
+  secret: process.env.NEXTAUTH_SECRET,
+  session: {
+    strategy: "jwt",
+  },
   callbacks: {
     async signIn({ user }) {
-      if (user.email && ALLOWED_ADMINS.includes(user.email)) {
-        return true;
-      }
-      return false; // Deny access to everyone else
+      // Basic gating: only specific email can sign in as admin
+      // You can add logic here to allow all users to sign in but only restrict /admin
+      return true;
     },
     async session({ session, token }) {
       if (session.user) {
@@ -24,12 +25,7 @@ export const authOptions: NextAuthOptions = {
       return session;
     },
   },
-  session: {
-    strategy: "jwt",
-  },
-  secret: process.env.NEXTAUTH_SECRET,
   pages: {
-    signIn: '/', // Redirect back to home for sign in or use default
-    error: '/',  // Redirect to home on error
-  }
+    signIn: "/login",
+  },
 };

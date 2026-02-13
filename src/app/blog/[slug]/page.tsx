@@ -4,6 +4,7 @@ import { getBlogBySlug, getBlogs } from "@/lib/blog";
 import { ArrowLeft, Sparkles, Calendar, BookOpen, Target, CheckCircle2 } from 'lucide-react';
 import Link from 'next/link';
 import ReactMarkdown from 'react-markdown';
+import { BackButton } from "@/components/BackButton";
 
 export async function generateStaticParams() {
   const blogs = getBlogs();
@@ -35,6 +36,8 @@ export default function BlogPost({ params }: { params: { slug: string } }) {
   return (
     <article className="min-h-screen bg-[#050505] text-white p-6 pt-32">
       <div className="max-w-4xl mx-auto space-y-12">
+        <BackButton />
+
         <Link href="/blog" className="inline-flex items-center gap-2 text-white/20 hover:text-white transition-colors group">
           <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" /> Back to Insights
         </Link>

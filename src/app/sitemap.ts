@@ -14,6 +14,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     '/privacy',
     '/terms',
     '/faq',
+    '/free-resume-template',
+    '/ats-score-calculator',
   ].map((route) => ({
     url: `${baseUrl}${route}`,
     lastModified: new Date(),

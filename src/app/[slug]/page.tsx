@@ -4,6 +4,7 @@ import { getPageBySlug, getProgrammaticPages } from "@/lib/programmatic";
 import { ArrowLeft, Sparkles, CheckCircle2, ChevronRight, BarChart3, ShieldCheck, Zap } from 'lucide-react';
 import Link from 'next/link';
 import ReactMarkdown from 'react-markdown';
+import { BackButton } from "@/components/BackButton";
 
 export async function generateStaticParams() {
   const pages = getProgrammaticPages();
@@ -40,6 +41,8 @@ export default function ProgrammaticPage({ params }: { params: { slug: string } 
       )}
 
       <div className="max-w-4xl mx-auto space-y-12">
+        <BackButton />
+
         <Link href="/" className="inline-flex items-center gap-2 text-white/20 hover:text-white transition-colors group">
           <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" /> Back Home
         </Link>
@@ -81,6 +84,13 @@ export default function ProgrammaticPage({ params }: { params: { slug: string } 
               </div>
            </div>
         </section>
+      </div>
+
+      {/* Sticky Analyze Button */}
+      <div className="fixed bottom-6 right-6 z-[110] lg:hidden">
+         <Link href="/" className="flex items-center gap-3 px-8 py-4 bg-blue-600 text-white rounded-2xl font-black shadow-2xl animate-bounce-slow">
+            <Zap className="w-5 h-5 fill-current" /> Analyze Now
+         </Link>
       </div>
     </main>
   );

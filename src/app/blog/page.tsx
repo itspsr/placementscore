@@ -2,8 +2,10 @@ import { Metadata } from "next";
 import Link from 'next/link';
 import { getBlogs } from "@/lib/blog";
 import { BookOpen, Calendar, ChevronRight } from 'lucide-react';
+import { BackButton } from "@/components/BackButton";
 
 export const metadata: Metadata = {
+// ... existing
   title: "Career Blog & Placement Guides | PlacementScore.online",
   description: "Daily updated insights on ATS algorithms, resume optimization, and Indian campus placement strategies for 2026-2027.",
 };
@@ -15,7 +17,8 @@ export default function BlogPage() {
 
   return (
     <main className="min-h-screen bg-[#050505] text-white p-6 pt-32">
-      <div className="max-w-6xl mx-auto space-y-20">
+      <div className="max-w-6xl mx-auto space-y-12">
+        <BackButton />
         <div className="text-center space-y-6">
           <h1 className="text-5xl md:text-8xl font-[1000] italic uppercase tracking-tighter">Placement Insights</h1>
           <p className="text-xl text-white/40 leading-relaxed italic max-w-2xl mx-auto">

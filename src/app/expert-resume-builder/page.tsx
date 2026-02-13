@@ -1,15 +1,16 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   ArrowLeft, Sparkles, FileText, Download, Target, 
   Briefcase, Brain, CheckCircle2, ChevronRight, Loader2,
-  Trash2, Copy, Check, Lock, CreditCard
+  Trash2, Copy, Check
 } from 'lucide-react';
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
 import { useSession } from "next-auth/react";
 import Link from 'next/link';
+import { ExpertGate } from "@/components/ExpertGate";
 
 export default function ExpertResumeBuilder() {
   const { data: session, status } = useSession();
@@ -21,21 +22,11 @@ export default function ExpertResumeBuilder() {
   const [result, setResult] = useState<any>(null);
   const [isCopied, setIsCopied] = useState(false);
 
-  // SECURE GATE: In a real app, this status should come from the database. 
-  // For this implementation, we check if the user is logged in.
-  const isExpert = session?.user?.email === "admin@placementscore.online"; // Placeholder logic for demonstration
-  // In production, you would fetch the user's tier from /api/user/status
+  const isExpert = session?.user?.email === "admin@placementscore.online";
 
   const handleGenerate = async () => {
-    if (!session) {
-      alert("Please sign in to use the AI Builder.");
-      return;
-    }
-
-    if (!originalText || !targetRole) {
-      alert("Please enter your resume text and target role.");
-      return;
-    }
+    if (!session) return alert("Please sign in.");
+    if (!originalText || !targetRole) return alert("Please fill all fields.");
 
     setIsGenerating(true);
     setResult(null);
@@ -69,7 +60,7 @@ export default function ExpertResumeBuilder() {
     try {
       const pdfDoc = await PDFDocument.create();
       const page = pdfDoc.addPage([600, 800]);
-      const { width, height } = page.getSize();
+      const { height } = page.getSize();
       const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
       const boldFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
 
@@ -118,10 +109,9 @@ export default function ExpertResumeBuilder() {
           <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" /> Back to Home
         </Link>
 
-        {/* HEADER */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-16">
           <div className="space-y-2">
-            <h1 className="text-5xl md:text-7xl font-[1000] italic uppercase tracking-tighter flex items-center gap-4">
+            <h1 className="text-5xl md:text-7xl font-[1000] italic uppercase tracking-tighter flex items-center gap-4 italic">
               AI Resume Builder <Sparkles className="text-blue-500 w-10 h-10" />
             </h1>
             <p className="text-white/30 font-bold uppercase tracking-widest text-xs">Architecting your high-performance career profile</p>
@@ -133,29 +123,8 @@ export default function ExpertResumeBuilder() {
           )}
         </div>
 
-        {/* GATING OVERLAY OR CONTENT */}
-        <div className="relative">
-          <AnimatePresence>
-            {!isExpert && (
-              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="absolute inset-0 z-50 bg-black/60 backdrop-blur-xl rounded-[60px] flex items-center justify-center p-12 border border-white/5 shadow-2xl">
-                 <div className="max-w-md text-center space-y-8">
-                    <div className="w-20 h-20 bg-blue-600 rounded-[28px] flex items-center justify-center mx-auto shadow-2xl shadow-blue-500/20">
-                       <Lock className="w-10 h-10 text-white" />
-                    </div>
-                    <div className="space-y-4">
-                       <h2 className="text-4xl font-[1000] italic uppercase tracking-tighter">Expert Feature Locked</h2>
-                       <p className="text-white/40 font-medium">The AI Resume Builder is exclusive to the ₹399 Expert Plan. Unlock it to generate a recruiter-grade, ATS-optimized resume in 10 seconds.</p>
-                    </div>
-                    <Link href="/?plan=expert" className="inline-flex w-full py-6 bg-white text-black rounded-[30px] font-[1000] text-xl items-center justify-center gap-3 hover:bg-blue-600 hover:text-white transition-all shadow-xl">
-                       <CreditCard className="w-5 h-5" /> Upgrade to Expert — ₹399
-                    </Link>
-                    <p className="text-[10px] font-black uppercase tracking-[0.4em] text-white/10">Verified Secure Checkout • AI Optimization Active</p>
-                 </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          <div className={`grid lg:grid-cols-1 gap-12 transition-all duration-700 ${!isExpert ? 'filter blur-sm pointer-events-none' : ''}`}>
+        <ExpertGate isExpert={isExpert}>
+          <div className="grid lg:grid-cols-1 gap-12 text-left">
             {!result ? (
               <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="bg-[#0A0A0A] p-10 md:p-16 rounded-[60px] border border-white/5 space-y-12 shadow-2xl">
                 <div className="space-y-10">
@@ -164,7 +133,7 @@ export default function ExpertResumeBuilder() {
                     <textarea 
                       value={originalText}
                       onChange={(e) => setOriginalText(e.target.value)}
-                      placeholder="Paste your resume content or a list of your achievements here..."
+                      placeholder="Paste your resume content here..."
                       className="w-full h-80 p-8 bg-black border border-white/10 rounded-[40px] outline-none focus:border-blue-600 transition-all font-medium text-white/80 resize-none shadow-inner no-scrollbar"
                     />
                   </div>
@@ -219,30 +188,20 @@ export default function ExpertResumeBuilder() {
                 <button 
                   onClick={handleGenerate}
                   disabled={isGenerating}
-                  className="w-full py-10 bg-blue-600 rounded-[40px] font-[1000] text-3xl hover:bg-blue-500 transition-all shadow-2xl shadow-blue-500/30 uppercase italic tracking-tighter flex items-center justify-center gap-6 disabled:opacity-50"
+                  className="w-full py-10 bg-blue-600 rounded-[40px] font-[1000] text-3xl text-white hover:bg-blue-500 transition-all shadow-2xl shadow-blue-500/30 uppercase italic tracking-tighter flex items-center justify-center gap-6 disabled:opacity-50"
                 >
-                  {isGenerating ? (
-                    <>
-                      <Loader2 className="w-10 h-10 animate-spin" />
-                      Neural Architecting...
-                    </>
-                  ) : (
-                    <>
-                      Build My Optimized Resume
-                      <Sparkles className="w-8 h-8" />
-                    </>
-                  )}
+                  {isGenerating ? <Loader2 className="w-10 h-10 animate-spin" /> : <>Build My Optimized Resume <Sparkles className="w-8 h-8" /></>}
                 </button>
               </motion.div>
             ) : (
               <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="space-y-12">
                 <div className="grid lg:grid-cols-3 gap-12">
-                  <div className="lg:col-span-2 bg-[#0A0A0A] border border-white/5 rounded-[60px] p-10 md:p-16 shadow-2xl relative overflow-hidden">
-                    <div className="flex justify-between items-center mb-12">
+                  <div className="lg:col-span-2 bg-[#0A0A0A] border border-white/5 rounded-[60px] p-10 md:p-16 shadow-2xl relative overflow-hidden text-left">
+                    <div className="flex justify-between items-center mb-12 text-left">
                       <h3 className="text-2xl font-[1000] uppercase italic tracking-tighter text-blue-500 flex items-center gap-3">
                         <FileText className="w-6 h-6" /> AI-Generated Blueprint
                       </h3>
-                      <div className="flex gap-4">
+                      <div className="flex gap-4 text-left">
                         <button onClick={copyToClipboard} className="p-4 bg-white/5 border border-white/5 rounded-2xl hover:bg-white/10 transition-all">
                           {isCopied ? <Check className="w-6 h-6 text-green-500" /> : <Copy className="w-6 h-6 text-white/40" />}
                         </button>
@@ -256,7 +215,7 @@ export default function ExpertResumeBuilder() {
                     </div>
                   </div>
 
-                  <div className="space-y-10">
+                  <div className="space-y-10 text-left">
                     <div className="bg-blue-600/10 border border-blue-600/20 rounded-[50px] p-10 space-y-8 shadow-2xl">
                       <div className="text-center space-y-2">
                         <h4 className="text-[10px] font-black uppercase tracking-[0.5em] text-blue-400 italic">ATS Confidence Level</h4>
@@ -269,10 +228,10 @@ export default function ExpertResumeBuilder() {
                     </div>
 
                     <div className="bg-white/5 border border-white/5 rounded-[50px] p-10 space-y-8">
-                      <h4 className="text-[10px] font-black uppercase tracking-[0.5em] text-white/20 flex items-center gap-3 italic">
+                      <h4 className="text-[10px] font-black uppercase tracking-[0.5em] text-white/20 flex items-center gap-3 italic text-left">
                         <CheckCircle2 className="w-5 h-5 text-green-500" /> Neural Optimizations
                       </h4>
-                      <ul className="space-y-6">
+                      <ul className="space-y-6 text-left">
                         {result.suggestedImprovements.map((imp: string, i: number) => (
                           <li key={i} className="text-base font-bold text-white/40 flex items-start gap-4 italic leading-snug">
                             <ChevronRight className="w-5 h-5 text-blue-500 shrink-0 mt-0.5" />
@@ -290,7 +249,7 @@ export default function ExpertResumeBuilder() {
               </motion.div>
             )}
           </div>
-        </div>
+        </ExpertGate>
       </div>
     </div>
   );

@@ -266,11 +266,11 @@ export default function Home() {
                </div>
             </section>
 
-            {/* Free Career Tools Section */}
+            {/* Paid Tools Section */}
             <section className="py-24 md:py-40 px-4 md:px-6 max-w-7xl mx-auto">
                <div className="text-center mb-16 md:mb-32 space-y-4">
-                  <h2 className="text-4xl md:text-7xl font-[1000] italic tracking-tighter uppercase leading-[1]">Free <span className="text-blue-500">Career Tools.</span></h2>
-                  <p className="text-white/20 font-bold uppercase tracking-[0.3em] text-[10px]">Neural-powered aids for your placement journey</p>
+                  <h2 className="text-4xl md:text-7xl font-[1000] italic uppercase tracking-tighter leading-[1]"><span className="text-blue-500">Paid Tools.</span></h2>
+                  <p className="text-white/20 font-bold uppercase tracking-[0.3em] text-[10px]">Premium AI-powered career accelerators for Expert users</p>
                </div>
                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
                   <ToolCard icon={IndianRupee} title="Salary Estimator" desc="Check your market value in top Indian tech hubs." link="/salary-estimator" />

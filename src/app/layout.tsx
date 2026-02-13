@@ -68,6 +68,9 @@ export const metadata: Metadata = {
   verification: {
     google: "YOUR_GOOGLE_SEARCH_CONSOLE_ID", 
   },
+  icons: {
+    icon: '/favicon.svg',
+  },
 };
 
 export default function RootLayout({

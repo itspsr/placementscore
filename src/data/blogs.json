@@ -1,0 +1,92 @@
+[
+  {
+    "id": 1,
+    "title": "How to Check ATS Score for TCS NQT 2026",
+    "slug": "how-to-check-ats-score-for-tcs-nqt-2026",
+    "metaDescription": "Learn how to calculate and improve your ATS score for TCS NQT 2026. Get hired by Tata Consultancy Services with an optimized resume.",
+    "cluster": "Company Specific Resume Guides",
+    "createdAt": "2026-02-13T10:00:00Z",
+    "content": "# How to Check ATS Score for TCS NQT 2026\n\nLanding a job at Tata Consultancy Services (TCS) through the National Qualifier Test (NQT) is a dream for thousands of engineering graduates in India. However, the first hurdle isn't the test itself—it's getting your resume past the TCS iON Applicant Tracking System (ATS). \n\n## Why TCS iON ATS is Different\n\nTCS uses a proprietary version of the iON platform to filter millions of applications. Unlike generic scanners, the TCS algorithm looks for specific institutional tags, CGPA stability, and a high density of core technical keywords like Java, Python, and SDLC.\n\n## Step-by-Step Optimization for TCS\n\n1. **Standardize Your Format:** Use a single-column layout. Avoid fancy graphics that the iON scanner might misinterpret as noise.\n2. **Keyword Injection:** Ensure your skills section matches the NQT job description exactly. If they ask for 'Agile', don't just write 'Scrum'.\n3. **Quantify Results:** TCS recruiters value scale. Instead of 'Worked on a project', write 'Developed a library management system serving 500+ daily users'.\n\n## FAQ\n\n**Q: What is a good ATS score for TCS?**\n**A:** Aim for a score above 85 on PlacementScore.online to be in the top 5% of applicants.\n\n**Q: Does TCS reject resumes automatically?**\n**A:** Yes, resumes that fail to meet the basic keyword and formatting thresholds are often filtered out before the manual review stage."
+  },
+  {
+    "id": 2,
+    "title": "10 Resume Mistakes That Kill Placement Chances in 2026",
+    "slug": "resume-mistakes-that-kill-placement-chances-2026",
+    "metaDescription": "Avoid these top 10 resume mistakes that lead to instant rejection in 2026. Learn how to fix your formatting and keywords.",
+    "cluster": "Resume Mistakes",
+    "createdAt": "2026-02-13T10:05:00Z",
+    "content": "# 10 Resume Mistakes That Kill Placement Chances in 2026\n\nIn the 2026 job market, recruiters spend less than 6 seconds on your resume. If you make any of these critical errors, your chances of a callback are near zero.\n\n## 1. Using Incompatible Fonts\nATS scanners struggle with non-standard fonts. Stick to Arial, Calibri, or Georgia. Avoid custom 'Creative' fonts.\n\n## 2. Multi-Column Layouts\nScanners read top-to-bottom. Columns often cause the software to merge your experience with your education, creating a garbled mess.\n\n## 3. Missing Contact Information\nIf the bot can't find your phone number or email string, it can't move you to the 'Interview' stage.\n\n## 4. Lack of Metrics\n'Good at C++' means nothing. 'Optimized C++ algorithms to reduce execution time by 40%' means everything.\n\n## FAQ\n\n**Q: Can I use colors on my resume?**\n**A:** It's best to keep it professional. High contrast (Black on White) ensures the best OCR (Optical Character Recognition) performance."
+  },
+  {
+    "id": 3,
+    "title": "ATS Resume Score Explained for Indian Students",
+    "slug": "ats-resume-score-explained-for-indian-students",
+    "metaDescription": "What is an ATS score? We explain how algorithms rank Indian resumes and how you can beat the system in 2026.",
+    "cluster": "ATS Score Guide",
+    "createdAt": "2026-02-13T10:10:00Z",
+    "content": "# ATS Resume Score Explained for Indian Students\n\nAn ATS score is a numerical representation of how well your resume matches a specific job description. In India, where application volumes are massive, this score is the primary filter for campus placements.\n\n## How the Score is Calculated\n\n1. **Keyword Match (30%):** Does your resume contain the required tools and technologies?\n2. **Formatting (25%):** Is your resume machine-readable?\n3. **Experience Density (25%):** Do your descriptions show growth and impact?\n4. **Section Hierarchy (20%):** Are your sections clearly labeled?\n\n## Why PlacementScore.online is Accurate\n\nOur engine uses logic reverse-engineered from Workday and Taleo, the systems used by companies like Deloitte, Amazon, and Google. We provide a score between 40-100 to give you a realistic view of your standing."
+  },
+  {
+    "id": 4,
+    "title": "Top Resume Keywords for SDE Roles in 2026",
+    "slug": "top-resume-keywords-for-sde-roles-2026",
+    "metaDescription": "Unlock the most important keywords for Software Development Engineer (SDE) roles in 2026. Rank #1 in recruiter searches.",
+    "cluster": "Resume Format Templates",
+    "createdAt": "2026-02-13T10:15:00Z",
+    "content": "# Top Resume Keywords for SDE Roles in 2026\n\nAs an SDE candidate, your resume must speak 'Machine'. Here are the high-priority keywords for 2026.\n\n## Core Technologies\n- **Backend:** Microservices, Node.js, Spring Boot, GoLang.\n- **Frontend:** Next.js, Tailwind CSS, TypeScript, WebAssembly.\n- **Cloud:** AWS Lambda, Docker, Kubernetes, Terraform.\n\n## Soft Skills that Scanners Love\n- Agile Methodology\n- Technical Documentation\n- Cross-functional Collaboration\n- Peer Code Review\n\n## Integrating Keywords Naturally\nDon't just 'keyword stuff' at the bottom. Weave these terms into your project descriptions to show you actually used the tools."
+  },
+  {
+    "id": 5,
+    "title": "How Recruiters Shortlist Campus Candidates at Top MNCs",
+    "slug": "how-recruiters-shortlist-campus-candidates",
+    "metaDescription": "Ever wondered how Google or Amazon picks freshers? We reveal the secret shortlisting process used by top MNC recruiters.",
+    "cluster": "Campus Placement Preparation",
+    "createdAt": "2026-02-13T10:20:00Z",
+    "content": "# How Recruiters Shortlist Campus Candidates at Top MNCs\n\nThe campus recruitment process in India is a funnel. Out of 10,000 applicants, only 100 get offers. Here is how they filter you out.\n\n## Phase 1: The Automated Filter\nBefore a human even opens your file, the ATS removes everyone below a certain score. This usually cuts 70% of the applicants.\n\n## Phase 2: The 6-Second Scan\nA junior recruiter looks at the remaining resumes. They look for college names, CGPA, and specific project impact. If they don't see numbers (e.g., 90% accuracy, 20% faster), they move on.\n\n## Phase 3: Technical Vetting\nSenior engineers review the finalists to see if the projects are real. This is where your 'Skills Gaps' on PlacementScore.online become critical to fix."
+  },
+  {
+    "id": 6,
+    "title": "Best Resume Format for Engineering Freshers in India",
+    "slug": "best-resume-format-for-engineering-freshers-india",
+    "metaDescription": "Download the ultimate ATS-friendly resume format for engineering students in India. Perfect for 2026 placements.",
+    "cluster": "Resume Format Templates",
+    "createdAt": "2026-02-13T10:25:00Z",
+    "content": "# Best Resume Format for Engineering Freshers in India\n\nFor freshers, the 'Reverse Chronological' format is king. It focuses on your most recent education and projects first, which is what Indian recruiters care about most.\n\n## The Perfect Structure\n1. **Header:** Name, LinkedIn, GitHub, Email.\n2. **Professional Summary:** 3 lines on your tech stack.\n3. **Education:** Degree, College, CGPA.\n4. **Skills:** Categorized into Languages, Frameworks, and Tools.\n5. **Projects:** 3 impact-driven projects.\n6. **Achievements:** Coding rankings (LeetCode, CodeChef) or awards.\n\n## Downloadable Insights\nOur Expert Plan allows you to generate this exact format as a verified PDF resume with a 90+ ATS score."
+  },
+  {
+    "id": 7,
+    "title": "How to Improve Resume Score from 40 to 80 Instantly",
+    "slug": "how-to-improve-resume-score-from-40-to-80",
+    "metaDescription": "Stuck with a low resume score? Follow our actionable guide to jump from 40 to 80 in less than 10 minutes.",
+    "cluster": "ATS Score Guide",
+    "createdAt": "2026-02-13T10:30:00Z",
+    "content": "# How to Improve Resume Score from 40 to 80 Instantly\n\nIf you scanned your resume on PlacementScore.online and got a score below 50, don't panic. Most raw resumes start there. Here is how to fix it.\n\n## Fix 1: Header Re-indexing\nMake sure your contact info is at the very top. Don't put your phone number inside a table or a footer.\n\n## Fix 2: Keyword Alignment\nIf the job asks for 'Data Analysis', ensure that exact phrase appears at least twice in your projects. 'Analyzed data' is not the same for a robot.\n\n## Fix 3: Action Verb Upgrade\nReplace 'Helped in' with 'Spearheaded' or 'Engineered'. This simple change adds 'Authority' to your score."
+  },
+  {
+    "id": 8,
+    "title": "ATS vs Human Recruiter: What Matters More?",
+    "slug": "ats-vs-human-recruiter-what-matters-more",
+    "metaDescription": "Who is the real gatekeeper? We compare ATS algorithms and human recruiters to help you build a winning resume.",
+    "cluster": "Campus Placement Preparation",
+    "createdAt": "2026-02-13T10:35:00Z",
+    "content": "# ATS vs Human Recruiter: What Matters More?\n\nIt's a common debate: should you write for the robot or the human? The truth is, you must write for BOTH, but in a specific order.\n\n## 1. The ATS is the Gatekeeper\nIf you don't optimize for the ATS, the human will never see your resume. You must win the 'Numerical Ranking' first.\n\n## 2. The Human is the Decision Maker\nOnce you pass the filter, a human reads your resume to see if you're a good culture fit. This is where your 'Summary' and 'Achievements' matter most.\n\n## The Balanced Approach\nUse clean formatting for the ATS and impact-driven bullet points for the human. This dual-strategy is what our AI engine specializes in."
+  },
+  {
+    "id": 9,
+    "title": "Why Your Resume Gets Rejected Automatically by HR Software",
+    "slug": "why-your-resume-gets-rejected-automatically",
+    "metaDescription": "Uncover the technical reasons behind automatic resume rejection. Fix your profile to start getting interview calls.",
+    "cluster": "Resume Mistakes",
+    "createdAt": "2026-02-13T10:40:00Z",
+    "content": "# Why Your Resume Gets Rejected Automatically by HR Software\n\nIt's frustrating to apply and get rejected within 5 minutes. Here is the technical reason why it's happening.\n\n## 1. Unparsable PDF Structure\nSome PDF creators save text as images. If a bot can't highlight the text in your PDF, it can't read it. Use standard 'Save as PDF' from Word or Google Docs.\n\n## 2. Keyword Thresholds\nMany MNCs set a threshold (e.g., 70% skill match). If your resume only hits 65%, you are auto-rejected without a second glance.\n\n## 3. Date Formatting Errors\nIf you write '2023-Present', some older ATS systems might see that as an invalid date range and discard your experience section entirely."
+  },
+  {
+    "id": 10,
+    "title": "Ultimate Resume Template for CSE Students (ATS Optimized)",
+    "slug": "ultimate-resume-template-for-cse-students",
+    "metaDescription": "Get the best, recruiter-approved resume template for CSE students. Optimized for 2026 placements and high ATS scores.",
+    "cluster": "Resume Format Templates",
+    "createdAt": "2026-02-13T10:45:00Z",
+    "content": "# Ultimate Resume Template for CSE Students (ATS Optimized)\n\nComputer Science students need a resume that highlights their coding proficiency and project impact above all else.\n\n## The CSE Blueprint\n- **Languages:** Proficient in Java, Python, C++.\n- **Tools:** Git, Jenkins, Postman, VS Code.\n- **Frameworks:** React, Node.js, Django.\n- **Cloud:** AWS (EC2, S3), Docker.\n\n## Project Highlighting\nAlways link your GitHub repo. A verified link to a working project is the best trust signal you can provide.\n\n## The Results\nStudents using this template on our platform report a 70% increase in interview callbacks from startups and MNCs alike."
+  }
+]

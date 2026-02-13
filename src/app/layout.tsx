@@ -2,9 +2,12 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 
+import { Providers } from "@/components/Providers";
+
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
+// ... existing metadata
   title: "PlacementScore.online | #1 AI ATS Resume Checker for Indian Placements",
   description: "Get your ATS score instantly. Optimized for Indian students at IIT, NIT, VIT, and SRM. Land top MNC jobs at TCS, Google, and Amazon with AI-powered resume rewriting.",
   keywords: [
@@ -99,7 +102,9 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className={inter.className}>{children}</body>
+      <body className={inter.className}>
+        <Providers>{children}</Providers>
+      </body>
     </html>
   );
 }

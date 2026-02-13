@@ -12,14 +12,15 @@ import {
   FileCode, Briefcase, GraduationCap, Trophy, Verified, Menu
 } from 'lucide-react';
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
+import { signIn, signOut, useSession } from "next-auth/react";
 
 // --- Types ---
 type AppState = 'landing' | 'analyzing' | 'result' | 'payment' | 'admin' | 'blog' | 'contact' | 'privacy' | 'terms';
 
 export default function Home() {
+  const { data: session } = useSession();
   const [view, setView] = useState<AppState>('landing');
   const [file, setFile] = useState<File | null>(null);
-  const [user, setUser] = useState<any>(null); 
   const [result, setResult] = useState<any>(null);
   const [paymentStep, setPaymentStep] = useState(1);
   const [utr, setUtr] = useState("");
@@ -39,37 +40,7 @@ export default function Home() {
 
   // --- Actions ---
   const handleGoogleLogin = () => {
-    const width = 500, height = 600;
-    const left = (window.innerWidth / 2) - (width / 2);
-    const top = (window.innerHeight / 2) - (height / 2);
-    const authWindow = window.open('about:blank', 'Google Auth', `width=${width},height=${height},left=${left},top=${top}`);
-    
-    if (authWindow) {
-      authWindow.document.write(`
-        <div style="font-family:sans-serif; display:flex; flex-direction:column; align-items:center; justify-content:center; height:100vh; background:#f8f9fa;">
-          <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_Logo.svg" width="120" style="margin-bottom:20px;" />
-          <h3 style="color:#3c4043;">Signing in to PlacementScore</h3>
-          <p style="color:#70757a; font-size:14px;">Choose an account</p>
-          <div style="border:1px solid #dadce0; padding:15px; width:80%; border-radius:8px; cursor:pointer; background:white; margin-top:20px;" onclick="window.close()">
-            <div style="display:flex; align-items:center; gap:10px;">
-              <div style="width:30px; height:30px; border-radius:50%; background:#4285f4; color:white; display:flex; align-items:center; justify-content:center;">U</div>
-              <div>
-                <div style="font-weight:bold; font-size:14px;">urboss</div>
-                <div style="font-size:12px; color:#5f6368;">urboss@example.com</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      `);
-      
-      const timer = setInterval(() => {
-        if (authWindow.closed) {
-          clearInterval(timer);
-          setUser({ name: "urboss", email: "urboss@example.com", avatar: "🌌" });
-          setView('landing');
-        }
-      }, 500);
-    }
+    signIn('google');
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -224,16 +195,19 @@ export default function Home() {
           <button onClick={() => scrollToSection('pricing')} className="hover:text-white transition">Pricing</button>
           <button onClick={() => setView('blog')} className="hover:text-white transition">Blog</button>
           <button onClick={() => scrollToSection('faq')} className="hover:text-white transition">FAQ</button>
-          {user && (
+          {session?.user && (
             <button onClick={() => window.location.href='/expert-resume-builder'} className="text-blue-500 hover:text-blue-400 flex items-center gap-2">
               AI Builder <Sparkles className="w-4 h-4" />
             </button>
           )}
           <div className="h-4 w-px bg-white/10" />
-          {user ? (
+          {session?.user ? (
             <div className="flex items-center gap-3 bg-white/5 px-4 py-2 rounded-full border border-white/10">
-              <span className="text-xs text-white/80">{user.name}</span>
-              <button onClick={() => setView('admin')} className="text-[10px] text-white/20 hover:text-white">Admin</button>
+              <span className="text-xs text-white/80">{session.user.name}</span>
+              {session.user.email === "admin@placementscore.online" && (
+                <button onClick={() => window.location.href='/admin'} className="text-[10px] text-white/20 hover:text-white">Admin</button>
+              )}
+              <button onClick={() => signOut()} className="text-[10px] text-red-500/50 hover:text-red-500">Sign Out</button>
             </div>
           ) : (
             <button onClick={handleGoogleLogin} className="bg-white text-black px-6 py-2.5 rounded-xl font-black hover:bg-blue-500 hover:text-white transition-all flex items-center gap-2">
@@ -261,10 +235,13 @@ export default function Home() {
                </button>
              )}
              <div className="w-full h-px bg-white/5" />
-             {user ? (
+             {session?.user ? (
                <div className="space-y-4">
-                  <p className="text-white/40 font-bold">{user.name}</p>
-                  <button onClick={() => { setView('admin'); setIsMenuOpen(false); }} className="px-6 py-2 bg-white/5 border border-white/10 rounded-xl text-xs font-black uppercase tracking-widest">Admin</button>
+                  <p className="text-white/40 font-bold">{session.user.name}</p>
+                  {session.user.email === "admin@placementscore.online" && (
+                    <button onClick={() => { window.location.href='/admin'; setIsMenuOpen(false); }} className="px-6 py-2 bg-white/5 border border-white/10 rounded-xl text-xs font-black uppercase tracking-widest">Admin</button>
+                  )}
+                  <button onClick={() => signOut()} className="px-6 py-2 bg-red-500/10 border border-red-500/20 rounded-xl text-xs font-black uppercase tracking-widest text-red-500">Sign Out</button>
                </div>
              ) : (
                <button onClick={handleGoogleLogin} className="w-full bg-white text-black py-5 rounded-2xl font-black text-xl flex items-center justify-center gap-3">
@@ -300,7 +277,7 @@ export default function Home() {
                   <h1 className="text-4xl sm:text-6xl md:text-[80px] font-[1000] leading-[1] md:leading-[0.9] tracking-tighter">
                     Get Your Real <br /> <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-indigo-500 italic">Placement Score.</span>
                   </h1>
-                  <p className="text-lg md:text-xl text-white/40 max-w-2xl lg:mx-0 mx-auto font-medium leading-relaxed">
+                  <p className="text-lg md:text-xl text-white/40 max-w-2xl lg:mx-0 mx-auto font-medium leading-relaxed text-balance">
                     Recruiters spend only 6 seconds on your resume. If your ATS score is below 80, you're getting rejected instantly. Benchmark your profile now.
                   </p>
                   
@@ -318,9 +295,10 @@ export default function Home() {
                 <div className="flex-1 relative w-full overflow-hidden py-10 md:py-0">
                   {/* RESPONSIVE RING UI */}
                   <div className="relative w-64 h-64 sm:w-80 sm:h-80 md:w-[500px] md:h-[500px] mx-auto group">
+                    <div className="absolute -inset-4 bg-gradient-to-br from-blue-600/10 to-indigo-600/10 rounded-full blur-3xl opacity-50 group-hover:opacity-100 transition-all duration-1000" />
                     <div className="absolute inset-0 rounded-full border-[1px] border-white/5 animate-spin-slow" />
                     <div className="absolute inset-[10%] rounded-full border-[15px] md:border-[50px] border-white/5 shadow-inner" />
-                    <svg className="absolute inset-[10%] w-[80%] h-[80%] -rotate-90">
+                    <svg className="absolute inset-[10%] w-[80%] h-[80%] -rotate-90 filter drop-shadow-[0_0_15px_rgba(59,130,246,0.3)]">
                       <circle cx="50%" cy="50%" r="45%" stroke="url(#ps-grad)" strokeWidth="30" fill="transparent" strokeDasharray="283%" strokeDashoffset="85%" strokeLinecap="round" className="opacity-90" />
                       <defs>
                         <linearGradient id="ps-grad" x1="0%" y1="0%" x2="100%" y2="0%">
@@ -350,12 +328,12 @@ export default function Home() {
 
             <section id="upload" className="py-24 md:py-40 px-4 md:px-6 max-w-5xl mx-auto">
                 <div className="text-center mb-12 md:mb-16 space-y-4">
-                  <h2 className="text-4xl md:text-6xl font-black italic tracking-tighter uppercase">Ready to bypass the bot?</h2>
+                  <h2 className="text-4xl md:text-6xl font-black italic tracking-tighter uppercase leading-tight">Ready to bypass the bot?</h2>
                   <p className="text-white/40 font-medium italic uppercase tracking-widest text-[10px] md:text-xs">✨ Text-based PDF Resume required (Max 5MB)</p>
                 </div>
                 <div className="relative group">
                   <div className="absolute -inset-2 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-[40px] md:rounded-[60px] blur-xl opacity-20 group-hover:opacity-40 transition-opacity" />
-                  <div className="relative bg-[#0A0A0A] p-8 md:p-20 rounded-[40px] md:rounded-[60px] border border-white/10 shadow-2xl text-center">
+                  <div className="relative bg-[#0A0A0A] p-8 md:p-20 rounded-[40px] md:rounded-[60px] border border-white/10 shadow-2xl text-center backdrop-blur-fix">
                     <input type="file" id="hero-up" className="hidden" accept=".pdf" onChange={handleFileChange} />
                     {!file ? (
                       <label htmlFor="hero-up" className="cursor-pointer block">
@@ -363,7 +341,7 @@ export default function Home() {
                           <Upload className="w-12 h-12 md:w-20 md:h-20 text-white/5 mx-auto group-hover/label:text-blue-500/50 transition-colors" />
                           <div className="space-y-2 md:space-y-4">
                              <h3 className="text-2xl md:text-4xl font-black italic uppercase tracking-tighter">Drag & Drop Resume</h3>
-                             <p className="text-white/20 font-black uppercase tracking-[0.2em] text-[10px] italic">Secure Analysis • Real-time Parsing</p>
+                             <p className="text-white/20 font-black uppercase tracking-[0.3em] text-[10px] italic">Secure Analysis • Real-time Parsing</p>
                           </div>
                         </div>
                       </label>
@@ -382,8 +360,8 @@ export default function Home() {
             </section>
 
             <section className="py-24 md:py-40 px-4 md:px-6 max-w-7xl mx-auto">
-               <h2 className="text-4xl md:text-6xl font-[1000] text-center mb-16 md:mb-32 italic tracking-tighter uppercase">3 Simple Steps</h2>
-               <div className="grid md:grid-cols-3 gap-8 md:gap-16">
+               <h2 className="text-4xl md:text-6xl font-[1000] text-center mb-16 md:mb-32 italic tracking-tighter uppercase leading-tight">3 Simple Steps</h2>
+               <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-16">
                   <StepCard num="01" icon={Upload} title="Upload PDF" desc="Drop your resume. Our neural engine extracts text and structure instantly." />
                   <StepCard num="02" icon={Terminal} title="3s AI Scan" desc="We benchmark your profile against 500+ proprietary corporate filters." />
                   <StepCard num="03" icon={Award} title="Win the Job" desc="Get a score and a full roadmap to fix keyword gaps and formatting." />
@@ -405,7 +383,7 @@ export default function Home() {
                   <div className="flex-1 w-full max-w-lg md:max-w-none">
                      <div className="p-8 md:p-16 bg-[#0A0A0A] rounded-[40px] md:rounded-[60px] border border-white/5 shadow-2xl relative overflow-hidden group">
                         <div className="flex items-center gap-4 md:gap-6 mb-8 md:mb-12 relative z-10">
-                           <div className="w-12 h-12 md:w-16 md:h-16 bg-red-500/10 text-red-500 rounded-2xl flex items-center justify-center font-[1000] text-2xl md:text-3xl italic ring-1 ring-red-500/20">!</div>
+                           <div className="w-12 h-12 md:w-16 md:h-16 bg-red-500/10 text-red-500 rounded-2xl flex items-center justify-center font-[1000] text-2xl md:text-3xl italic ring-1 ring-red-500/20 shadow-lg">!</div>
                            <h4 className="text-xl md:text-3xl font-[1000] italic tracking-tighter uppercase">Critical Gap Found</h4>
                         </div>
                         <p className="text-xl md:text-2xl text-white/40 font-medium leading-relaxed relative z-10 italic">"Missing <span className="text-white">Quantifiable Metrics</span> in bullet points. Ranked in bottom 20% tier."</p>
@@ -430,7 +408,7 @@ export default function Home() {
                </div>
 
                <div className="mt-20 md:mt-40 overflow-x-auto rounded-[30px] md:rounded-[50px] border border-white/5 bg-white/[0.01] shadow-2xl no-scrollbar">
-                  <table className="w-full text-left border-collapse min-w-[600px]">
+                  <table className="w-full text-left border-collapse min-w-[700px]">
                      <thead className="bg-white/5 text-[10px] md:text-[11px] font-black uppercase tracking-[0.4em] text-white/10">
                         <tr>
                            <th className="p-6 md:p-10 border-b border-white/5">Core Feature</th>
@@ -485,7 +463,7 @@ export default function Home() {
                      { q: "How accurate is the score?", a: "Our engine uses algorithms with 95%+ parity with industry software like Workday and Taleo." },
                      { q: "Do you store resume content?", a: "No. Content is processed in volatile memory and purged immediately after analysis." }
                   ].map((item, i) => (
-                     <div key={i} className="border border-white/5 rounded-[24px] md:rounded-[32px] bg-[#0A0A0A] overflow-hidden">
+                     <div key={i} className="border border-white/5 rounded-[24px] md:rounded-[32px] bg-[#0A0A0A] overflow-hidden backdrop-blur-fix">
                         <button onClick={() => setActiveFaq(activeFaq === i ? null : i)} className="w-full p-6 md:p-10 flex items-center justify-between text-left group">
                            <span className="text-lg md:text-2xl font-black italic tracking-tight group-hover:text-blue-500 transition-colors uppercase leading-tight pr-4">{item.q}</span>
                            <div className={`w-8 h-8 md:w-10 md:h-10 shrink-0 rounded-full border border-white/10 flex items-center justify-center transition-all ${activeFaq === i ? 'bg-blue-600 border-blue-600 rotate-180' : ''}`}>
@@ -521,7 +499,7 @@ export default function Home() {
 
         {view === 'result' && (
           <motion.div key="result" className="pt-24 md:pt-40 pb-20 md:pb-32 px-4 md:px-6 max-w-7xl mx-auto relative z-10">
-             <div className="bg-[#0A0A0A] p-8 md:p-20 rounded-[40px] md:rounded-[70px] border border-white/5 flex flex-col xl:flex-row gap-12 md:gap-24 shadow-2xl">
+             <div className="bg-[#0A0A0A] p-8 md:p-20 rounded-[40px] md:rounded-[70px] border border-white/5 flex flex-col xl:flex-row gap-12 md:gap-24 shadow-2xl backdrop-blur-fix">
                 <div className="text-center space-y-8 md:space-y-10 xl:w-[400px]">
                    <div className="relative inline-block">
                       <div className="absolute -inset-4 bg-blue-600/20 rounded-full blur-2xl animate-pulse" />
@@ -551,15 +529,15 @@ export default function Home() {
 
                    <div className="space-y-6 md:space-y-8">
                       <div className={`p-6 md:p-10 bg-green-500/[0.03] rounded-[30px] md:rounded-[40px] border border-green-500/10 transition-all ${!isPaid ? 'blur-xl opacity-30 select-none' : ''}`}>
-                        <h4 className="text-lg md:text-xl font-black text-green-400 mb-6 uppercase tracking-widest flex items-center gap-3 italic"><CheckCircle className="w-4 h-4 md:w-5 md:h-5" /> Strengths</h4>
-                        <div className="grid md:grid-cols-2 gap-4">
+                        <h4 className="text-lg md:text-xl font-black text-green-400 mb-6 uppercase tracking-widest flex items-center gap-3 italic text-left"><CheckCircle className="w-4 h-4 md:w-5 md:h-5" /> Strengths</h4>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                            {result.strengths.map((s:any) => <div key={s} className="p-4 bg-green-500/5 rounded-2xl border border-green-500/5 text-xs md:text-sm font-bold text-white/60 flex items-center gap-3">✓ {s}</div>)}
                         </div>
                       </div>
 
                       {(isPaid && (selectedPlan?.tier === 'ELITE' || selectedPlan?.tier === 'EXPERT')) ? (
                          <div className="p-6 md:p-10 bg-amber-500/[0.03] rounded-[30px] md:rounded-[40px] border border-amber-500/10">
-                           <h4 className="text-lg md:text-xl font-black text-amber-400 mb-6 uppercase tracking-widest flex items-center gap-3 italic"><Target className="w-4 h-4 md:w-5 md:h-5" /> Skill Gaps</h4>
+                           <h4 className="text-lg md:text-xl font-black text-amber-400 mb-6 uppercase tracking-widest flex items-center gap-3 italic text-left"><Target className="w-4 h-4 md:w-5 md:h-5" /> Skill Gaps</h4>
                            <div className="flex flex-wrap gap-2 md:gap-4">
                               {result.keyword_gaps.map((k:any) => <span key={k} className="px-4 md:px-6 py-2 md:py-3 bg-amber-500/10 rounded-full border border-amber-500/10 text-xs md:text-sm font-black text-amber-500/80 uppercase italic tracking-widest">{k}</span>)}
                            </div>
@@ -572,10 +550,10 @@ export default function Home() {
 
                       {(isPaid && selectedPlan?.tier === 'EXPERT') && (
                         <div className="p-6 md:p-10 bg-indigo-600/[0.03] rounded-[30px] md:rounded-[40px] border border-indigo-600/10 space-y-6">
-                           <h4 className="text-lg md:text-xl font-black text-indigo-400 mb-2 uppercase tracking-widest flex items-center gap-3 italic"><Sparkles className="w-4 h-4 md:w-5 md:h-5" /> Expert Optimizer</h4>
+                           <h4 className="text-lg md:text-xl font-black text-indigo-400 mb-2 uppercase tracking-widest flex items-center gap-3 italic text-left"><Sparkles className="w-4 h-4 md:w-5 md:h-5" /> Expert Optimizer</h4>
                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                              <div className="p-4 bg-white/[0.02] rounded-2xl border border-white/5 text-[9px] font-black uppercase tracking-widest text-white/30">Standardized Parsing</div>
-                              <div className="p-4 bg-white/[0.02] rounded-2xl border border-white/5 text-[9px] font-black uppercase tracking-widest text-white/30">Metric-First Rewrite</div>
+                              <div className="p-4 bg-white/[0.02] rounded-2xl border border-white/5 text-[9px] font-black uppercase tracking-widest text-white/30 text-left">Standardized Parsing</div>
+                              <div className="p-4 bg-white/[0.02] rounded-2xl border border-white/5 text-[9px] font-black uppercase tracking-widest text-white/30 text-left">Metric-First Rewrite</div>
                            </div>
                         </div>
                       )}
@@ -620,10 +598,10 @@ export default function Home() {
                             {isGenerated && (
                                <div className="flex flex-col sm:flex-row gap-4">
                                   <button onClick={handleDownload} className="flex-1 py-6 md:py-7 bg-green-500 text-white rounded-3xl font-[1000] text-xl md:text-2xl hover:bg-green-600 transition-all flex items-center justify-center gap-4 shadow-2xl uppercase italic">
-                                     <CheckCircle className="w-6 h-6" /> Download PDF
+                                     <CheckCircle className="w-6 h-6" /> Download Optimized PDF
                                   </button>
                                   <button onClick={() => window.location.href='/expert-resume-builder'} className="flex-1 py-6 md:py-7 bg-blue-600 text-white rounded-3xl font-[1000] text-xl md:text-2xl hover:bg-blue-700 transition-all flex items-center justify-center gap-4 shadow-2xl uppercase italic">
-                                     AI Builder <Sparkles className="w-6 h-6" />
+                                     Advanced AI Builder <Sparkles className="w-6 h-6" />
                                   </button>
                                </div>
                             )}
@@ -657,11 +635,11 @@ export default function Home() {
                       </div>
                       <div className="text-left space-y-6 md:space-y-8">
                         <div className="space-y-2">
-                           <label className="text-[9px] font-black uppercase text-white/20 ml-2">12-Digit UTR Number</label>
+                           <label className="text-[9px] font-black uppercase text-white/20 ml-2 tracking-widest">12-Digit UTR Number</label>
                            <input type="text" placeholder="e.g. 812834131941" className="w-full p-5 md:p-7 bg-white/5 border border-white/10 rounded-2xl md:rounded-3xl font-black text-lg md:text-2xl outline-none focus:border-blue-600 transition-all text-white" value={utr} onChange={(e)=>setUtr(e.target.value)} />
                         </div>
                         <div className="space-y-2">
-                           <label className="text-[9px] font-black uppercase text-white/20 ml-2">Transaction ID</label>
+                           <label className="text-[9px] font-black uppercase text-white/20 ml-2 tracking-widest">Transaction ID</label>
                            <input type="text" placeholder="e.g. T260213..." className="w-full p-5 md:p-7 bg-white/5 border border-white/10 rounded-2xl md:rounded-3xl font-black text-lg md:text-2xl outline-none focus:border-blue-600 transition-all text-white" value={transactionId} onChange={(e)=>setTransactionId(e.target.value)} />
                         </div>
                         {paymentError && <div className="p-4 bg-red-500/10 border border-red-500/20 text-red-500 text-[10px] font-[1000] rounded-xl uppercase tracking-widest text-center">{paymentError}</div>}
@@ -671,9 +649,12 @@ export default function Home() {
                 )}
                 {paymentStep === 4 && (
                    <div className="py-12 md:py-20 space-y-8 md:space-y-12">
-                      <CheckCircle className="w-20 h-20 md:w-32 md:h-32 text-green-500 mx-auto" />
-                      <div className="space-y-2 md:space-y-4">
-                         <h3 className="text-3xl md:text-5xl font-[1000] italic uppercase tracking-tighter leading-none text-center">Verified</h3>
+                      <div className="relative inline-block mx-auto">
+                         <div className="absolute inset-0 bg-green-500 rounded-full blur-3xl opacity-20 animate-pulse" />
+                         <CheckCircle className="w-20 h-20 md:w-32 md:h-32 text-green-500 mx-auto relative z-10" />
+                      </div>
+                      <div className="space-y-2 md:space-y-4 text-center">
+                         <h3 className="text-3xl md:text-5xl font-[1000] italic uppercase tracking-tighter leading-none">Verified</h3>
                          <button onClick={() => setView('result')} className="w-full py-6 md:py-7 mt-8 bg-white text-black rounded-3xl font-[1000] text-xl md:text-2xl shadow-2xl uppercase italic">Access Report</button>
                       </div>
                    </div>
@@ -682,10 +663,10 @@ export default function Home() {
           </motion.div>
         )}
 
-        {/* SEO Pages (Full 1000+ Word Expansion) */}
+        {/* Info Pages (Full 1000+ Word Expansion) */}
         {(['blog', 'contact', 'privacy', 'terms'] as AppState[]).includes(view) && (
            <motion.div key={view} className="pt-32 md:pt-48 pb-20 md:pb-32 px-4 md:px-6 max-w-6xl mx-auto relative z-10">
-              <div className="bg-[#0A0A0A] p-8 md:p-20 rounded-[40px] md:rounded-[70px] border border-white/5 shadow-2xl">
+              <div className="bg-[#0A0A0A] p-8 md:p-20 rounded-[40px] md:rounded-[70px] border border-white/5 shadow-2xl backdrop-blur-fix">
                  <div className="flex items-center gap-6 md:gap-8 mb-12 md:mb-20">
                     <button onClick={() => setView('landing')} className="w-12 h-12 md:w-16 md:h-16 bg-white/5 border border-white/5 rounded-2xl md:rounded-3xl flex items-center justify-center hover:bg-white/10 transition-all"><ArrowRight className="rotate-180" /></button>
                     <h2 className="text-2xl md:text-7xl font-[1000] capitalize italic tracking-tighter uppercase leading-none">{view === 'blog' ? 'Blog & Insights' : view === 'contact' ? 'Contact Us' : view === 'privacy' ? 'Privacy Shield' : 'Terms of Usage'}</h2>
@@ -694,10 +675,10 @@ export default function Home() {
                  <div className="text-white/40 font-medium leading-relaxed text-sm md:text-xl space-y-10 md:space-y-20 italic">
                     {view === 'blog' && (
                        <div className="space-y-16 md:space-y-24">
-                          <section className="space-y-6 md:space-y-8">
+                          <section className="space-y-6 md:space-y-8 text-center lg:text-left">
                              <h3 className="text-2xl md:text-5xl font-black text-white italic tracking-tighter uppercase underline decoration-blue-600 underline-offset-8">Mastering the 2026 Campus Placement Season</h3>
                              <p>Welcome to the authoritative career resource for Indian graduates. In a market where corporate giants like TCS, Infosys, and Google receive over 1 million applications annually, your resume is no longer a document—it's a data point. If your data isn't structured for <strong>Applicant Tracking Systems (ATS)</strong>, your career ends before it begins. This deep dive will equip you with the exact strategies to dominate 2026 hiring trends.</p>
-                             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 pt-4 md:pt-8">
+                             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 pt-4 md:pt-8 text-left">
                                 <div className="space-y-4 p-6 md:p-8 bg-white/5 rounded-2xl md:rounded-3xl border border-white/5">
                                    <h4 className="text-white font-[1000] uppercase italic">1. The Death of the Graphic Resume</h4>
                                    <p className="text-xs md:text-sm">Modern OCR (Optical Character Recognition) software struggles with multiple columns, tables, and infographic-style elements. Our analysis shows text-first resumes have a 4.5x higher callback rate.</p>
@@ -715,9 +696,9 @@ export default function Home() {
                     {view === 'contact' && (
                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 md:gap-32">
                           <div className="space-y-10 md:space-y-16">
-                             <div className="space-y-4 md:space-y-6">
-                                <h3 className="text-3xl md:text-6xl font-[1000] text-white italic uppercase tracking-tighter leading-none text-center lg:text-left">Global <br /> <span className="text-blue-500">Infrastructure.</span></h3>
-                                <p className="text-lg md:text-2xl leading-relaxed text-center lg:text-left">Technical support hubs in India's tech corridors to stay in sync with industry requirements.</p>
+                             <div className="space-y-4 md:space-y-6 text-center lg:text-left">
+                                <h3 className="text-3xl md:text-6xl font-[1000] text-white italic uppercase tracking-tighter leading-none">Global <br /> <span className="text-blue-500">Infrastructure.</span></h3>
+                                <p className="text-lg md:text-2xl leading-relaxed">Technical support hubs in India's tech corridors to stay in sync with industry requirements.</p>
                              </div>
                              <div className="space-y-8 md:space-y-10">
                                 <div className="flex flex-col sm:flex-row items-center gap-6 md:gap-8 group">
@@ -735,10 +716,10 @@ export default function Home() {
 
                     {view === 'privacy' && (
                        <div className="space-y-12 md:space-y-20">
-                          <section className="space-y-6 md:space-y-8">
-                             <h3 className="text-3xl md:text-6xl font-[1000] text-white italic uppercase tracking-tighter flex items-center justify-center lg:justify-start gap-4 md:gap-6 text-center lg:text-left"><ShieldCheck className="text-blue-500 w-12 h-12 md:w-16 md:h-16" /> Information Shield</h3>
+                          <section className="space-y-6 md:space-y-8 text-center lg:text-left">
+                             <h3 className="text-3xl md:text-6xl font-[1000] text-white italic uppercase tracking-tighter flex items-center justify-center lg:justify-start gap-4 md:gap-6"><ShieldCheck className="text-blue-500 w-12 h-12 md:w-16 md:h-16" /> Information Shield</h3>
                              <p>At <strong>PlacementScore.online</strong>, we handle highly sensitive professional data. Our privacy architecture is built on <strong>Zero Permanent Storage</strong>. Resumes are processed in volatile RAM and purged immediately after the analysis cycle.</p>
-                             <p>This 1000-word commitment to your safety explains our use of 256-bit AES encryption for all data in transit. We strictly adhere to the Indian Digital Personal Data Protection (DPDP) Act of 2023. We never share your resume text with recruiters, marketing firms, or third-party analytical companies without explicit opt-in consent. Your career journey is personal, and our platform is designed to act as a private vault for your professional evolution. By utilizing our AI builder, you are choosing an engine that respects intellectual property and data sovereignty above all else.</p>
+                             <p>This deep commitment to your safety explains our use of 256-bit AES encryption for all data in transit. We strictly adhere to the Indian Digital Personal Data Protection (DPDP) Act of 2023. We never share your resume text with recruiters, marketing firms, or third-party analytical companies without explicit opt-in consent. Your career journey is personal, and our platform is designed to act as a private vault for your professional evolution. By utilizing our AI builder, you are choosing an engine that respects intellectual property and data sovereignty above all else. Every transaction and every scan is isolated to ensure that no digital footprint of your private work history remains on our servers longer than strictly necessary for real-time analysis.</p>
                           </section>
                        </div>
                     )}
@@ -747,7 +728,7 @@ export default function Home() {
                        <div className="space-y-12 md:space-y-20 text-center max-w-5xl mx-auto">
                           <h3 className="text-4xl md:text-8xl font-[1000] text-white italic uppercase tracking-tighter leading-none">Agreement of Usage</h3>
                           <p className="text-lg md:text-2xl italic leading-relaxed text-white/60">By accessing the <strong>PlacementScore.online</strong> ecosystem, you enter into a binding digital agreement. Due to the immediate delivery of proprietary AI analysis, all sales are considered final upon report generation. We provide a 99.9% uptime guarantee for our scanning servers.</p>
-                          <p>Furthermore, usage of our 'Expert AI Builder' results in the creation of derivative works based on your original input. PlacementScore retains the right to use anonymized metadata to improve its neural scoring accuracy, but the copyright of the generated PDF remains with the user for the purpose of job applications.</p>
+                          <p>Furthermore, usage of our 'Expert AI Builder' results in the creation of derivative works based on your original input. PlacementScore retains the right to use anonymized metadata to improve its neural scoring accuracy, but the copyright of the generated PDF remains with the user for the purpose of job applications. Any attempt to reverse-engineer our proprietary scoring weights or automate access to our analysis engine without a commercial license is strictly prohibited and will result in permanent account termination.</p>
                        </div>
                     )}
                  </div>
@@ -767,8 +748,8 @@ export default function Home() {
                        <tr><th className="p-8 md:p-10">Student</th><th className="p-8 md:p-10">Plan</th><th className="p-8 md:p-10">UTR</th><th className="p-8 md:p-10">Status</th><th className="p-8 md:p-10 text-right">Action</th></tr>
                     </thead>
                     <tbody className="divide-y divide-white/5 font-bold text-xs md:text-sm">
-                       <tr className="hover:bg-white/[0.01] transition-colors"><td className="p-8 md:p-10">Aman S. (IIT-D)</td><td className="p-8 md:p-10 text-blue-500 uppercase tracking-widest italic">Elite</td><td className="p-8 md:p-10 font-mono tracking-widest">882103322199</td><td className="p-8 md:p-10 text-amber-500 italic">Verification</td><td className="p-8 md:p-10 text-right"><button className="text-green-500 hover:underline uppercase text-[10px]">Approve</button></td></tr>
-                       <tr className="hover:bg-white/[0.01] transition-colors"><td className="p-8 md:p-10">Priya K. (VIT)</td><td className="p-8 md:p-10 text-indigo-500 uppercase tracking-widest italic">Expert</td><td className="p-8 md:p-10 font-mono tracking-widest">991102213122</td><td className="p-8 md:p-10 text-green-500 italic">Secured</td><td className="p-8 md:p-10 text-right">—</td></tr>
+                       <tr className="hover:bg-white/[0.01] transition-colors"><td className="p-8 md:p-10">Aman S. (IIT-D)</td><td className="p-8 md:p-10 text-blue-500 uppercase tracking-widest italic text-[10px]">Elite</td><td className="p-8 md:p-10 font-mono tracking-widest text-[10px]">882103322199</td><td className="p-8 md:p-10 text-amber-500 italic uppercase tracking-widest text-[10px]">Verification</td><td className="p-8 md:p-10 text-right"><button className="px-4 py-2 bg-green-500/10 text-green-500 rounded-xl hover:bg-green-500 hover:text-black transition-all text-[10px] uppercase font-black">Approve</button></td></tr>
+                       <tr className="hover:bg-white/[0.01] transition-colors"><td className="p-8 md:p-10">Priya K. (VIT)</td><td className="p-8 md:p-10 text-indigo-500 uppercase tracking-widest italic text-[10px]">Expert</td><td className="p-8 md:p-10 font-mono tracking-widest text-[10px]">991102213122</td><td className="p-8 md:p-10 text-green-500 italic uppercase tracking-widest text-[10px]">Secured</td><td className="p-8 md:p-10 text-right">—</td></tr>
                     </tbody>
                  </table>
               </div>
@@ -839,7 +820,7 @@ const TestimonialCard = ({ quote, name, role }: any) => (
       <p className="text-lg md:text-2xl text-white/50 font-medium leading-relaxed italic relative z-10 tracking-tight text-center md:text-left">"{quote}"</p>
       <div className="pt-6 md:pt-10 border-t border-white/5 flex flex-col sm:flex-row items-center gap-4 md:gap-6 relative z-10">
          <div className="w-12 h-12 md:w-16 md:h-16 rounded-[18px] md:rounded-[24px] bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center font-[1000] italic text-xl md:text-2xl text-white shadow-xl shadow-blue-500/20">{name[0]}</div>
-         <div className="space-y-1 text-center sm:text-left">
+         <div className="space-y-1 text-center sm:text-left text-left">
             <h4 className="text-lg md:text-xl font-black text-white italic uppercase tracking-tighter leading-none">{name}</h4>
             <p className="text-[8px] md:text-[10px] font-black text-white/20 uppercase tracking-[0.3em] italic">{role}</p>
          </div>

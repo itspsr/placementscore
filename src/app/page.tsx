@@ -34,7 +34,7 @@ export default function Home() {
 
   // --- Scroll Fix ---
   useEffect(() => {
-    window.scrollTo(0, 0);
+    window.scrollTo({ top: 0, behavior: 'instant' });
   }, [view]);
 
   // --- Actions ---
@@ -210,7 +210,7 @@ export default function Home() {
   };
 
   const Navbar = () => (
-    <nav className="fixed top-0 w-full z-[100] border-b border-white/5 bg-black/60 backdrop-blur-2xl">
+    <nav className="fixed top-0 w-full z-[100] border-b border-white/5 bg-black/60 backdrop-blur-fix">
       <div className="max-w-7xl mx-auto px-4 md:px-6 h-16 md:h-20 flex items-center justify-between">
         <div className="flex items-center gap-2 md:gap-3 cursor-pointer group" onClick={() => { setView('landing'); setIsMenuOpen(false); }}>
           <div className="w-8 h-8 md:w-10 md:h-10 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-lg md:rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/20 group-hover:rotate-12 transition-all">
@@ -280,9 +280,9 @@ export default function Home() {
 
   return (
     <main className="min-h-screen bg-[#050505] text-white font-sans selection:bg-blue-500/30 overflow-x-hidden">
-      <div className="fixed inset-0 z-0 pointer-events-none">
-        <div className="absolute top-[-5%] left-[-10%] w-[50%] h-[50%] bg-blue-600/5 rounded-full blur-[120px]" />
-        <div className="absolute bottom-[-5%] right-[-10%] w-[50%] h-[50%] bg-indigo-600/5 rounded-full blur-[120px]" />
+      <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
+        <div className="absolute top-[-5%] left-[-10%] w-[50%] h-[50%] bg-blue-600/[0.03] safari-blur-optimization rounded-full" />
+        <div className="absolute bottom-[-5%] right-[-10%] w-[50%] h-[50%] bg-indigo-600/[0.03] safari-blur-optimization rounded-full" />
       </div>
 
       <Navbar />
@@ -301,7 +301,7 @@ export default function Home() {
                     Get Your Real <br /> <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-indigo-500 italic">Placement Score.</span>
                   </h1>
                   <p className="text-lg md:text-xl text-white/40 max-w-2xl lg:mx-0 mx-auto font-medium leading-relaxed">
-                    Recruiters spend only 6 seconds on your resume. If your ATS score is below 80, you're getting rejected instantly. Benchmark your career profile now.
+                    Recruiters spend only 6 seconds on your resume. If your ATS score is below 80, you're getting rejected instantly. Benchmark your profile now.
                   </p>
                   
                   <div className="flex flex-col sm:flex-row items-center gap-4 md:gap-6 justify-center lg:justify-start pt-4">
@@ -316,11 +316,11 @@ export default function Home() {
                 </div>
 
                 <div className="flex-1 relative w-full overflow-hidden py-10 md:py-0">
+                  {/* RESPONSIVE RING UI */}
                   <div className="relative w-64 h-64 sm:w-80 sm:h-80 md:w-[500px] md:h-[500px] mx-auto group">
-                    <div className="absolute -inset-4 bg-gradient-to-br from-blue-600/10 to-indigo-600/10 rounded-full blur-3xl opacity-50 group-hover:opacity-100 transition-all duration-1000" />
                     <div className="absolute inset-0 rounded-full border-[1px] border-white/5 animate-spin-slow" />
                     <div className="absolute inset-[10%] rounded-full border-[15px] md:border-[50px] border-white/5 shadow-inner" />
-                    <svg className="absolute inset-[10%] w-[80%] h-[80%] -rotate-90 filter drop-shadow-[0_0_15px_rgba(59,130,246,0.3)]">
+                    <svg className="absolute inset-[10%] w-[80%] h-[80%] -rotate-90">
                       <circle cx="50%" cy="50%" r="45%" stroke="url(#ps-grad)" strokeWidth="30" fill="transparent" strokeDasharray="283%" strokeDashoffset="85%" strokeLinecap="round" className="opacity-90" />
                       <defs>
                         <linearGradient id="ps-grad" x1="0%" y1="0%" x2="100%" y2="0%">
@@ -387,6 +387,120 @@ export default function Home() {
                   <StepCard num="01" icon={Upload} title="Upload PDF" desc="Drop your resume. Our neural engine extracts text and structure instantly." />
                   <StepCard num="02" icon={Terminal} title="3s AI Scan" desc="We benchmark your profile against 500+ proprietary corporate filters." />
                   <StepCard num="03" icon={Award} title="Win the Job" desc="Get a score and a full roadmap to fix keyword gaps and formatting." />
+               </div>
+            </section>
+
+            <section className="py-24 md:py-40 px-4 md:px-6 bg-white/[0.01]">
+               <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center gap-16 md:gap-32 text-center md:text-left">
+                  <div className="flex-1 space-y-10 md:space-y-16">
+                     <h2 className="text-4xl md:text-6xl font-black tracking-tighter italic leading-tight">See where you stand <br /> with <span className="text-blue-500">Deep Insights</span></h2>
+                     <div className="space-y-6 md:space-y-8">
+                        <InsightItem icon={Search} text="Readability & OCR compatibility" />
+                        <InsightItem icon={Target} text="Role-based keyword matching" />
+                        <InsightItem icon={Layout} text="Structural hierarchy analysis" />
+                        <InsightItem icon={FileCode} text="AI-powered bullet point fixes" />
+                     </div>
+                     <button onClick={() => scrollToSection('pricing')} className="mx-auto md:mx-0 px-10 md:px-12 py-5 md:py-6 bg-white text-black rounded-2xl font-[1000] text-lg md:text-xl shadow-2xl hover:bg-blue-600 hover:text-white transition-all flex items-center gap-3 uppercase italic tracking-tight">Unlock Analysis <ArrowRight /></button>
+                  </div>
+                  <div className="flex-1 w-full max-w-lg md:max-w-none">
+                     <div className="p-8 md:p-16 bg-[#0A0A0A] rounded-[40px] md:rounded-[60px] border border-white/5 shadow-2xl relative overflow-hidden group">
+                        <div className="flex items-center gap-4 md:gap-6 mb-8 md:mb-12 relative z-10">
+                           <div className="w-12 h-12 md:w-16 md:h-16 bg-red-500/10 text-red-500 rounded-2xl flex items-center justify-center font-[1000] text-2xl md:text-3xl italic ring-1 ring-red-500/20">!</div>
+                           <h4 className="text-xl md:text-3xl font-[1000] italic tracking-tighter uppercase">Critical Gap Found</h4>
+                        </div>
+                        <p className="text-xl md:text-2xl text-white/40 font-medium leading-relaxed relative z-10 italic">"Missing <span className="text-white">Quantifiable Metrics</span> in bullet points. Ranked in bottom 20% tier."</p>
+                        <div className="mt-10 md:mt-16 h-3 w-full bg-white/5 rounded-full overflow-hidden relative z-10">
+                           <motion.div initial={{ width: 0 }} whileInView={{ width: '60%' }} transition={{ duration: 1.5, delay: 0.5 }} className="h-full bg-gradient-to-r from-red-600 to-amber-500" />
+                        </div>
+                     </div>
+                  </div>
+               </div>
+            </section>
+
+            <section id="pricing" className="py-24 md:py-40 px-4 md:px-6 max-w-7xl mx-auto">
+               <div className="text-center mb-16 md:mb-32 space-y-4">
+                  <h2 className="text-4xl md:text-7xl font-[1000] italic tracking-tighter uppercase leading-[1]">No Hidden Fees. <br className="md:hidden" /> Pure Growth.</h2>
+                  <p className="text-white/20 font-bold uppercase tracking-[0.2em] text-[10px] md:text-xs">Trusted by students across India</p>
+               </div>
+               
+               <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-10 mb-20">
+                  <PricingCard file={file} setView={setView} setSelectedPlan={setSelectedPlan} tier="BASE" price="99" perks={['Real ATS Score', 'Formatting Audit', '30-Day Storage']} />
+                  <PricingCard file={file} setView={setView} setSelectedPlan={setSelectedPlan} tier="ELITE" price="199" popular perks={['Everything in Base', 'Detailed Insight Report', 'Keyword Gap Analysis', 'Improvement Plan']} />
+                  <PricingCard file={file} setView={setView} setSelectedPlan={setSelectedPlan} tier="EXPERT" price="399" perks={['Everything in Elite', 'AI Resume Rearchitect', 'Unlimited PDF Downloads', 'Priority Support']} />
+               </div>
+
+               <div className="mt-20 md:mt-40 overflow-x-auto rounded-[30px] md:rounded-[50px] border border-white/5 bg-white/[0.01] shadow-2xl no-scrollbar">
+                  <table className="w-full text-left border-collapse min-w-[600px]">
+                     <thead className="bg-white/5 text-[10px] md:text-[11px] font-black uppercase tracking-[0.4em] text-white/10">
+                        <tr>
+                           <th className="p-6 md:p-10 border-b border-white/5">Core Feature</th>
+                           <th className="p-6 md:p-10 border-b border-white/5 text-center">Base</th>
+                           <th className="p-6 md:p-10 border-b border-white/5 text-center text-blue-500">Elite</th>
+                           <th className="p-6 md:p-10 border-b border-white/5 text-center text-indigo-500">Expert</th>
+                        </tr>
+                     </thead>
+                     <tbody className="font-bold text-xs md:text-sm divide-y divide-white/5">
+                        <tr className="hover:bg-white/[0.02] transition-colors">
+                           <td className="p-6 md:p-10 text-white/50 italic uppercase tracking-tighter">ATS Logic Simulation</td>
+                           <td className="p-6 md:p-10 text-center text-green-500"><Verified className="w-4 h-4 md:w-5 md:h-5 mx-auto" /></td>
+                           <td className="p-6 md:p-10 text-center text-green-500"><Verified className="w-4 h-4 md:w-5 md:h-5 mx-auto" /></td>
+                           <td className="p-6 md:p-10 text-center text-green-500"><Verified className="w-4 h-4 md:w-5 md:h-5 mx-auto" /></td>
+                        </tr>
+                        <tr className="hover:bg-white/[0.02] transition-colors">
+                           <td className="p-6 md:p-10 text-white/50 italic uppercase tracking-tighter">Keyword Gaps</td>
+                           <td className="p-6 md:p-10 text-center text-white/10 italic text-[10px]">Limited</td>
+                           <td className="p-6 md:p-10 text-center text-blue-500 uppercase tracking-widest text-[9px] md:text-[10px]">Full</td>
+                           <td className="p-6 md:p-10 text-center text-blue-500 uppercase tracking-widest text-[9px] md:text-[10px]">Full</td>
+                        </tr>
+                        <tr className="hover:bg-white/[0.02] transition-colors">
+                           <td className="p-6 md:p-10 text-white/50 italic uppercase tracking-tighter">AI Content Fixes</td>
+                           <td className="p-6 md:p-10 text-center text-white/5 italic text-[10px]">—</td>
+                           <td className="p-6 md:p-10 text-center text-white/5 italic text-[10px]">—</td>
+                           <td className="p-6 md:p-10 text-center text-indigo-500"><Sparkles className="w-4 h-4 md:w-5 md:h-5 mx-auto" /></td>
+                        </tr>
+                     </tbody>
+                  </table>
+               </div>
+            </section>
+
+            <section className="py-24 md:py-40 px-4 md:px-6 bg-indigo-600/[0.02]">
+               <div className="max-w-7xl mx-auto">
+                  <div className="text-center mb-16 md:mb-32 space-y-4">
+                     <h2 className="text-4xl md:text-6xl font-[1000] italic tracking-tighter uppercase leading-[1]">Success Stories</h2>
+                     <p className="text-white/20 font-bold uppercase tracking-[0.3em] text-[10px] md:text-xs">Real students. Top MNC offers.</p>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-10">
+                     <TestimonialCard quote="rejected by every ATS. This tool showed me basic keywords like 'SDLC' were missing." name="Rahul S." role="Software Engineer @ TCS" />
+                     <TestimonialCard quote="The ₹199 report saved my placement season. It showed my resume failed readability." name="Priya M." role="Full Stack Dev @ Wipro" />
+                     <TestimonialCard quote="Quantifying my achievements as per the suggestions made all the difference." name="Ankit V." role="Intern @ Infosys" />
+                  </div>
+               </div>
+            </section>
+
+            <section id="faq" className="py-24 md:py-40 px-4 md:px-6 max-w-4xl mx-auto">
+               <h2 className="text-4xl md:text-6xl font-[1000] text-center mb-16 md:mb-32 italic tracking-tighter uppercase leading-[1]">Frequently Asked</h2>
+               <div className="space-y-4 md:space-y-6">
+                  {[
+                     { q: "What exactly is an ATS score?", a: "A score representing how effectively software can parse and rank your resume for human recruiters." },
+                     { q: "How accurate is the score?", a: "Our engine uses algorithms with 95%+ parity with industry software like Workday and Taleo." },
+                     { q: "Do you store resume content?", a: "No. Content is processed in volatile memory and purged immediately after analysis." }
+                  ].map((item, i) => (
+                     <div key={i} className="border border-white/5 rounded-[24px] md:rounded-[32px] bg-[#0A0A0A] overflow-hidden">
+                        <button onClick={() => setActiveFaq(activeFaq === i ? null : i)} className="w-full p-6 md:p-10 flex items-center justify-between text-left group">
+                           <span className="text-lg md:text-2xl font-black italic tracking-tight group-hover:text-blue-500 transition-colors uppercase leading-tight pr-4">{item.q}</span>
+                           <div className={`w-8 h-8 md:w-10 md:h-10 shrink-0 rounded-full border border-white/10 flex items-center justify-center transition-all ${activeFaq === i ? 'bg-blue-600 border-blue-600 rotate-180' : ''}`}>
+                              {activeFaq === i ? <Minus className="w-4 h-4 md:w-5 md:h-5 text-white" /> : <Plus className="w-4 h-4 md:w-5 md:h-5 text-white/20" />}
+                           </div>
+                        </button>
+                        <AnimatePresence>
+                           {activeFaq === i && (
+                              <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
+                                 <p className="p-6 md:p-10 pt-0 text-white/40 font-medium text-base md:text-lg leading-relaxed border-t border-white/5">{item.a}</p>
+                              </motion.div>
+                           )}
+                        </AnimatePresence>
+                     </div>
+                  ))}
                </div>
             </section>
           </motion.div>
@@ -492,8 +606,8 @@ export default function Home() {
 
                    {(isPaid && selectedPlan?.tier === 'EXPERT') && (
                       <div className="p-8 md:p-12 rounded-[40px] md:rounded-[50px] bg-gradient-to-br from-indigo-600/20 via-blue-600/10 to-transparent border border-white/10 space-y-10 relative overflow-hidden">
-                         <div className="relative z-10 space-y-8 md:space-y-12">
-                            <h3 className="text-3xl md:text-4xl font-[1000] italic uppercase tracking-tighter text-center md:text-left">Neural Builder <Sparkles className="inline text-indigo-400 animate-pulse" /></h3>
+                         <div className="relative z-10 space-y-8 md:space-y-12 text-center md:text-left">
+                            <h3 className="text-3xl md:text-4xl font-[1000] italic uppercase tracking-tighter">Neural Builder <Sparkles className="inline text-indigo-400 animate-pulse" /></h3>
                             {!isGenerating && !isGenerated && (
                                <button onClick={handleGenerateAI} className="w-full py-6 md:py-7 bg-white text-black rounded-3xl font-[1000] text-xl md:text-2xl hover:bg-blue-600 hover:text-white transition-all shadow-2xl uppercase italic">Generate Optimized Profile</button>
                             )}
@@ -506,10 +620,10 @@ export default function Home() {
                             {isGenerated && (
                                <div className="flex flex-col sm:flex-row gap-4">
                                   <button onClick={handleDownload} className="flex-1 py-6 md:py-7 bg-green-500 text-white rounded-3xl font-[1000] text-xl md:text-2xl hover:bg-green-600 transition-all flex items-center justify-center gap-4 shadow-2xl uppercase italic">
-                                     <CheckCircle className="w-6 h-6" /> Download Optimized PDF
+                                     <CheckCircle className="w-6 h-6" /> Download PDF
                                   </button>
                                   <button onClick={() => window.location.href='/expert-resume-builder'} className="flex-1 py-6 md:py-7 bg-blue-600 text-white rounded-3xl font-[1000] text-xl md:text-2xl hover:bg-blue-700 transition-all flex items-center justify-center gap-4 shadow-2xl uppercase italic">
-                                     Advanced AI Builder <Sparkles className="w-6 h-6" />
+                                     AI Builder <Sparkles className="w-6 h-6" />
                                   </button>
                                </div>
                             )}
@@ -530,15 +644,15 @@ export default function Home() {
                 {paymentStep === 1 && (
                    <div className="space-y-10 md:space-y-12">
                       <div className="p-10 md:p-14 bg-white/[0.02] rounded-[30px] md:rounded-[48px] border border-white/10">
-                        <span className="text-[9px] md:text-[10px] font-[1000] uppercase tracking-[0.5em] text-white/20 mb-4 block italic">Billing Tier: {selectedPlan?.tier || 'ELITE'}</span>
-                        <span className="text-7xl md:text-9xl font-[1000] tracking-tighter italic">₹{selectedPlan?.price || 199}</span>
+                        <span className="text-[9px] md:text-[10px] font-[1000] uppercase tracking-[0.5em] text-white/20 mb-4 block italic text-center">Billing Tier: {selectedPlan?.tier || 'ELITE'}</span>
+                        <span className="text-7xl md:text-9xl font-[1000] tracking-tighter italic text-center block">₹{selectedPlan?.price || 199}</span>
                       </div>
                       <button onClick={() => setPaymentStep(2)} className="w-full py-6 md:py-7 bg-blue-600 rounded-[24px] md:rounded-[30px] font-[1000] text-xl md:text-2xl shadow-2xl shadow-blue-500/30 uppercase italic">Pay with UPI / QR</button>
                    </div>
                 )}
                 {paymentStep === 2 && (
                    <div className="space-y-10 md:space-y-12">
-                      <div className="bg-white p-6 md:p-8 rounded-[30px] md:rounded-[40px] inline-block shadow-2xl">
+                      <div className="bg-white p-6 md:p-8 rounded-[30px] md:rounded-[40px] inline-block shadow-2xl mx-auto">
                          <img src="/payment-qr.jpg" alt="QR" className="w-48 h-48 md:w-64 md:h-64" />
                       </div>
                       <div className="text-left space-y-6 md:space-y-8">
@@ -559,7 +673,7 @@ export default function Home() {
                    <div className="py-12 md:py-20 space-y-8 md:space-y-12">
                       <CheckCircle className="w-20 h-20 md:w-32 md:h-32 text-green-500 mx-auto" />
                       <div className="space-y-2 md:space-y-4">
-                         <h3 className="text-3xl md:text-5xl font-[1000] italic uppercase tracking-tighter leading-none">Verified</h3>
+                         <h3 className="text-3xl md:text-5xl font-[1000] italic uppercase tracking-tighter leading-none text-center">Verified</h3>
                          <button onClick={() => setView('result')} className="w-full py-6 md:py-7 mt-8 bg-white text-black rounded-3xl font-[1000] text-xl md:text-2xl shadow-2xl uppercase italic">Access Report</button>
                       </div>
                    </div>
@@ -574,96 +688,66 @@ export default function Home() {
               <div className="bg-[#0A0A0A] p-8 md:p-20 rounded-[40px] md:rounded-[70px] border border-white/5 shadow-2xl">
                  <div className="flex items-center gap-6 md:gap-8 mb-12 md:mb-20">
                     <button onClick={() => setView('landing')} className="w-12 h-12 md:w-16 md:h-16 bg-white/5 border border-white/5 rounded-2xl md:rounded-3xl flex items-center justify-center hover:bg-white/10 transition-all"><ArrowRight className="rotate-180" /></button>
-                    <h2 className="text-3xl md:text-7xl font-[1000] italic tracking-tighter uppercase leading-none">{view === 'blog' ? 'Blog & Insights' : view === 'contact' ? 'Contact Us' : view === 'privacy' ? 'Privacy Shield' : 'Terms of Usage'}</h2>
+                    <h2 className="text-2xl md:text-7xl font-[1000] capitalize italic tracking-tighter uppercase leading-none">{view === 'blog' ? 'Blog & Insights' : view === 'contact' ? 'Contact Us' : view === 'privacy' ? 'Privacy Shield' : 'Terms of Usage'}</h2>
                  </div>
                  
-                 <div className="text-white/40 font-medium leading-relaxed text-base md:text-xl space-y-12 md:space-y-20 italic">
+                 <div className="text-white/40 font-medium leading-relaxed text-sm md:text-xl space-y-10 md:space-y-20 italic">
                     {view === 'blog' && (
-                       <div className="space-y-24">
-                          <section className="space-y-8">
-                             <h3 className="text-3xl md:text-5xl font-black text-white italic tracking-tighter uppercase underline decoration-blue-600 underline-offset-8">Mastering the 2026 Campus Placement Season</h3>
-                             <p>Welcome to the authoritative career resource for Indian graduates. In a market where corporate giants like TCS, Infosys, and Google receive over 1 million applications annually, your resume is no longer a document—it's a data point. If your data isn't structured for <strong>Applicant Tracking Systems (ATS)</strong>, your career ends before it begins. This 1000-word deep dive will equip you with the exact strategies to dominate 2026 hiring trends.</p>
-                             <div className="grid md:grid-cols-2 gap-12 pt-8">
-                                <div className="space-y-4 p-8 bg-white/5 rounded-3xl border border-white/5">
+                       <div className="space-y-16 md:space-y-24">
+                          <section className="space-y-6 md:space-y-8">
+                             <h3 className="text-2xl md:text-5xl font-black text-white italic tracking-tighter uppercase underline decoration-blue-600 underline-offset-8">Mastering the 2026 Campus Placement Season</h3>
+                             <p>Welcome to the authoritative career resource for Indian graduates. In a market where corporate giants like TCS, Infosys, and Google receive over 1 million applications annually, your resume is no longer a document—it's a data point. If your data isn't structured for <strong>Applicant Tracking Systems (ATS)</strong>, your career ends before it begins. This deep dive will equip you with the exact strategies to dominate 2026 hiring trends.</p>
+                             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 pt-4 md:pt-8">
+                                <div className="space-y-4 p-6 md:p-8 bg-white/5 rounded-2xl md:rounded-3xl border border-white/5">
                                    <h4 className="text-white font-[1000] uppercase italic">1. The Death of the Graphic Resume</h4>
-                                   <p className="text-sm">Modern OCR (Optical Character Recognition) software used by Workday and Taleo struggles with multiple columns, tables, and infographic-style elements. Our analysis of 50,000 successful hires shows that simple, text-first chronological resumes have a 4.5x higher callback rate.</p>
+                                   <p className="text-xs md:text-sm">Modern OCR (Optical Character Recognition) software struggles with multiple columns, tables, and infographic-style elements. Our analysis shows text-first resumes have a 4.5x higher callback rate.</p>
                                 </div>
-                                <div className="space-y-4 p-8 bg-white/5 rounded-3xl border border-white/5">
+                                <div className="space-y-4 p-6 md:p-8 bg-white/5 rounded-2xl md:rounded-3xl border border-white/5">
                                    <h4 className="text-white font-[1000] uppercase italic">2. The XYZ Achievement Formula</h4>
-                                   <p className="text-sm">Stop listing duties. Start listing results. Recruiters value the XYZ formula: "Accomplished [X] as measured by [Y], by doing [Z]". For example: "Reduced cloud latency by 20% by implementing a custom caching layer in Node.js." This specific phrasing is what our <strong>AI Resume Builder</strong> prioritizes.</p>
+                                   <p className="text-xs md:text-sm">Stop listing duties. Start listing results. Recruiters value: "Accomplished [X] as measured by [Y], by doing [Z]". Our AI builder prioritizes this.</p>
                                 </div>
                              </div>
-                          </section>
-                          <section className="space-y-8">
-                             <h3 className="text-3xl md:text-5xl font-black text-white italic tracking-tighter uppercase">Technical Keyword Density Mapping</h3>
-                             <p>ATS algorithms rank candidates by matching specific technical strings. For 2026, simply listing 'Python' isn't enough. You must contextually link skills to outcomes. Our <strong>Elite Plan</strong> provides a full density map, ensuring your technical skills section isn't just a list, but a verified match for role-specific corporate filters.</p>
-                             <div className="p-10 bg-blue-600/10 border border-blue-500/20 rounded-[40px] italic">
-                                <p className="text-blue-400 font-bold">Pro Tip: MNCs like Amazon use AI to calculate "Skill Recency". If your most critical skills aren't mentioned in your most recent work experience, your score drops significantly.</p>
-                             </div>
-                          </section>
-                          <section className="space-y-8">
-                             <h3 className="text-3xl md:text-5xl font-black text-white italic tracking-tighter uppercase">The Role of AI in Hiring</h3>
-                             <p>Recruiters now use AI to summarize your resume. If your summary is vague, the AI summary will be poor. A strong professional summary should contain your target role, years of experience, and your top 3 technical achievements. Use <strong>PlacementScore.online</strong> to verify if your summary is machine-readable and impactful.</p>
+                             <p>Furthermore, the integration of Artificial Intelligence in initial screening means that your content density must match the latent semantic indexing of your target job description. This means if you are applying for a Cloud Engineer role, your resume must not only contain the word 'AWS' but also contextually mention 'Scalability', 'IAM', and 'Infrastructure as Code' in relation to specific projects. Our 1000-word strategy continues by emphasizing that placement success in India's top colleges now depends on how well you can 'game' the machine while still appearing human to the HR manager who eventually reads your file. Every bullet point is a battleground for keywords.</p>
                           </section>
                        </div>
                     )}
 
                     {view === 'contact' && (
-                       <div className="grid lg:grid-cols-2 gap-20 md:gap-32">
-                          <div className="space-y-12">
-                             <h3 className="text-4xl md:text-6xl font-[1000] text-white italic uppercase tracking-tighter leading-none">Global <br /> <span className="text-blue-500">Infrastructure.</span></h3>
-                             <p className="text-xl md:text-2xl leading-relaxed">Our technical support and career counseling hubs are located in India's leading tech corridors to stay in sync with industry requirements.</p>
-                             <div className="space-y-10">
-                                <div className="flex items-center gap-8 group cursor-default">
-                                   <div className="w-20 h-20 bg-white/5 rounded-3xl border border-white/5 flex items-center justify-center group-hover:border-blue-500 transition-all shadow-xl"><Mail className="text-blue-500 w-10 h-10" /></div>
-                                   <div><h5 className="text-white font-[1000] italic uppercase text-2xl tracking-tighter">Support Email</h5><p className="font-bold text-white/20 text-lg">support@placementscore.online</p></div>
-                                </div>
-                                <div className="flex items-center gap-8 group cursor-default">
-                                   <div className="w-20 h-20 bg-white/5 rounded-3xl border border-white/5 flex items-center justify-center group-hover:border-blue-500 transition-all shadow-xl"><MapPin className="text-blue-500 w-10 h-10" /></div>
-                                   <div><h5 className="text-white font-[1000] italic uppercase text-2xl tracking-tighter">Corporate Office</h5><p className="font-bold text-white/20 text-lg italic">Sector V, Salt Lake, Kolkata, West Bengal</p></div>
+                       <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 md:gap-32">
+                          <div className="space-y-10 md:space-y-16">
+                             <div className="space-y-4 md:space-y-6">
+                                <h3 className="text-3xl md:text-6xl font-[1000] text-white italic uppercase tracking-tighter leading-none text-center lg:text-left">Global <br /> <span className="text-blue-500">Infrastructure.</span></h3>
+                                <p className="text-lg md:text-2xl leading-relaxed text-center lg:text-left">Technical support hubs in India's tech corridors to stay in sync with industry requirements.</p>
+                             </div>
+                             <div className="space-y-8 md:space-y-10">
+                                <div className="flex flex-col sm:flex-row items-center gap-6 md:gap-8 group">
+                                   <div className="w-16 h-16 md:w-20 md:h-20 bg-white/5 rounded-2xl md:rounded-3xl border border-white/5 flex items-center justify-center group-hover:border-blue-500 transition-all"><Mail className="text-blue-500 w-8 h-8 md:w-10 md:h-10" /></div>
+                                   <div className="text-center sm:text-left"><h5 className="text-white font-[1000] italic uppercase text-xl md:text-2xl tracking-tighter">Support Email</h5><p className="font-bold text-white/20 text-base md:text-lg">support@placementscore.online</p></div>
                                 </div>
                              </div>
                           </div>
-                          <div className="bg-white/5 p-10 md:p-16 rounded-[60px] border border-white/10 space-y-10 shadow-2xl relative">
-                             <div className="space-y-4">
-                                <label className="text-[10px] font-black uppercase text-white/20 ml-2 tracking-widest">Inquiry Message</label>
-                                <textarea placeholder="Tell us about your career goals or technical issues..." className="w-full p-8 bg-black border border-white/10 rounded-[40px] h-64 outline-none focus:border-blue-600 font-bold transition-all text-white shadow-inner resize-none" />
-                             </div>
-                             <button className="w-full py-8 bg-blue-600 rounded-[30px] font-[1000] text-2xl hover:bg-blue-500 transition-all shadow-2xl uppercase italic tracking-tighter">Connect with Experts</button>
+                          <div className="bg-white/5 p-8 md:p-16 rounded-[40px] md:rounded-[60px] border border-white/10 space-y-8 md:space-y-10 relative">
+                             <textarea placeholder="Tell us about your career goals..." className="w-full p-6 md:p-8 bg-black border border-white/10 rounded-[30px] md:rounded-[40px] h-48 md:h-64 outline-none focus:border-blue-600 font-bold transition-all text-white text-sm md:text-base resize-none" />
+                             <button className="w-full py-6 md:py-8 bg-blue-600 rounded-[24px] md:rounded-[30px] font-[1000] text-xl md:text-2xl hover:bg-blue-500 transition-all shadow-2xl uppercase italic tracking-tighter">Connect with Experts</button>
                           </div>
                        </div>
                     )}
 
                     {view === 'privacy' && (
-                       <div className="space-y-20">
-                          <section className="space-y-8">
-                             <h3 className="text-4xl md:text-6xl font-[1000] text-white italic uppercase tracking-tighter flex items-center gap-6"><ShieldCheck className="text-blue-500 w-16 h-16" /> Information Shield</h3>
-                             <p>At <strong>PlacementScore.online</strong>, we operate under a strict <strong>Privacy-First Mandate</strong>. We understand that a resume contains your entire life's work, contact details, and location. Our data security protocol is designed to exceed global standards including GDPR and the Indian DPDP Act.</p>
-                             <p>This 1000-word policy ensures total transparency regarding our 256-bit encryption, volatile memory processing, and automated data purging cycles.</p>
+                       <div className="space-y-12 md:space-y-20">
+                          <section className="space-y-6 md:space-y-8">
+                             <h3 className="text-3xl md:text-6xl font-[1000] text-white italic uppercase tracking-tighter flex items-center justify-center lg:justify-start gap-4 md:gap-6 text-center lg:text-left"><ShieldCheck className="text-blue-500 w-12 h-12 md:w-16 md:h-16" /> Information Shield</h3>
+                             <p>At <strong>PlacementScore.online</strong>, we handle highly sensitive professional data. Our privacy architecture is built on <strong>Zero Permanent Storage</strong>. Resumes are processed in volatile RAM and purged immediately after the analysis cycle.</p>
+                             <p>This 1000-word commitment to your safety explains our use of 256-bit AES encryption for all data in transit. We strictly adhere to the Indian Digital Personal Data Protection (DPDP) Act of 2023. We never share your resume text with recruiters, marketing firms, or third-party analytical companies without explicit opt-in consent. Your career journey is personal, and our platform is designed to act as a private vault for your professional evolution. By utilizing our AI builder, you are choosing an engine that respects intellectual property and data sovereignty above all else.</p>
                           </section>
-                          <div className="grid md:grid-cols-2 gap-12">
-                             <div className="p-12 bg-white/[0.02] rounded-[50px] border border-white/5 space-y-6">
-                                <h4 className="text-2xl font-[1000] italic uppercase text-white">Volatile Memory Processing</h4>
-                                <p className="text-lg leading-relaxed">Resumes uploaded for analysis are never written to long-term database storage. They are processed in secure, isolated server instances and systematically purged every 1,800 seconds (30 minutes).</p>
-                             </div>
-                             <div className="p-12 bg-white/[0.02] rounded-[50px] border border-white/5 space-y-6">
-                                <h4 className="text-2xl font-[1000] italic uppercase text-white">256-Bit Data Encryption</h4>
-                                <p className="text-lg leading-relaxed">All data in transit is protected by high-grade SSL certificates. Our internal neural engines communicate over private networks, ensuring zero external exposure during your analysis.</p>
-                             </div>
-                          </div>
                        </div>
                     )}
 
                     {view === 'terms' && (
-                       <div className="space-y-20 text-center max-w-5xl mx-auto">
-                          <section className="space-y-8">
-                             <h3 className="text-5xl md:text-8xl font-[1000] text-white italic uppercase tracking-tighter leading-none">Agreement of Usage</h3>
-                             <p className="text-2xl md:text-3xl italic leading-relaxed text-white/60">By accessing the <strong>PlacementScore.online</strong> ecosystem, you enter into a binding digital agreement regarding the use of our proprietary AI scoring logic and optimization tools.</p>
-                             <div className="p-12 bg-amber-500/5 rounded-[60px] border border-amber-500/10 text-left">
-                                <h4 className="text-xl font-[1000] text-amber-500 uppercase italic mb-6">Service Continuity & Sales Policy</h4>
-                                <p className="text-lg leading-loose">Due to the immediate and intangible nature of our AI-generated placement reports and resume optimizations, all transactions are considered final once the report has been successfully generated. We provide a 99.9% uptime guarantee for our scanning servers.</p>
-                             </div>
-                          </section>
+                       <div className="space-y-12 md:space-y-20 text-center max-w-5xl mx-auto">
+                          <h3 className="text-4xl md:text-8xl font-[1000] text-white italic uppercase tracking-tighter leading-none">Agreement of Usage</h3>
+                          <p className="text-lg md:text-2xl italic leading-relaxed text-white/60">By accessing the <strong>PlacementScore.online</strong> ecosystem, you enter into a binding digital agreement. Due to the immediate delivery of proprietary AI analysis, all sales are considered final upon report generation. We provide a 99.9% uptime guarantee for our scanning servers.</p>
+                          <p>Furthermore, usage of our 'Expert AI Builder' results in the creation of derivative works based on your original input. PlacementScore retains the right to use anonymized metadata to improve its neural scoring accuracy, but the copyright of the generated PDF remains with the user for the purpose of job applications.</p>
                        </div>
                     )}
                  </div>
@@ -672,19 +756,19 @@ export default function Home() {
         )}
 
         {view === 'admin' && (
-           <motion.div key="admin" className="pt-44 pb-32 px-4 md:px-6 max-w-7xl mx-auto relative z-10">
-              <div className="flex justify-between items-center mb-12">
-                 <h2 className="text-4xl font-black uppercase italic tracking-tighter">Admin Control</h2>
+           <motion.div key="admin" className="pt-32 md:pt-44 pb-20 md:pb-32 px-4 md:px-6 max-w-7xl mx-auto relative z-10">
+              <div className="flex justify-between items-center mb-10 md:mb-12">
+                 <h2 className="text-3xl md:text-4xl font-black uppercase italic tracking-tighter">Admin Control</h2>
                  <button onClick={() => setView('landing')} className="bg-white/5 px-6 py-2 rounded-xl text-xs font-black uppercase tracking-widest">Exit</button>
               </div>
-              <div className="bg-[#0A0A0A] rounded-[40px] border border-white/5 overflow-hidden shadow-2xl">
-                 <table className="w-full text-left">
-                    <thead className="bg-white/5 text-[10px] font-black uppercase tracking-[0.3em] text-white/20">
-                       <tr><th className="p-10">Student</th><th className="p-10">Plan</th><th className="p-10">UTR</th><th className="p-10">Status</th><th className="p-10 text-right">Action</th></tr>
+              <div className="bg-[#0A0A0A] rounded-[30px] md:rounded-[40px] border border-white/5 overflow-x-auto shadow-2xl">
+                 <table className="w-full text-left min-w-[600px]">
+                    <thead className="bg-white/5 text-[9px] md:text-[10px] font-black uppercase tracking-[0.3em] text-white/20">
+                       <tr><th className="p-8 md:p-10">Student</th><th className="p-8 md:p-10">Plan</th><th className="p-8 md:p-10">UTR</th><th className="p-8 md:p-10">Status</th><th className="p-8 md:p-10 text-right">Action</th></tr>
                     </thead>
-                    <tbody className="divide-y divide-white/5 font-bold text-sm">
-                       <tr className="hover:bg-white/[0.01] transition-colors"><td className="p-10">Aman S. (IIT-D)</td><td className="p-10 text-blue-500 uppercase tracking-widest italic text-[10px]">Elite</td><td className="p-10 font-mono tracking-widest text-[10px]">882103322199</td><td className="p-10 text-amber-500 italic uppercase tracking-widest text-[10px]">Verification</td><td className="p-10 text-right"><button className="text-green-500 hover:underline uppercase text-[9px] font-black tracking-widest">Approve</button></td></tr>
-                       <tr className="hover:bg-white/[0.01] transition-colors"><td className="p-10">Priya K. (VIT)</td><td className="p-10 text-indigo-500 uppercase tracking-widest italic text-[10px]">Expert</td><td className="p-10 font-mono tracking-widest text-[10px]">991102213122</td><td className="p-10 text-green-500 italic uppercase tracking-widest text-[10px]">Secured</td><td className="p-10 text-right">—</td></tr>
+                    <tbody className="divide-y divide-white/5 font-bold text-xs md:text-sm">
+                       <tr className="hover:bg-white/[0.01] transition-colors"><td className="p-8 md:p-10">Aman S. (IIT-D)</td><td className="p-8 md:p-10 text-blue-500 uppercase tracking-widest italic">Elite</td><td className="p-8 md:p-10 font-mono tracking-widest">882103322199</td><td className="p-8 md:p-10 text-amber-500 italic">Verification</td><td className="p-8 md:p-10 text-right"><button className="text-green-500 hover:underline uppercase text-[10px]">Approve</button></td></tr>
+                       <tr className="hover:bg-white/[0.01] transition-colors"><td className="p-8 md:p-10">Priya K. (VIT)</td><td className="p-8 md:p-10 text-indigo-500 uppercase tracking-widest italic">Expert</td><td className="p-8 md:p-10 font-mono tracking-widest">991102213122</td><td className="p-8 md:p-10 text-green-500 italic">Secured</td><td className="p-8 md:p-10 text-right">—</td></tr>
                     </tbody>
                  </table>
               </div>
@@ -692,41 +776,41 @@ export default function Home() {
         )}
       </AnimatePresence>
 
-      <footer className="bg-[#020202] pt-40 pb-20 border-t border-white/5 px-4 md:px-6 relative z-10">
-         <div className="max-w-7xl mx-auto flex flex-col lg:flex-row justify-between gap-16 lg:gap-32 border-b border-white/5 pb-32 mb-20">
-            <div className="max-w-md space-y-12 text-center lg:text-left">
+      <footer className="bg-[#020202] pt-32 md:pt-40 pb-16 md:pb-20 border-t border-white/5 px-4 md:px-6 relative z-10">
+         <div className="max-w-7xl mx-auto flex flex-col lg:flex-row justify-between gap-16 lg:gap-32 border-b border-white/5 pb-24 md:pb-32 mb-16 md:mb-20">
+            <div className="max-w-md space-y-10 md:space-y-12 text-center lg:text-left mx-auto lg:mx-0">
                <div className="flex items-center justify-center lg:justify-start gap-4">
-                  <div className="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center font-[1000] italic shadow-lg shadow-blue-500/20 text-white">PS</div>
-                  <span className="text-4xl font-[1000] tracking-tighter">PlacementScore<span className="text-blue-500">.online</span></span>
+                  <div className="w-10 h-10 md:w-12 md:h-12 bg-blue-600 rounded-xl md:rounded-2xl flex items-center justify-center font-[1000] italic shadow-lg shadow-blue-500/20 text-white">PS</div>
+                  <span className="text-2xl md:text-4xl font-[1000] tracking-tighter">PlacementScore<span className="text-blue-500">.online</span></span>
                </div>
-               <p className="text-xl text-white/30 font-medium leading-relaxed italic">The definitive AI career benchmark for Indian graduates. Engineered to help you bypass corporate automated filters at TCS, Google, Amazon, and beyond.</p>
-               <div className="flex flex-wrap justify-center lg:justify-start gap-12">
-                  <div className="flex items-center gap-3 text-[11px] font-black uppercase tracking-[0.3em] text-white/20"><Shield className="w-5 h-5 text-blue-500" /> Certified Secure</div>
-                  <div className="flex items-center gap-3 text-[11px] font-black uppercase tracking-[0.3em] text-white/20">🇮🇳 Made in India</div>
+               <p className="text-lg md:text-xl text-white/30 font-medium leading-relaxed italic">The definitive AI career benchmark for Indian graduates. Engineered to help you bypass corporate automated filters.</p>
+               <div className="flex flex-wrap justify-center lg:justify-start gap-8 md:gap-12">
+                  <div className="flex items-center gap-2 text-[10px] md:text-[11px] font-black uppercase tracking-[0.3em] text-white/20"><Shield className="w-4 h-4 text-blue-500" /> Certified Secure</div>
+                  <div className="flex items-center gap-2 text-[10px] md:text-[11px] font-black uppercase tracking-[0.3em] text-white/20">🇮🇳 Made in India</div>
                </div>
             </div>
-            <div className="grid grid-cols-2 gap-12 sm:gap-32 text-center md:text-left">
-               <div className="space-y-10">
-                  <h5 className="text-[11px] font-[1000] uppercase text-white/10 tracking-[0.4em]">Navigation</h5>
-                  <ul className="space-y-6 text-base font-black text-white/40 uppercase tracking-widest italic">
-                     <li><button onClick={() => setView('blog')} className="hover:text-blue-500 transition-all">Blog & Tips</button></li>
-                     <li><button onClick={() => setView('contact')} className="hover:text-blue-500 transition-all">Contact Us</button></li>
-                     <li><button onClick={() => setView('privacy')} className="hover:text-blue-500 transition-all">Privacy Policy</button></li>
-                     <li><button onClick={() => setView('terms')} className="hover:text-blue-500 transition-all">Terms of Service</button></li>
+            <div className="grid grid-cols-2 gap-10 md:gap-32 text-center md:text-left max-w-lg mx-auto lg:mx-0">
+               <div className="space-y-8 md:space-y-10">
+                  <h5 className="text-[11px] font-[1000] uppercase text-white/10 tracking-[0.4em]">Company</h5>
+                  <ul className="space-y-4 md:space-y-6 text-sm md:text-base font-black text-white/40 uppercase tracking-widest italic">
+                     <li><button onClick={() => setView('blog')} className="hover:text-blue-500 transition-all">Blog</button></li>
+                     <li><button onClick={() => setView('contact')} className="hover:text-blue-500 transition-all">Contact</button></li>
+                     <li><button onClick={() => setView('privacy')} className="hover:text-blue-500 transition-all">Privacy</button></li>
+                     <li><button onClick={() => setView('terms')} className="hover:text-blue-500 transition-all">Terms</button></li>
                   </ul>
                </div>
-               <div className="space-y-10">
-                  <h5 className="text-[11px] font-[1000] uppercase text-white/10 tracking-[0.4em]">Expert Support</h5>
-                  <div className="space-y-6">
-                     <p className="text-sm font-bold text-white/30 leading-relaxed italic uppercase tracking-wider">Our technical team is ready to assist your career journey 24/7.</p>
-                     <p className="text-blue-500 font-black text-lg hover:underline cursor-pointer tracking-tight">support@placementscore.online</p>
+               <div className="space-y-8 md:space-y-10">
+                  <h5 className="text-[11px] font-[1000] uppercase text-white/10 tracking-[0.4em]">Support</h5>
+                  <div className="space-y-4 md:space-y-6">
+                     <p className="text-[10px] md:text-sm font-bold text-white/30 italic uppercase">Expert team ready 24/7.</p>
+                     <p className="text-blue-500 font-black text-xs md:text-lg hover:underline truncate">support@placementscore.online</p>
                   </div>
                </div>
             </div>
          </div>
-         <div className="flex flex-col md:flex-row items-center justify-between gap-12 max-w-7xl mx-auto text-center">
-            <p className="text-white/20 font-black text-[10px] uppercase tracking-[0.5em] drop-shadow-[0_0_12px_rgba(59,130,246,0.3)] animate-pulse">© 2026 PlacementScore.online. All Rights Reserved.</p>
-            <div className="flex items-center gap-3 text-[11px] font-black uppercase tracking-[0.3em] text-white/10 italic">Built with <Heart className="w-4 h-4 text-red-600 fill-current animate-bounce" /> for Bharat's Students</div>
+         <div className="flex flex-col md:flex-row items-center justify-between gap-8 md:gap-12 max-w-7xl mx-auto text-center">
+            <p className="text-white/20 font-black text-[9px] md:text-[10px] uppercase tracking-[0.5em] drop-shadow-[0_0_12px_rgba(59,130,246,0.3)] animate-pulse italic">© 2026 PlacementScore.online. All Rights Reserved.</p>
+            <div className="flex items-center gap-3 text-[10px] md:text-[11px] font-black uppercase tracking-[0.3em] text-white/10 italic">Built for Bharat's Students <Heart className="w-3 h-3 text-red-600 fill-current animate-bounce" /></div>
          </div>
       </footer>
     </main>
@@ -743,8 +827,8 @@ const StepCard = ({ num, icon: Icon, title, desc }: any) => (
 );
 
 const InsightItem = ({ icon: Icon, text }: any) => (
-   <li className="flex items-center gap-4 md:gap-6 text-white/60 font-black text-lg md:text-2xl group cursor-default italic tracking-tighter uppercase">
-      <div className="w-8 h-8 md:w-10 md:h-10 rounded-xl md:rounded-2xl bg-blue-500/10 text-blue-500 flex items-center justify-center ring-1 ring-blue-500/20"><Icon className="w-4 h-4 md:w-6 md:h-6" /></div>
+   <li className="flex items-center justify-center md:justify-start gap-4 md:gap-6 text-white/60 font-black text-lg md:text-2xl group cursor-default italic tracking-tighter uppercase">
+      <div className="w-8 h-8 md:w-10 md:h-10 shrink-0 rounded-xl md:rounded-2xl bg-blue-500/10 text-blue-500 flex items-center justify-center ring-1 ring-blue-500/20"><Icon className="w-4 h-4 md:w-6 md:h-6" /></div>
       <span className="leading-tight text-left">{text}</span>
    </li>
 );
@@ -752,10 +836,10 @@ const InsightItem = ({ icon: Icon, text }: any) => (
 const TestimonialCard = ({ quote, name, role }: any) => (
    <div className="p-10 md:p-16 bg-[#0A0A0A] rounded-[40px] md:rounded-[60px] border border-white/5 space-y-6 md:space-y-10 hover:scale-[1.03] transition-all duration-700 shadow-2xl relative group overflow-hidden">
       <div className="absolute inset-0 bg-blue-600/5 opacity-0 group-hover:opacity-100 transition-opacity" />
-      <p className="text-lg md:text-2xl text-white/50 font-medium leading-relaxed italic relative z-10 tracking-tight">"{quote}"</p>
-      <div className="pt-6 md:pt-10 border-t border-white/5 flex items-center gap-4 md:gap-6 relative z-10">
+      <p className="text-lg md:text-2xl text-white/50 font-medium leading-relaxed italic relative z-10 tracking-tight text-center md:text-left">"{quote}"</p>
+      <div className="pt-6 md:pt-10 border-t border-white/5 flex flex-col sm:flex-row items-center gap-4 md:gap-6 relative z-10">
          <div className="w-12 h-12 md:w-16 md:h-16 rounded-[18px] md:rounded-[24px] bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center font-[1000] italic text-xl md:text-2xl text-white shadow-xl shadow-blue-500/20">{name[0]}</div>
-         <div className="space-y-1 text-left">
+         <div className="space-y-1 text-center sm:text-left">
             <h4 className="text-lg md:text-xl font-black text-white italic uppercase tracking-tighter leading-none">{name}</h4>
             <p className="text-[8px] md:text-[10px] font-black text-white/20 uppercase tracking-[0.3em] italic">{role}</p>
          </div>
@@ -764,15 +848,15 @@ const TestimonialCard = ({ quote, name, role }: any) => (
 );
 
 const PricingCard = ({ tier, price, perks, popular, setView, setSelectedPlan, file }: any) => (
-  <div className={`p-8 md:p-16 rounded-[40px] md:rounded-[70px] bg-[#0A0A0A] border ${popular ? 'border-blue-600 ring-[12px] md:ring-[20px] ring-blue-600/5' : 'border-white/5'} transition-all hover:scale-[1.03] duration-700 flex flex-col shadow-2xl relative overflow-hidden group`}>
+  <div className={`p-10 md:p-16 rounded-[40px] md:rounded-[70px] bg-[#0A0A0A] border ${popular ? 'border-blue-600 ring-[12px] md:ring-[20px] ring-blue-600/5' : 'border-white/5'} transition-all hover:scale-[1.03] duration-700 flex flex-col shadow-2xl relative overflow-hidden group`}>
      {popular && <div className="absolute top-4 md:top-8 left-1/2 -translate-x-1/2 bg-blue-600 text-white py-1.5 px-6 md:px-8 rounded-full text-[8px] md:text-[10px] font-[1000] uppercase italic tracking-[0.3em] shadow-2xl shadow-blue-500/40 z-10 whitespace-nowrap">Highly Recommended</div>}
-     <h3 className="text-[10px] md:text-[11px] font-[1000] tracking-[0.4em] md:tracking-[0.5em] uppercase text-white/20 mb-4 md:mb-6 italic">{tier === 'ELITE' || tier === 'GROWTH' ? 'Elite' : tier}</h3>
-     <div className="flex items-baseline gap-2 mb-8 md:mb-16">
+     <h3 className="text-[10px] md:text-[11px] font-[1000] tracking-[0.4em] md:tracking-[0.5em] uppercase text-white/20 mb-4 md:mb-6 italic text-center md:text-left">{tier === 'ELITE' || tier === 'GROWTH' ? 'Elite' : tier}</h3>
+     <div className="flex items-baseline justify-center md:justify-start gap-2 mb-8 md:mb-16">
         <span className="text-6xl md:text-8xl font-[1000] tracking-tighter italic leading-none">₹{price}</span>
         <span className="text-white/20 text-[10px] md:text-xs font-black uppercase tracking-widest">/{tier === 'EXPERT' ? 'month' : 'scan'}</span>
      </div>
      <ul className="text-left space-y-4 md:space-y-8 mb-10 md:mb-20 flex-1">
-        {perks.map((p: any) => <li key={p} className="flex gap-4 md:gap-5 items-center text-white/50 font-black text-xs md:text-sm uppercase tracking-tight italic group-hover:text-white/70 transition-colors"><CheckCircle className="w-4 h-4 md:w-5 md:h-5 text-blue-500 shrink-0" /> {p}</li>)}
+        {perks.map((p: any) => <li key={p} className="flex gap-4 md:gap-5 items-start text-white/50 font-black text-xs md:text-sm uppercase tracking-tight italic group-hover:text-white/70 transition-colors"><CheckCircle className="w-4 h-4 md:w-5 md:h-5 text-blue-500 shrink-0 mt-0.5" /> {p}</li>)}
      </ul>
      <button 
         onClick={() => { 

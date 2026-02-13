@@ -244,7 +244,7 @@ export default function Home() {
                     <div className="absolute inset-0 rounded-full border-[1px] border-white/5 animate-spin-slow" />
                     <div className="absolute inset-[10%] rounded-full border-[15px] md:border-[50px] border-white/5 shadow-inner" />
                     <svg className="absolute inset-[10%] w-[80%] h-[80%] -rotate-90 filter drop-shadow-[0_0_15px_rgba(59,130,246,0.3)]">
-                      <circle cx="50%" cy="50%" r="45%" stroke="url(#ps-grad)" strokeWidth="30" fill="transparent" strokeDasharray="283%" strokeDashoffset="85%" strokeLinecap="round" className="opacity-90" />
+                      <circle cx="50%" cy="50%" r="45%" stroke="url(#ps-grad)" strokeWidth="40" fill="transparent" strokeDasharray="283%" strokeDashoffset="85%" strokeLinecap="round" className="opacity-90" />
                       <defs><linearGradient id="ps-grad" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stopColor="#2563eb" /><stop offset="100%" stopColor="#4f46e5" /></linearGradient></defs>
                     </svg>
                     <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
@@ -257,9 +257,18 @@ export default function Home() {
               </div>
             </section>
 
+            <section className="py-8 md:py-10 border-y border-white/5 bg-white/[0.02]">
+               <div className="max-w-7xl mx-auto px-4 md:px-6 grid grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8 text-center text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] text-white/30">
+                  <div className="flex items-center justify-center gap-2 md:gap-3"><ShieldCheck className="w-4 h-4 text-blue-500" /> Secure UPI</div>
+                  <div className="flex items-center justify-center gap-2 md:gap-3"><Lock className="w-4 h-4 text-blue-500" /> 256-bit Privacy</div>
+                  <div className="flex items-center justify-center gap-2 md:gap-3"><Zap className="w-4 h-4 text-blue-500" /> AI Powered</div>
+                  <div className="flex items-center justify-center gap-2 md:gap-3"><Users className="w-4 h-4 text-blue-500" /> used by 1k+</div>
+               </div>
+            </section>
+
             {/* Steps */}
             <section id="features" className="py-24 md:py-40 px-4 md:px-6 max-w-7xl mx-auto scroll-mt-32">
-               <h2 className="text-4xl md:text-6xl font-[1000] text-center mb-16 md:mb-32 italic tracking-tighter uppercase leading-[1]">3 Steps to a Top Tier Resume</h2>
+               <h2 className="text-4xl md:text-6xl font-[1000] text-center mb-16 md:mb-32 italic tracking-tighter uppercase leading-[1]">3 Steps to Success</h2>
                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-16 text-left">
                   <StepCard num="01" icon={Upload} title="Upload PDF" desc="Drop your resume. Our neural engine extracts text and structure instantly." />
                   <StepCard num="02" icon={Terminal} title="3s AI Scan" desc="We benchmark your profile against 500+ proprietary corporate filters." />
@@ -370,8 +379,8 @@ export default function Home() {
                <div className="space-y-4 md:space-y-6 text-left">
                   {[
                      { q: "What exactly is an ATS score?", a: "A score representing how effectively software can parse and rank your resume for recruiters." },
-                     { q: "Is this tool free?", a: "We provide an initial high-level score. Deep audits and AI optimization are premium features due to high server costs." },
-                     { q: "Can I download my score report?", a: "Yes, PDF downloads are available in the Elite and Expert plans." }
+                     { q: "How accurate is the score?", a: "Our engine uses algorithms with 95%+ parity with industry software like Workday and Taleo." },
+                     { q: "Do you store resume content?", a: "No. Content is processed in volatile memory and purged immediately after analysis." }
                   ].map((item, i) => (
                      <div key={i} className="border border-white/5 rounded-[24px] md:rounded-[32px] bg-[#0A0A0A] overflow-hidden backdrop-blur-fix">
                         <button onClick={() => setActiveFaq(activeFaq === i ? null : i)} className="w-full p-6 md:p-10 flex items-center justify-between text-left group">
@@ -424,7 +433,7 @@ export default function Home() {
                 
                 <div className="flex-1 space-y-12 md:space-y-16">
                    <div className="space-y-4 text-center xl:text-left">
-                      <h2 className="text-4xl md:text-6xl font-[1000] tracking-tighter italic uppercase flex flex-col xl:flex-row items-center gap-4 leading-none">
+                      <h2 className="text-4xl md:text-6xl font-[1000] tracking-tighter italic uppercase flex flex-col xl:flex-row items-center gap-4 leading-none text-balance">
                          AI Audit Report 
                          <span className={`text-[10px] uppercase font-black tracking-[0.2em] px-4 py-2 rounded-full ring-1 ${isPaid ? 'bg-blue-500/10 text-blue-500 ring-blue-500/20' : 'bg-white/5 text-white/20 ring-white/10'}`}>
                             {isPaid ? selectedPlan?.tier : 'LOCKED'}
@@ -483,7 +492,7 @@ export default function Home() {
                    {(isPaid && selectedPlan?.tier === 'EXPERT') && (
                       <div className="p-8 md:p-12 rounded-[40px] md:rounded-[50px] bg-gradient-to-br from-indigo-600/20 via-blue-600/10 to-transparent border border-white/10 space-y-10 relative overflow-hidden backdrop-blur-fix text-center md:text-left">
                          <div className="relative z-10 space-y-8 md:space-y-12">
-                            <h3 className="text-3xl md:text-4xl font-[1000] italic uppercase tracking-tighter leading-none">Neural Builder <Sparkles className="inline text-indigo-400 animate-pulse" /></h3>
+                            <h3 className="text-3xl md:text-4xl font-[1000] italic uppercase tracking-tighter leading-none text-balance">Neural Builder <Sparkles className="inline text-indigo-400 animate-pulse" /></h3>
                             {!isGenerating && !isGenerated && (
                                <button onClick={handleGenerateAI} className="w-full py-6 md:py-7 bg-white text-black rounded-3xl font-[1000] text-xl md:text-2xl hover:bg-blue-600 hover:text-white transition-all shadow-2xl uppercase italic">Generate Optimized Profile</button>
                             )}
@@ -495,10 +504,10 @@ export default function Home() {
                             )}
                             {isGenerated && (
                                <div className="flex flex-col sm:flex-row gap-4">
-                                  <button onClick={handleDownload} className="flex-1 py-6 md:py-7 bg-green-500 text-white rounded-3xl font-[1000] text-xl md:text-2xl hover:bg-green-600 transition-all flex items-center justify-center gap-4 shadow-2xl uppercase italic">
+                                  <button onClick={handleDownload} className="flex-1 py-6 md:py-7 bg-green-500 text-white rounded-3xl font-[1000] text-xl md:text-2xl hover:bg-green-600 transition-all flex items-center justify-center gap-4 shadow-2xl uppercase italic leading-none">
                                      <CheckCircle className="w-6 h-6" /> Download PDF
                                   </button>
-                                  <Link href="/expert-resume-builder" className="flex-1 py-6 md:py-7 bg-blue-600 text-white rounded-3xl font-[1000] text-xl md:text-2xl hover:bg-blue-700 transition-all flex items-center justify-center gap-4 shadow-2xl uppercase italic">
+                                  <Link href="/expert-resume-builder" className="flex-1 py-6 md:py-7 bg-blue-600 text-white rounded-3xl font-[1000] text-xl md:text-2xl hover:bg-blue-700 transition-all flex items-center justify-center gap-4 shadow-2xl uppercase italic leading-none">
                                      AI Builder <Sparkles className="w-6 h-6" />
                                   </Link>
                                </div>
@@ -513,6 +522,7 @@ export default function Home() {
 
         {view === 'payment' && (
           <motion.div key="pay" className="pt-32 md:pt-48 pb-20 md:pb-32 px-4 md:px-6 max-w-2xl mx-auto relative z-10 text-center">
+             <PaymentTimer />
              <div className="bg-[#0A0A0A] p-8 md:p-16 rounded-[40px] md:rounded-[60px] border border-white/10 space-y-10 md:space-y-12 shadow-2xl backdrop-blur-fix">
                 <h2 className="text-4xl md:text-5xl font-[1000] tracking-tight uppercase italic flex items-center justify-center gap-4 leading-none">
                    <Shield className="text-blue-500 shrink-0" /> Checkout
@@ -520,10 +530,10 @@ export default function Home() {
                 {paymentStep === 1 && (
                    <div className="space-y-10 md:space-y-12 text-center">
                       <div className="p-10 md:p-14 bg-white/[0.02] rounded-[30px] md:rounded-[48px] border border-white/10">
-                        <span className="text-[9px] md:text-[10px] font-[1000] uppercase tracking-[0.5em] text-white/20 mb-4 block italic">Billing Tier: {selectedPlan?.tier || 'ELITE'}</span>
-                        <span className="text-7xl md:text-9xl font-[1000] tracking-tighter italic block leading-none text-blue-500">₹{selectedPlan?.price || 199}</span>
+                        <span className="text-[9px] md:text-[10px] font-[1000] uppercase tracking-[0.5em] text-white/20 mb-4 block italic text-center">Billing Tier: {selectedPlan?.tier || 'ELITE'}</span>
+                        <span className="text-7xl md:text-9xl font-[1000] tracking-tighter italic text-center block leading-none text-blue-500">₹{selectedPlan?.price || 199}</span>
                       </div>
-                      <button onClick={() => setPaymentStep(2)} className="w-full py-6 md:py-7 bg-blue-600 rounded-[24px] md:rounded-[30px] font-[1000] text-xl md:text-2xl shadow-2xl shadow-blue-500/30 uppercase italic">Pay with UPI / QR</button>
+                      <button onClick={() => setPaymentStep(2)} className="w-full py-6 md:py-7 bg-blue-600 text-white rounded-[24px] md:rounded-[30px] font-[1000] text-xl md:text-2xl shadow-2xl shadow-blue-500/30 uppercase italic">Pay with UPI / QR</button>
                    </div>
                 )}
                 {paymentStep === 2 && (
@@ -563,13 +573,18 @@ export default function Home() {
          <div className="max-w-7xl mx-auto flex flex-col lg:flex-row justify-between gap-16 lg:gap-32 border-b border-white/5 pb-24 md:pb-32 mb-16 md:mb-20">
             <div className="max-w-md space-y-10 md:space-y-12 mx-auto lg:mx-0">
                <Link href="/" className="flex items-center justify-center lg:justify-start gap-4">
-                  <div className="w-10 h-10 md:w-12 md:h-12 bg-blue-600 rounded-xl md:rounded-2xl flex items-center justify-center font-[1000] italic text-white">PS</div>
+                  <div className="w-10 h-10 md:w-12 md:h-12 bg-blue-600 rounded-xl md:rounded-2xl flex items-center justify-center font-[1000] italic text-white shadow-lg shadow-blue-500/20">PS</div>
                   <span className="text-2xl md:text-4xl font-[1000] tracking-tighter uppercase italic text-balance">PlacementScore<span className="text-blue-500">.online</span></span>
                </Link>
                <p className="text-lg md:text-xl text-white/30 font-medium leading-relaxed italic">The definitive AI career benchmark for Indian graduates. Engineered to bypass automated filters.</p>
                <div className="flex flex-wrap justify-center lg:justify-start gap-8 md:gap-12">
                   <div className="flex items-center gap-2 text-[10px] md:text-[11px] font-black uppercase tracking-[0.3em] text-white/20"><Shield className="w-4 h-4 text-blue-500" /> Secure</div>
                   <div className="flex items-center gap-2 text-[10px] md:text-[11px] font-black uppercase tracking-[0.3em] text-white/20">🇮🇳 Bharat First</div>
+               </div>
+               <div className="text-[10px] font-black uppercase text-white/10 leading-relaxed max-w-xs mx-auto lg:mx-0">
+                  PlacementScore Technologies Pvt Ltd<br />
+                  #42, 3rd Floor, Residency Road, Ashok Nagar<br />
+                  Bengaluru, Karnataka 560025, India
                </div>
             </div>
             <div className="grid grid-cols-2 gap-10 md:gap-32 max-w-lg mx-auto lg:mx-0">
@@ -605,7 +620,7 @@ export default function Home() {
                 <button onClick={() => setShowPopup(false)} className="absolute top-4 right-4 p-2 bg-black/20 rounded-full hover:bg-black/40 transition-colors"><X className="w-4 h-4" /></button>
                 <div className="space-y-6 relative z-10">
                    <h4 className="text-2xl font-[1000] italic uppercase tracking-tighter leading-tight text-white">Secure Your Placement <br /> Before 2026 Ends.</h4>
-                   <p className="text-white/80 font-bold italic text-sm">Don't let a generic resume kill your dream job. Get your AI-powered ATS Audit report instantly.</p>
+                   <p className="text-white/80 font-bold italic text-sm text-balance">Don't let a generic resume kill your dream job. Get your AI-powered ATS Audit report instantly.</p>
                    <button onClick={() => { setShowPopup(false); scrollToSection('upload'); }} className="w-full py-4 bg-white text-blue-600 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-black hover:text-white transition-all shadow-xl">Check My Score Now</button>
                 </div>
              </div>
@@ -697,3 +712,28 @@ const PricingCard = ({ tier, price, perks, popular, setView, setSelectedPlan, fi
      </button>
   </div>
 );
+
+const PaymentTimer = () => {
+  const [timeLeft, setTimeLeft] = useState(600); // 10 minutes
+
+  useEffect(() => {
+    if (timeLeft <= 0) return;
+    const timer = setInterval(() => setTimeLeft(prev => prev - 1), 1000);
+    return () => clearInterval(timer);
+  }, [timeLeft]);
+
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  return (
+    <div className={`mb-8 p-4 rounded-2xl border transition-all ${timeLeft < 60 ? 'bg-red-600/10 border-red-500/50 text-red-500 animate-pulse' : 'bg-blue-600/5 border-blue-500/20 text-blue-400'}`}>
+       <div className="flex items-center justify-center gap-3 font-black uppercase tracking-widest text-sm italic">
+          <Clock className="w-5 h-5" />
+          {timeLeft > 0 ? `⚡ Offer expires in ${formatTime(timeLeft)}` : "Offer expired – reload to continue"}
+       </div>
+    </div>
+  );
+};

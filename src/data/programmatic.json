@@ -65,12 +65,51 @@
     "slug": "resume-score-checker-india",
     "metaDescription": "India's #1 AI-powered resume score checker. Optimized for TCS, Infosys, Wipro, and Accenture recruitment algorithms.",
     "type": "Product Page",
-    "content": "## India's Leading ATS Tool\nPlacementScore.online is designed specifically for the nuances of the Indian job market. We understand that Indian recruiters look for different markers than those in the US or Europe. This 1200-word analysis covers why localized scoring is critical for your success.\n\n### Features of our Engine\n- **MNC Parity:** Direct logic match with systems used by Indian IT giants.\n- **Mobile Optimization:** Check your score on your phone before the drive starts.\n- **Instant Feedback:** No waiting in long queues for manual feedback.",
+    "content": "## India's Leading ATS Tool\nPlacementScore.online is designed specifically for the Indian job market. We understand that Indian recruiters look for different markers than those in the US or Europe. This 1200-word analysis covers why localized scoring is critical for your success.\n\n### Features of our Engine\n- **MNC Parity:** Direct logic match with systems used by Indian IT giants.\n- **Mobile Optimization:** Check your score on your phone before the drive starts.\n- **Instant Feedback:** No waiting in long queues for manual feedback.",
     "createdAt": "2026-02-13T14:30:00Z",
     "schema": {
       "@context": "https://schema.org",
       "@type": "Article",
       "headline": "Best Resume Score Checker India"
+    }
+  },
+  {
+    "title": "Top 50 Resume Keywords for 2026 SDE Roles",
+    "slug": "top-50-resume-keywords-2026",
+    "metaDescription": "Discover the top 50 resume keywords that will dominate the 2026 SDE job market. Boost your ATS score instantly.",
+    "type": "Evergreen Content",
+    "content": "## Keywords that Rank\nIn 2026, ATS systems are looking for semantic depth. Here are the top keywords grouped by domain.\n\n### Cloud & DevOps\nAWS, Azure, Docker, Kubernetes, CI/CD, Terraform, Microservices.\n\n### Frontend\nNext.js, Tailwind CSS, TypeScript, Framer Motion, Redux, GraphQL.\n\n### Backend\nNode.js, GoLang, Rust, PostgreSQL, MongoDB, Redis, Kafka.",
+    "createdAt": "2026-02-13T15:00:00Z",
+    "schema": {
+      "@context": "https://schema.org",
+      "@type": "Article",
+      "headline": "Top 50 Resume Keywords for 2026"
+    }
+  },
+  {
+    "title": "5 Fatal Resume Mistakes That Kill Your Placement Chances",
+    "slug": "resume-mistakes-kill-chances",
+    "metaDescription": "Are you making these 5 resume mistakes? Learn why your profile is being auto-rejected by ATS software and how to fix it today.",
+    "type": "Evergreen Content",
+    "content": "## Mistake 1: Graphical Overload\nBots can't read images. If your skills are in a star-rating graphic, the score is zero.\n\n## Mistake 2: Missing Quantified Impact\nRecruiters look for numbers. 'Handled sales' vs 'Increased sales by 40%'.",
+    "createdAt": "2026-02-13T15:10:00Z",
+    "schema": {
+      "@context": "https://schema.org",
+      "@type": "Article",
+      "headline": "5 Fatal Resume Mistakes"
+    }
+  },
+  {
+    "title": "Why Your Resume Gets Rejected: Behind the ATS Algorithm",
+    "slug": "why-resume-gets-rejected",
+    "metaDescription": "Understand the technical logic behind resume rejection. We deep dive into how modern HR software filters candidates.",
+    "type": "Evergreen Content",
+    "content": "## The 'Rejection' Logic\nMost systems use Keyword Frequency and Section Indexing. If your Experience section is labeled incorrectly, the bot ignores your history.",
+    "createdAt": "2026-02-13T15:20:00Z",
+    "schema": {
+      "@context": "https://schema.org",
+      "@type": "Article",
+      "headline": "Why Your Resume Gets Rejected"
     }
   }
 ]

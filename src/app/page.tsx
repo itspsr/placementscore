@@ -11,6 +11,7 @@ import {
   Minus, Plus, Shield, IndianRupee, Heart, Terminal, BookOpen, Scale, FileSignature,
   FileCode, Briefcase, GraduationCap, Trophy, Verified, Menu
 } from 'lucide-react';
+import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
 
 // --- Types ---
 type AppState = 'landing' | 'analyzing' | 'result' | 'payment' | 'admin' | 'blog' | 'contact' | 'privacy' | 'terms';

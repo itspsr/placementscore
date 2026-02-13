@@ -24,5 +24,44 @@
       "@type": "Article",
       "headline": "Resume Format for TCS Campus Placement 2026"
     }
+  },
+  {
+    "title": "Check ATS Score for TCS Resume 2026 | Free Scanner",
+    "slug": "check-ats-score-for-tcs",
+    "metaDescription": "Scan your resume for TCS iON ATS. Get your score instantly and learn how to pass the TCS initial screening for 2026 freshers.",
+    "type": "company-guide",
+    "content": "## Passing the TCS iON ATS\nTCS iON is one of the most sophisticated recruitment platforms in India. It doesn't just scan for keywords; it analyzes institutional ranking and skill frequency.\n\n### Key Requirements for TCS\n- **Skills:** Java, Python, SQL, SDLC.\n- **Format:** Single column, standard font.\n\n### How to use the scanner\nUpload your PDF below and our neural engine will simulate a TCS recruiter's review.",
+    "createdAt": "2026-02-13T12:00:00Z",
+    "schema": {
+      "@context": "https://schema.org",
+      "@type": "Article",
+      "headline": "Check ATS Score for TCS"
+    }
+  },
+  {
+    "title": "ATS Score for Infosys Recruitment 2026 | Resume Help",
+    "slug": "check-ats-score-for-infosys",
+    "metaDescription": "Is your resume Infosys ready? Check your ATS score now and fix keywords for the 2026 campus placement drive.",
+    "type": "company-guide",
+    "content": "## Infosys Recruitment Logic 2026\nInfosys looks for well-rounded profiles with strong foundation in core engineering principles and communication skills.\n\n### Optimization Tips\n- Mention certifications prominently.\n- Use clear section headers like 'Technical Skills'.",
+    "createdAt": "2026-02-13T12:05:00Z",
+    "schema": {
+      "@context": "https://schema.org",
+      "@type": "Article",
+      "headline": "Check ATS Score for Infosys"
+    }
+  },
+  {
+    "title": "Accenture ATS Resume Score 2026 | Get Your Result",
+    "slug": "check-ats-score-for-accenture",
+    "metaDescription": "Accenture uses advanced AI filters. Scan your resume to see if you meet their 2026 hiring criteria.",
+    "type": "company-guide",
+    "content": "## Beating the Accenture Filter\nAccenture values innovation and specific technology stacks (Cloud, SAP, Full Stack).\n\n### High Impact Keywords\n- Cloud Architecture\n- Agile Transformation\n- SDLC Management",
+    "createdAt": "2026-02-13T12:10:00Z",
+    "schema": {
+      "@context": "https://schema.org",
+      "@type": "Article",
+      "headline": "Check ATS Score for Accenture"
+    }
   }
 ]

@@ -2,9 +2,9 @@ import { MetadataRoute } from 'next';
 import { getBlogs } from '@/lib/blog';
 import { getProgrammaticPages } from '@/lib/programmatic';
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = 'https://placementscore.online';
-  const blogs = getBlogs();
+  const blogs = await getBlogs();
   const pages = getProgrammaticPages();
   
   const staticRoutes = [

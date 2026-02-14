@@ -16,7 +16,7 @@ export async function GET(req: Request) {
   try {
     const existingBlogs = JSON.parse(fs.readFileSync(DATA_PATH, 'utf8'));
 
-    // Mock Mode Fallback
+    // Mock Mode Fallback (For build and local testing without keys)
     if (!process.env.GEMINI_API_KEY || process.env.GEMINI_API_KEY === "") {
         console.log("No GEMINI_API_KEY found, running Master Loop in Mock Mode");
         const mockTopic = "Mock AI Strategy: How to Automate Placement Prep in 2026";
@@ -36,6 +36,19 @@ export async function GET(req: Request) {
     }
 
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+    // --- PHASE 1: AGENT PROPOSES IDEAS ---
+    const proposalPrompt = `
+      You are a senior SEO Growth Agent for 'placementscore.online'. 
+      Analyze the current recruitment trends for Indian college students (TCS NQT 2026, Google India Internships, Resume Keywords for SDE-1).
+      Propose a high-intent, low-competition blog topic that will rank on Google India.
+      Return JSON only: { "topic": "Proposed Topic", "keyword": "main keyword" }
+    `;
+    const proposalResult = await model.generateContent(proposalPrompt);
+    const proposalData = JSON.parse(proposalResult.response.text().replace(/```json/g, "").replace(/```/g, "").trim());
+    const selectedTopic = proposalData.topic;
+
+    // --- PHASE 2: AUTO-APPROVAL SYSTEM ---
     const isDuplicate = existingBlogs.some((b: any) => b.title.toLowerCase().includes(selectedTopic.toLowerCase()));
     
     if (isDuplicate) {
@@ -67,7 +80,7 @@ export async function GET(req: Request) {
     const executionResult = await model.generateContent(executionPrompt);
     const finalBlog = JSON.parse(executionResult.response.text().replace(/```json/g, "").replace(/```/g, "").trim());
 
-    // --- PHASE 4: TRIGGER NEW REACTIONS (SAVE & LOG) ---
+    // --- PHASE 4: SAVE ---
     const newEntry = {
       ...finalBlog,
       id: existingBlogs.length + 1,
@@ -77,8 +90,6 @@ export async function GET(req: Request) {
 
     existingBlogs.push(newEntry);
     fs.writeFileSync(DATA_PATH, JSON.stringify(existingBlogs, null, 2));
-
-    console.log("Master Loop Complete: Blog published successfully.", finalBlog.slug);
 
     return NextResponse.json({ 
       success: true, 

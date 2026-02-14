@@ -88,5 +88,24 @@
     "cluster": "Resume Format Templates",
     "createdAt": "2026-02-13T10:45:00Z",
     "content": "# Ultimate Resume Template for CSE Students (ATS Optimized)\n\nComputer Science students need a resume that highlights their coding proficiency and project impact above all else.\n\n## The CSE Blueprint\n- **Languages:** Proficient in Java, Python, C++.\n- **Tools:** Git, Jenkins, Postman, VS Code.\n- **Frameworks:** React, Node.js, Django.\n- **Cloud:** AWS (EC2, S3), Docker.\n\n## Project Highlighting\nAlways link your GitHub repo. A verified link to a working project is the best trust signal you can provide.\n\n## The Results\nStudents using this template on our platform report a 70% increase in interview callbacks from startups and MNCs alike."
+  },
+  {
+    "id": 11,
+    "title": "Mock Authority Guide: ATS Score Guide for 2026",
+    "slug": "mock-guide-ats-score-guide-1771067606934",
+    "metaDescription": "This is a mock generated authority guide for ATS Score Guide.",
+    "cluster": "ATS Score Guide",
+    "createdAt": "2026-02-14T11:13:26.934Z",
+    "content": "# Mock Authority Guide: ATS Score Guide\n\nThis is a mock generated blog post because the GEMINI_API_KEY is currently missing in the environment. \n\n## Section 1\nContent would go here in a real generation.\n\n## FAQ\n1. Is this real? No, it is a mock."
+  },
+  {
+    "id": 12,
+    "title": "Mock AI Strategy: How to Automate Placement Prep in 2026",
+    "slug": "mock-loop-1771067628310",
+    "metaDescription": "Mock meta description for automated loop.",
+    "content": "# Mock AI Strategy: How to Automate Placement Prep in 2026\n\nThis is a mock generated blog post via the Master AI Loop.",
+    "cluster": "Automated Placement Guide",
+    "createdAt": "2026-02-14T11:13:48.310Z",
+    "source": "Mock Self-Improving Loop"
   }
 ]

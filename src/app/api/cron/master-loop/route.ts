@@ -7,31 +7,35 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
 const DATA_PATH = path.join(process.cwd(), 'src/data/blogs.json');
 
 export async function GET(req: Request) {
-  const { searchParams } = new URL(req.url);
-  
   // SECURE CRON ACCESS
-  if (process.env.NODE_ENV === 'production' && searchParams.get('key') !== process.env.CRON_SECRET) {
+  const authHeader = req.headers.get('authorization');
+  if (process.env.NODE_ENV === 'production' && authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   try {
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-
-    // --- PHASE 1: AGENT PROPOSES IDEAS ---
-    // AI analyzes current trends for Indian graduates in 2026/2027
-    const proposalPrompt = `
-      You are a senior SEO Growth Agent for 'placementscore.online'. 
-      Analyze the current recruitment trends for Indian college students (TCS NQT 2026, Google India Internships, Resume Keywords for SDE-1).
-      Propose a high-intent, low-competition blog topic that will rank on Google India.
-      Return JSON only: { "topic": "Proposed Topic", "keyword": "main keyword" }
-    `;
-    const proposalResult = await model.generateContent(proposalPrompt);
-    const proposalData = JSON.parse(proposalResult.response.text().replace(/```json/g, "").replace(/```/g, "").trim());
-    const selectedTopic = proposalData.topic;
-
-    // --- PHASE 2: AUTO-APPROVAL SYSTEM ---
-    // Check against existing database to ensure no duplicates
     const existingBlogs = JSON.parse(fs.readFileSync(DATA_PATH, 'utf8'));
+
+    // Mock Mode Fallback
+    if (!process.env.GEMINI_API_KEY || process.env.GEMINI_API_KEY === "") {
+        console.log("No GEMINI_API_KEY found, running Master Loop in Mock Mode");
+        const mockTopic = "Mock AI Strategy: How to Automate Placement Prep in 2026";
+        const mockEntry = {
+            id: existingBlogs.length + 1,
+            title: mockTopic,
+            slug: `mock-loop-${Date.now()}`,
+            metaDescription: "Mock meta description for automated loop.",
+            content: `# ${mockTopic}\n\nThis is a mock generated blog post via the Master AI Loop.`,
+            cluster: "Automated Placement Guide",
+            createdAt: new Date().toISOString(),
+            source: "Mock Self-Improving Loop"
+        };
+        existingBlogs.push(mockEntry);
+        fs.writeFileSync(DATA_PATH, JSON.stringify(existingBlogs, null, 2));
+        return NextResponse.json({ success: true, status: "MOCKED", published_slug: mockEntry.slug });
+    }
+
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
     const isDuplicate = existingBlogs.some((b: any) => b.title.toLowerCase().includes(selectedTopic.toLowerCase()));
     
     if (isDuplicate) {

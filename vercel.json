@@ -1,11 +1,11 @@
 {
   "crons": [
     {
-      "path": "/api/cron/master-loop?key=YOUR_CRON_SECRET",
+      "path": "/api/cron/master-loop",
       "schedule": "0 2 * * *"
     },
     {
-      "path": "/api/cron/generate-programmatic?key=YOUR_CRON_SECRET",
+      "path": "/api/cron/generate-programmatic",
       "schedule": "0 3 * * *"
     }
   ]

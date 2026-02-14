@@ -7,14 +7,14 @@ import ReactMarkdown from 'react-markdown';
 import { BackButton } from "@/components/BackButton";
 
 export async function generateStaticParams() {
-  const blogs = getBlogs();
+  const blogs = await getBlogs();
   return blogs.map((blog: any) => ({
     slug: blog.slug,
   }));
 }
 
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
-  const blog = getBlogBySlug(params.slug);
+  const blog = await getBlogBySlug(params.slug);
   if (!blog) return { title: "Blog Not Found" };
 
   return {
@@ -29,8 +29,8 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   };
 }
 
-export default function BlogPost({ params }: { params: { slug: string } }) {
-  const blog = getBlogBySlug(params.slug);
+export default async function BlogPost({ params }: { params: { slug: string } }) {
+  const blog = await getBlogBySlug(params.slug);
   if (!blog) notFound();
 
   return (

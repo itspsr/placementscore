@@ -10,8 +10,11 @@ export const metadata: Metadata = {
   description: "Daily updated insights on ATS algorithms, resume optimization, and Indian campus placement strategies for 2026-2027.",
 };
 
-export default function BlogPage() {
-  const blogs = getBlogs().sort((a: any, b: any) => 
+export default async function BlogPage() {
+  const blogs = await getBlogs();
+  
+  // Sort if they came from JSON (Supabase query already sorts)
+  const sortedBlogs = blogs.sort((a: any, b: any) => 
     new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
   );
 

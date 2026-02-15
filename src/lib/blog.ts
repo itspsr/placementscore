@@ -4,9 +4,14 @@ import { createClient } from '@supabase/supabase-js';
 
 const DATA_PATH = path.join(process.cwd(), 'src/data/blogs.json');
 
+// Force local JSON for now to ensure original 10 blogs show up
+const supabase = null; 
+
+/* 
 const supabase = process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY
   ? createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY)
   : null;
+*/
 
 export async function getBlogs() {
   if (supabase) {

@@ -91,21 +91,11 @@
   },
   {
     "id": 11,
-    "title": "Mock Authority Guide: ATS Score Guide for 2026",
-    "slug": "mock-guide-ats-score-guide-1771067606934",
-    "metaDescription": "This is a mock generated authority guide for ATS Score Guide.",
-    "cluster": "ATS Score Guide",
-    "createdAt": "2026-02-14T11:13:26.934Z",
-    "content": "# Mock Authority Guide: ATS Score Guide\n\nThis is a mock generated blog post because the GEMINI_API_KEY is currently missing in the environment. \n\n## Section 1\nContent would go here in a real generation.\n\n## FAQ\n1. Is this real? No, it is a mock."
-  },
-  {
-    "id": 12,
-    "title": "Mock AI Strategy: How to Automate Placement Prep in 2026",
-    "slug": "mock-loop-1771067628310",
-    "metaDescription": "Mock meta description for automated loop.",
-    "content": "# Mock AI Strategy: How to Automate Placement Prep in 2026\n\nThis is a mock generated blog post via the Master AI Loop.",
-    "cluster": "Automated Placement Guide",
-    "createdAt": "2026-02-14T11:13:48.310Z",
-    "source": "Mock Self-Improving Loop"
+    "title": "How to Get Hired at Google in 2026: The Ultimate ATS Strategy",
+    "slug": "get-hired-google-2026-ats-strategy",
+    "metaDescription": "Master the Google ATS with our 2026 hiring guide. Learn the exact keywords and formatting needed to land an SDE role at Google.",
+    "cluster": "Company Specific Resume Guides",
+    "createdAt": "2026-02-15T03:50:00Z",
+    "content": "# How to Get Hired at Google in 2026: The Ultimate ATS Strategy\n\nGoogle receives over 3 million applications a year. To stand out, your resume needs more than just a high CGPA—it needs to be architected for Google's internal 'gHire' system.\n\n## The Google Resume Philosophy\nGoogle recruiters look for 'Googliness', but the ATS looks for 'Impact'. In 2026, the focus has shifted from what you know to what you've delivered.\n\n## Key Optimization Pillars\n1. **The Google XYZ Formula:** Instead of 'I built an app', use 'Accomplished [X] as measured by [Y], by doing [Z]'. \n2. **Technical Depth:** Ensure you mention specific technical challenges you solved, not just a list of languages.\n3. **Formatting Simplicity:** Google's parsers are robust but they prefer clean, sans-serif fonts and zero tables.\n\n## FAQ\n**Q: Is a one-page resume mandatory for Google?**\n**A:** For freshers and junior roles, yes. It shows you can prioritize information.\n\n**Q: Should I include hobbies?**\n**A:** Only if they demonstrate leadership or technical passion (e.g., contributing to Open Source)."
   }
 ]

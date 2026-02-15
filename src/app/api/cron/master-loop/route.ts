@@ -48,7 +48,25 @@ export async function GET(req: Request) {
         return NextResponse.json({ success: true, status: "MOCKED", published_slug: mockEntry.slug });
     }
 
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const modelsToTry = ["gemini-1.5-flash", "gemini-pro", "gemini-1.5-flash-latest"];
+    let model;
+    let success = false;
+    
+    for (const modelName of modelsToTry) {
+        try {
+            model = genAI.getGenerativeModel({ model: modelName });
+            // Test if model works
+            await model.generateContent("test");
+            success = true;
+            console.log(`Using model: ${modelName}`);
+            break;
+        } catch (e) {
+            console.log(`Model ${modelName} failed, trying next...`);
+        }
+    }
+
+    if (!success) throw new Error("All Gemini models failed. Check your API key and permissions.");
+
 
     const proposalPrompt = `
       You are a senior SEO Growth Agent for 'placementscore.online'. 

@@ -579,6 +579,10 @@ export default function Home() {
                    <div className="space-y-10 md:space-y-12 text-center">
                       <div className="bg-white p-6 md:p-8 rounded-[30px] md:rounded-[40px] inline-block shadow-2xl mx-auto">
                          <img src="/payment-qr.jpg" alt="QR" className="w-48 h-48 md:w-64 md:h-64" />
+                         <div className="mt-4 p-4 bg-blue-50 border border-blue-100 rounded-2xl">
+                            <p className="text-[10px] font-black text-blue-900 uppercase tracking-widest mb-1">UPI ID:</p>
+                            <p className="text-xl font-black text-blue-600 italic">itspsr1@ybl</p>
+                         </div>
                       </div>
                       <div className="text-left space-y-6 md:space-y-8">
                         <div className="space-y-2">
@@ -747,7 +751,7 @@ const PricingCard = ({ tier, price, perks, popular, setView, setSelectedPlan, fi
      <h3 className="text-[10px] md:text-[11px] font-[1000] tracking-[0.4em] md:tracking-[0.5em] uppercase text-white/20 mb-4 md:mb-6 italic text-center md:text-left">{tier === 'ELITE' || tier === 'GROWTH' ? 'Elite' : tier}</h3>
      <div className="flex items-baseline justify-center md:justify-start gap-2 mb-8 md:mb-16">
         <span className="text-6xl md:text-8xl font-[1000] tracking-tighter italic leading-none">₹{price}</span>
-        <span className="text-white/20 text-[10px] md:text-xs font-black uppercase tracking-widest">/{tier === 'EXPERT' ? 'month' : 'scan'}</span>
+        <span className="text-white/20 text-[10px] md:text-xs font-black uppercase tracking-widest">/scan</span>
      </div>
      <ul className="text-left space-y-4 md:space-y-8 mb-10 md:mb-20 flex-1">
         {perks.map((p: any) => <li key={p} className="flex gap-4 md:gap-5 items-start text-white/50 font-black text-xs md:text-sm uppercase tracking-tight italic group-hover:text-white/70 transition-colors"><CheckCircle className="w-4 h-4 md:w-5 md:h-5 text-blue-500 shrink-0 mt-0.5" /> {p}</li>)}

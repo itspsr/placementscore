@@ -3,10 +3,40 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
 
+// Simple In-Memory Rate Limiter (Note: Resets on Lambda cold start)
+// For production, use Upstash Redis or similar persistent store.
+const rateLimitMap = new Map<string, { count: number; lastReset: number }>();
+const RATE_LIMIT_WINDOW = 3600 * 1000; // 1 hour
+const MAX_REQUESTS = 10;
+
+function checkRateLimit(identifier: string) {
+  const now = Date.now();
+  const userData = rateLimitMap.get(identifier) || { count: 0, lastReset: now };
+
+  if (now - userData.lastReset > RATE_LIMIT_WINDOW) {
+    userData.count = 0;
+    userData.lastReset = now;
+  }
+
+  if (userData.count >= MAX_REQUESTS) {
+    return false;
+  }
+
+  userData.count++;
+  rateLimitMap.set(identifier, userData);
+  return true;
+}
+
 export async function POST(req: Request) {
   try {
     const body = await req.json();
     const { userId, plan, originalResumeText, targetRole, experienceLevel, keySkills } = body;
+
+    // 0. Rate Limiting Check
+    const ip = req.headers.get('x-forwarded-for') || 'anonymous';
+    if (!checkRateLimit(userId || ip)) {
+      return NextResponse.json({ error: "Rate limit exceeded. Try again in an hour." }, { status: 429 });
+    }
 
     // 1. Validate plan === "expert"
     if (plan !== "expert" && plan !== "EXPERT") {

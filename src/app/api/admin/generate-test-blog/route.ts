@@ -25,7 +25,6 @@ export async function POST(req: Request) {
     return NextResponse.json({ 
       success: true, 
       slug: blog.slug, 
-      storage: result.storage,
       blog
     });
   } catch (error: any) {

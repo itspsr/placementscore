@@ -1,7 +1,7 @@
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
-import { Shield, Users, IndianRupee, Verified, ArrowLeft, Lock } from "lucide-react";
+import { Shield, Users, IndianRupee, Verified, ArrowLeft, Lock, BookOpen, Sparkles } from "lucide-react";
 import Link from "next/link";
 
 export default async function AdminPage() {

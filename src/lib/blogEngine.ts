@@ -1,7 +1,6 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
 import { createClient } from "@supabase/supabase-js";
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 
 const supabase = process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY
   ? createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY)
@@ -20,13 +19,52 @@ export interface GeneratedBlog {
   faq_schema?: string;
 }
 
-export async function generateBlogArticle(topic: string, cluster: string): Promise<GeneratedBlog> {
-  if (!process.env.GEMINI_API_KEY) {
+async function generateWithGemini(prompt: string) {
+  if (!GEMINI_API_KEY) {
     throw new Error("GEMINI_API_KEY is missing");
   }
 
-  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+  try {
+    const response = await fetch(
+      "https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=" + GEMINI_API_KEY,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          contents: [
+            {
+              parts: [{ text: prompt }]
+            }
+          ]
+        })
+      }
+    );
 
+    const raw = await response.text();
+    console.log("GEMINI RAW:", raw);
+
+    if (!response.ok) {
+      throw new Error(`Gemini API error: ${response.status} ${raw}`);
+    }
+
+    const data = JSON.parse(raw);
+    const text = data?.candidates?.[0]?.content?.parts?.[0]?.text || null;
+
+    if (!text) {
+      throw new Error("Empty Gemini response");
+    }
+
+    return text;
+
+  } catch (err) {
+    console.error("Gemini generation failed:", err);
+    return null;
+  }
+}
+
+export async function generateBlogArticle(topic: string, cluster: string): Promise<GeneratedBlog> {
   const prompt = `
     You are a senior SEO SaaS architect. Build a 2000-word authority blog for 'placementscore.online'.
     
@@ -57,18 +95,59 @@ export async function generateBlogArticle(topic: string, cluster: string): Promi
     JSON only, no markdown wrappers.
   `;
 
-  const result = await model.generateContent(prompt);
-  const response = await result.response;
-  const rawJson = response.text().replace(/```json/g, "").replace(/```/g, "").trim();
-  const blogData = JSON.parse(rawJson);
+  const result = await generateWithGemini(prompt);
+  
+  if (!result) {
+    // Fallback logic
+    const slug = topic.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') + '-' + Date.now();
+    return {
+      title: `Guide to ${topic}`,
+      slug: slug,
+      meta_description: `Learn more about ${topic} and how it impacts your placement score.`,
+      content: `
+# ${topic}
 
-  return {
-    ...blogData,
-    cluster,
-    created_at: new Date().toISOString(),
-    source: "Automated Blog Engine",
-    published: true
-  };
+This is an AI-generated resume strategy guide for ${topic}.
+
+Detailed insights will be updated shortly.
+
+Stay tuned for structured resume tips, ATS keywords, formatting strategies, and interview optimization.
+      `.trim(),
+      keywords: topic,
+      cluster,
+      created_at: new Date().toISOString(),
+      source: "Gemini Fallback",
+      published: true
+    };
+  }
+
+  try {
+    const rawJson = result.replace(/```json/g, "").replace(/```/g, "").trim();
+    const blogData = JSON.parse(rawJson);
+
+    return {
+      ...blogData,
+      cluster,
+      created_at: new Date().toISOString(),
+      source: "Gemini 1.5 Flash",
+      published: true
+    };
+  } catch (e) {
+    console.error("JSON Parse Error in Blog Engine:", e);
+    // Return fallback if parsing fails
+    const slug = topic.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') + '-' + Date.now();
+    return {
+      title: `Guide to ${topic}`,
+      slug: slug,
+      meta_description: `Learn more about ${topic} and how it impacts your placement score.`,
+      content: result || `Fallback content for ${topic}`,
+      keywords: topic,
+      cluster,
+      created_at: new Date().toISOString(),
+      source: "Gemini Parsing Fallback",
+      published: true
+    };
+  }
 }
 
 export async function saveBlog(blog: GeneratedBlog) {

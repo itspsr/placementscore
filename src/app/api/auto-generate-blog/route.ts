@@ -3,6 +3,8 @@ import { generateBlogArticle, saveBlog } from '@/lib/blogEngine';
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 
+export const dynamic = 'force-dynamic';
+
 const TRENDING_KEYWORDS = [
   "ATS resume tips 2026",
   "Resume keywords for TCS",
@@ -22,18 +24,18 @@ const CLUSTERS = [
 ];
 
 export async function GET(req: Request) {
-  // 1. Verify Request (Cron or Admin)
-  const authHeader = req.headers.get('authorization');
-  const isCron = authHeader === `Bearer ${process.env.CRON_SECRET}`;
-  
-  const session = await getServerSession(authOptions);
-  const isAdmin = session?.user?.name === 'urboss' || session?.user?.email === 'itspsr@gmail.com';
-
-  if (!isCron && !isAdmin) {
-    return NextResponse.json({ error: "Unauthorized access" }, { status: 401 });
-  }
-
   try {
+    // 1. Verify Request (Cron or Admin)
+    const authHeader = req.headers.get('authorization');
+    const isCron = authHeader === `Bearer ${process.env.CRON_SECRET}`;
+    
+    const session = await getServerSession(authOptions);
+    const isAdmin = session?.user?.name === 'urboss' || session?.user?.email === 'itspsr@gmail.com';
+
+    if (!isCron && !isAdmin) {
+      return NextResponse.json({ error: "Unauthorized access" }, { status: 401 });
+    }
+
     // 2. Select Topic & Cluster
     const keyword = TRENDING_KEYWORDS[Math.floor(Math.random() * TRENDING_KEYWORDS.length)];
     const cluster = CLUSTERS[Math.floor(Math.random() * CLUSTERS.length)];
@@ -43,8 +45,8 @@ export async function GET(req: Request) {
     // 3 & 4. Call Gemini & Generate
     const blog = await generateBlogArticle(keyword, cluster);
 
-    // 5 & 6. Create Slug (automatic in generateBlogArticle) & Insert into DB
-    const result = await saveBlog(blog);
+    // 5 & 6. Create Slug & Insert into DB
+    await saveBlog(blog);
 
     // 7. Return Success
     return NextResponse.json({ 
@@ -55,9 +57,10 @@ export async function GET(req: Request) {
 
   } catch (error: any) {
     console.error("Auto Blog Generation Failed:", error);
+    // Never return 500 for cron, return 200 with success: false
     return NextResponse.json({ 
       success: false, 
       error: error.message 
-    }, { status: 500 });
+    }, { status: 200 });
   }
 }

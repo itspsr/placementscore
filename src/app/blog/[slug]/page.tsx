@@ -1,7 +1,7 @@
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getBlogBySlug, getBlogs } from "@/lib/blog";
-import { ArrowLeft, Sparkles, Calendar, BookOpen, Target, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, Sparkles, Calendar } from 'lucide-react';
 import Link from 'next/link';
 import ReactMarkdown from 'react-markdown';
 import { BackButton } from "@/components/BackButton";
@@ -19,12 +19,12 @@ export async function generateMetadata({ params }: { params: { slug: string } })
 
   return {
     title: `${blog.title} | PlacementScore.online`,
-    description: blog.metaDescription,
+    description: blog.metaDescription || blog.meta_description,
     openGraph: {
       title: blog.title,
-      description: blog.metaDescription,
+      description: blog.metaDescription || blog.meta_description,
       type: 'article',
-      publishedTime: blog.createdAt,
+      publishedTime: blog.createdAt || blog.created_at,
     }
   };
 }
@@ -33,8 +33,17 @@ export default async function BlogPost({ params }: { params: { slug: string } })
   const blog = await getBlogBySlug(params.slug);
   if (!blog) notFound();
 
+  const faqSchema = blog.faqSchema || blog.faq_schema;
+
   return (
     <article className="min-h-screen bg-[#050505] text-white p-6 pt-32">
+      {faqSchema && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: faqSchema }}
+        />
+      )}
+      
       <div className="max-w-4xl mx-auto space-y-12">
         <BackButton />
 
@@ -44,7 +53,7 @@ export default async function BlogPost({ params }: { params: { slug: string } })
 
         <header className="space-y-8">
            <div className="flex items-center gap-4 text-[10px] font-black uppercase tracking-[0.4em] text-blue-500">
-             <Calendar className="w-4 h-4" /> {new Date(blog.createdAt).toLocaleDateString()}
+             <Calendar className="w-4 h-4" /> {new Date(blog.createdAt || blog.created_at).toLocaleDateString()}
              <span className="text-white/10">•</span>
              <span className="text-white/30 italic">{blog.cluster}</span>
            </div>
@@ -52,7 +61,7 @@ export default async function BlogPost({ params }: { params: { slug: string } })
              {blog.title}
            </h1>
            <p className="text-2xl text-white/40 font-medium italic border-l-4 border-blue-600 pl-8">
-             {blog.metaDescription}
+             {blog.metaDescription || blog.meta_description}
            </p>
         </header>
 

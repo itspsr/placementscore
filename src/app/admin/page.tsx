@@ -41,6 +41,16 @@ export default async function AdminPage() {
            <AdminStatCard title="Verified Users" value="12,401" icon={Shield} color="text-indigo-500" />
         </div>
 
+        {/* Action Links */}
+        <div className="flex flex-wrap gap-6 pt-4">
+           <Link href="/admin/blogs" className="px-8 py-4 bg-white/5 border border-white/10 rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-blue-600 hover:text-white transition-all flex items-center gap-3 italic">
+              <BookOpen className="w-4 h-4" /> Manage Blogs
+           </Link>
+           <Link href="/expert-resume-builder" className="px-8 py-4 bg-white/5 border border-white/10 rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-blue-600 hover:text-white transition-all flex items-center gap-3 italic">
+              <Sparkles className="w-4 h-4" /> AI Builder
+           </Link>
+        </div>
+
         {/* Request Table */}
         <div className="bg-[#0A0A0A] rounded-[50px] border border-white/5 overflow-hidden shadow-2xl backdrop-blur-3xl">
           <div className="p-10 border-b border-white/5">

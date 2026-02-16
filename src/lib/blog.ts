@@ -10,11 +10,20 @@ const supabase = process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.SUPABASE_SE
 
 export async function getBlogs() {
   if (supabase) {
-    const { data, error } = await supabase.from('blogs').select('*').order('createdAt', { ascending: false });
-    if (error) {
-        console.error("Supabase error fetching blogs:", error);
-    } else if (data && data.length > 0) {
-        return data;
+    const { data, error } = await supabase
+      .from('blogs')
+      .select('*')
+      .eq('published', true)
+      .order('created_at', { ascending: false });
+    
+    if (!error && data && data.length > 0) {
+      return data.map(blog => ({
+        ...blog,
+        // Compatibility mapping
+        metaDescription: blog.meta_description,
+        createdAt: blog.created_at,
+        faqSchema: blog.faq_schema
+      }));
     }
   }
   
@@ -28,9 +37,19 @@ export async function getBlogs() {
 
 export async function getBlogBySlug(slug: string) {
   if (supabase) {
-    const { data, error } = await supabase.from('blogs').select('*').eq('slug', slug).single();
+    const { data, error } = await supabase
+      .from('blogs')
+      .select('*')
+      .eq('slug', slug)
+      .single();
+    
     if (!error && data) {
-        return data;
+      return {
+        ...data,
+        metaDescription: data.meta_description,
+        createdAt: data.created_at,
+        faqSchema: data.faq_schema
+      };
     }
   }
 

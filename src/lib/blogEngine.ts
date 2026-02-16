@@ -1,7 +1,5 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { createClient } from "@supabase/supabase-js";
-import fs from "fs";
-import path from "path";
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
 
@@ -9,17 +7,17 @@ const supabase = process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.SUPABASE_SE
   ? createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY)
   : null;
 
-const DATA_PATH = path.join(process.cwd(), "src/data/blogs.json");
-
 export interface GeneratedBlog {
   title: string;
   slug: string;
-  metaDescription: string;
+  meta_description: string;
   content: string;
-  keyword: string;
+  keywords: string;
   cluster: string;
-  createdAt: string;
+  created_at: string;
   source: string;
+  published: boolean;
+  faq_schema?: string;
 }
 
 export async function generateBlogArticle(topic: string, cluster: string): Promise<GeneratedBlog> {
@@ -51,10 +49,10 @@ export async function generateBlogArticle(topic: string, cluster: string): Promi
     {
       "title": "...",
       "slug": "...",
-      "metaDescription": "...",
+      "meta_description": "...",
       "content": "...",
-      "keyword": "...",
-      "faqSchema": "..."
+      "keywords": "...",
+      "faq_schema": "..."
     }
     JSON only, no markdown wrappers.
   `;
@@ -67,30 +65,31 @@ export async function generateBlogArticle(topic: string, cluster: string): Promi
   return {
     ...blogData,
     cluster,
-    createdAt: new Date().toISOString(),
-    source: "Automated Blog Engine"
+    created_at: new Date().toISOString(),
+    source: "Automated Blog Engine",
+    published: true
   };
 }
 
 export async function saveBlog(blog: GeneratedBlog) {
-  // 1. Save to Supabase (Primary)
-  if (supabase) {
-    const { error } = await supabase.from("blogs").insert([blog]);
-    if (error) {
-      console.error("Supabase Save Error:", error);
-    } else {
-      return { success: true, storage: "supabase" };
-    }
+  if (!supabase) {
+    console.error("Supabase configuration missing. Cannot save blog.");
+    throw new Error("Database connection not configured.");
   }
 
-  // 2. Save to Local JSON (Fallback/Backup)
-  try {
-    const existing = JSON.parse(fs.readFileSync(DATA_PATH, "utf8"));
-    existing.push(blog);
-    fs.writeFileSync(DATA_PATH, JSON.stringify(existing, null, 2));
-    return { success: true, storage: "local" };
-  } catch (e) {
-    console.error("Local Save Error:", e);
-    throw e;
+  const { data, error } = await supabase.from("blogs").insert([blog]).select();
+  
+  if (error) {
+    console.error("Supabase Save Error:", error);
+    throw error;
   }
+  
+  return { success: true, data };
+}
+
+export async function deleteBlog(id: string | number) {
+  if (!supabase) throw new Error("Database connection not configured.");
+  const { error } = await supabase.from("blogs").delete().eq("id", id);
+  if (error) throw error;
+  return { success: true };
 }

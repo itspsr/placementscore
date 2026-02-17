@@ -97,6 +97,31 @@ export default function RootLayout({
         </Script>
       </head>
       <body className={`${inter.className} bg-[#050505] antialiased selection:bg-blue-500/30`}>
+        <Script
+          id="organization-schema"
+          type="application/ld+json"
+          strategy="beforeInteractive"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "Organization",
+              "name": "PlacementScore.online",
+              "url": "https://placementscore.online",
+              "logo": "https://placementscore.online/logo.png",
+              "sameAs": [
+                "https://twitter.com/placementscore",
+                "https://www.linkedin.com/company/placementscore"
+              ],
+              "contactPoint": {
+                "@type": "ContactPoint",
+                "telephone": "+91-1234567890",
+                "contactType": "customer service",
+                "areaServed": "IN",
+                "availableLanguage": "en"
+              }
+            })
+          }}
+        />
         <Providers>{children}</Providers>
       </body>
     </html>

@@ -27,12 +27,7 @@ export async function getBlogs() {
     }
   }
   
-  try {
-    const fileContent = fs.readFileSync(DATA_PATH, 'utf8');
-    return JSON.parse(fileContent);
-  } catch (error) {
-    return [];
-  }
+  return [];
 }
 
 export async function getBlogBySlug(slug: string) {

@@ -30,7 +30,7 @@ async function generateWithGemini(prompt: string) {
 
   try {
     const response = await fetch(
-      "https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=" + GEMINI_API_KEY,
+      "https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash-latest:generateContent?key=" + GEMINI_API_KEY,
       {
         method: "POST",
         headers: {
@@ -43,7 +43,8 @@ async function generateWithGemini(prompt: string) {
             }
           ],
           generationConfig: {
-            maxOutputTokens: 2048
+            maxOutputTokens: 1500,
+            temperature: 0.7
           }
         })
       }
@@ -73,10 +74,11 @@ async function generateWithGemini(prompt: string) {
 
 export async function generateBlogArticle(topic: string, cluster: string): Promise<GeneratedBlog> {
   const prompt = `
-    Write a 1500-1800 word SEO optimized blog on "${topic}".
+    Write a 1500-2000 word SEO optimized blog on "${topic}".
     Include headings (H1, H2, H3), actionable advice, a FAQ section with 5 questions, and a high-CTR meta description.
     Target Indian students preparing for placements in 2026/2027.
     Make it authoritative and practical.
+    Include 2-3 internal link placeholders like [LINK: /resume-builder] or [LINK: /ats-score] where relevant.
     
     Return as valid JSON:
     {

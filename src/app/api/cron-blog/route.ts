@@ -7,6 +7,7 @@ const TRENDING_KEYWORDS = [
   "ATS Resume Tips 2026",
   "Resume Keywords for TCS",
   "Google Internship Resume Guide",
+  "Best Resume Format for Freshers India",
   "How to Increase Resume Score",
   "Resume Format for Campus Placement",
   "Amazon SDE-1 Interview Preparation",
@@ -25,7 +26,10 @@ export async function GET(req: Request) {
   try {
     // 1. Verify Request (Cron Secret)
     const authHeader = req.headers.get('authorization');
-    if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+    const cronHeader = req.headers.get('x-cron-secret');
+    const isValidAuth = authHeader === `Bearer ${process.env.CRON_SECRET}` || cronHeader === process.env.CRON_SECRET;
+    
+    if (!isValidAuth) {
       return NextResponse.json({ error: "Unauthorized access" }, { status: 401 });
     }
 

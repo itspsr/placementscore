@@ -18,7 +18,8 @@ export async function POST(req: Request) {
   }
 
   try {
-    const { topic, cluster } = await req.json();
+    const body = await req.json().catch(() => ({}));
+    const { topic, cluster } = body;
     
     console.log(`Admin triggering blog generation: ${topic} (${cluster})`);
     
@@ -28,7 +29,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ 
       success: true, 
       slug: blog.slug, 
-      blog
+      result
     });
   } catch (error: any) {
     console.error("Admin Generation Error:", error);

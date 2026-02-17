@@ -24,6 +24,10 @@ async function generateWithGemini(prompt: string) {
     throw new Error("GEMINI_API_KEY is missing");
   }
 
+  if (prompt.length > 10000) {
+    throw new Error("Prompt too long");
+  }
+
   try {
     const response = await fetch(
       "https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=" + GEMINI_API_KEY,
@@ -37,7 +41,10 @@ async function generateWithGemini(prompt: string) {
             {
               parts: [{ text: prompt }]
             }
-          ]
+          ],
+          generationConfig: {
+            maxOutputTokens: 2048
+          }
         })
       }
     );
@@ -66,31 +73,19 @@ async function generateWithGemini(prompt: string) {
 
 export async function generateBlogArticle(topic: string, cluster: string): Promise<GeneratedBlog> {
   const prompt = `
-    You are a senior SEO SaaS architect. Build a 2000-word authority blog for 'placementscore.online'.
-    
-    Topic: ${topic}
-    Cluster: ${cluster}
-    Focus: Indian college students (IIT, NIT, VIT, SRM, etc.)
-    Target Year: 2026/2027
-    Style: Professional, data-driven, encouraging.
-    
-    Requirements:
-    1. Title: SEO Optimized (max 60 chars).
-    2. Meta Description: High CTR (max 155 chars).
-    3. Content: 1500-2000 words in high-quality Markdown.
-    4. Structure: H1, multiple H2s and H3s.
-    5. Include a FAQ section with 5 questions.
-    6. Include internal links placeholder like [LINK:HOME], [LINK:PRICING].
-    7. Include JSON-LD FAQ Schema in a separate field.
+    Write a 1500-1800 word SEO optimized blog on "${topic}".
+    Include headings (H1, H2, H3), actionable advice, a FAQ section with 5 questions, and a high-CTR meta description.
+    Target Indian students preparing for placements in 2026/2027.
+    Make it authoritative and practical.
     
     Return as valid JSON:
     {
-      "title": "...",
-      "slug": "...",
-      "meta_description": "...",
-      "content": "...",
-      "keywords": "...",
-      "faq_schema": "..."
+      "title": "SEO Optimized Title",
+      "slug": "url-slug",
+      "meta_description": "CTR focused description",
+      "content": "Full Markdown content here",
+      "keywords": "comma, separated, keywords",
+      "faq_schema": "JSON-LD FAQ Schema string"
     }
     JSON only, no markdown wrappers.
   `;

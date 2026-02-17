@@ -3,23 +3,26 @@ import { generateBlogArticle, saveBlog } from '@/lib/blogEngine';
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 
+export const dynamic = 'force-dynamic';
+
 export async function POST(req: Request) {
-  // 1. Verify Admin Session
+  // 1. Verify Request (Admin Session or Cron Secret)
   const session = await getServerSession(authOptions);
+  const authHeader = req.headers.get('authorization');
   
-  // Basic security: only 'urboss' or specific emails allowed
-  const isAdmin = session?.user?.email === 'itspsr@gmail.com' || session?.user?.name === 'urboss';
-  
-  if (!isAdmin && process.env.NODE_ENV === 'production') {
-    return NextResponse.json({ error: "Unauthorized. Admin access only." }, { status: 401 });
+  const isAdmin = session?.user?.name === 'urboss' || session?.user?.email === 'itspsr@gmail.com' || session?.user?.email === 'admin@placementscore.online';
+  const isCron = authHeader === `Bearer ${process.env.CRON_SECRET}`;
+
+  if (!isAdmin && !isCron) {
+    return NextResponse.json({ error: "Unauthorized access" }, { status: 401 });
   }
 
   try {
     const { topic, cluster } = await req.json();
     
-    console.log(`Admin triggering test blog generation: ${topic} (${cluster})`);
+    console.log(`Admin triggering blog generation: ${topic} (${cluster})`);
     
-    const blog = await generateBlogArticle(topic || "ATS resume tips", cluster || "Manual Test");
+    const blog = await generateBlogArticle(topic || "ATS resume tips", cluster || "Manual Admin Trigger");
     const result = await saveBlog(blog);
 
     return NextResponse.json({ 

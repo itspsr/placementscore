@@ -1,7 +1,7 @@
 {
   "crons": [
     {
-      "path": "/api/auto-generate-blog",
+      "path": "/api/cron-blog",
       "schedule": "0 3 * * *"
     }
   ]

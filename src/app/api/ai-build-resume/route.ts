@@ -1,10 +1,14 @@
 import { NextResponse } from 'next/server';
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { createClient } from '@supabase/supabase-js';
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+);
 
-// Simple In-Memory Rate Limiter (Note: Resets on Lambda cold start)
-// For production, use Upstash Redis or similar persistent store.
+// Simple In-Memory Rate Limiter
 const rateLimitMap = new Map<string, { count: number; lastReset: number }>();
 const RATE_LIMIT_WINDOW = 3600 * 1000; // 1 hour
 const MAX_REQUESTS = 10;
@@ -38,9 +42,21 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Rate limit exceeded. Try again in an hour." }, { status: 429 });
     }
 
-    // 1. Validate plan === "expert"
-    if (plan !== "expert" && plan !== "EXPERT") {
-      return NextResponse.json({ error: "Upgrade to Expert Plan to use the AI Resume Builder" }, { status: 403 });
+    // 1. Verify Expert Plan via Supabase
+    if (!userId) return NextResponse.json({ error: "User ID required" }, { status: 400 });
+
+    // Allow admin bypass
+    if (userId !== "admin@placementscore.online") {
+        const { data: sub, error } = await supabase
+            .from('subscriptions')
+            .select('status, plan')
+            .eq('email', userId)
+            .eq('status', 'active')
+            .single();
+
+        if (error || !sub || sub.plan !== 'expert') {
+             return NextResponse.json({ error: "Access Denied. Active Expert Subscription Required." }, { status: 403 });
+        }
     }
 
     if (!process.env.GEMINI_API_KEY) {

@@ -17,8 +17,16 @@ export default function FreeTemplate() {
     if (!email) return;
     
     setIsLoading(true);
-    // Simulate database store
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    try {
+      await fetch('/api/capture-lead', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, source: 'free-resume-template' })
+      });
+    } catch (err) {
+      console.error(err);
+    }
+    
     setIsLoading(false);
     setIsSubmitted(true);
     

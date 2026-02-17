@@ -252,8 +252,13 @@ export default function Home() {
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 font-bold text-[9px] md:text-[10px] uppercase tracking-widest">
             <Sparkles className="w-3 h-3" /> 🔥 {analyzeCount.toLocaleString()}+ Resumes Analysed
           </div>
-                  <h1 className="text-4xl sm:text-6xl md:text-[80px] font-[1000] leading-[1] md:leading-[0.9] tracking-tighter">
+                  <h1 className="text-4xl sm:text-6xl md:text-[80px] font-[1000] leading-[1] md:leading-[0.9] tracking-tighter relative">
                     Get Your Real <br /> <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-indigo-500 italic">Placement Score.</span>
+                    <motion.div initial={{ scale: 0, rotate: -20 }} animate={{ scale: 1, rotate: 0 }} transition={{ delay: 0.5, type: 'spring' }} className="absolute -top-8 -right-8 md:-top-12 md:-right-12 hidden md:block">
+                       <div className="bg-white text-blue-600 px-4 py-2 rounded-full font-black text-xs uppercase tracking-widest shadow-2xl flex items-center gap-2 transform rotate-12 border-2 border-blue-600">
+                          <Verified className="w-4 h-4 fill-current" /> Verified AI
+                       </div>
+                    </motion.div>
                   </h1>
                   <p className="text-lg md:text-xl text-white/40 max-w-2xl lg:mx-0 mx-auto font-medium leading-relaxed text-balance">
                     Check Your Resume Score in 30 Seconds. Secure your future by bypassing the 6-second ATS rejection cycle instantly.
@@ -490,12 +495,35 @@ export default function Home() {
                    </div>
 
                    <div className="space-y-6 md:space-y-8">
-                      {/* PREVIEW: Blurred if not paid */}
-                      <div className={`p-6 md:p-10 bg-green-500/[0.03] rounded-[30px] md:rounded-[40px] border border-green-500/10 transition-all ${!isPaid ? 'blur-xl opacity-30 select-none' : ''}`}>
+                      {/* PREVIEW: Show 3 strengths, blur rest if not paid */}
+                      <div className="p-6 md:p-10 bg-green-500/[0.03] rounded-[30px] md:rounded-[40px] border border-green-500/10 transition-all">
                         <h4 className="text-lg md:text-xl font-black text-green-400 mb-6 uppercase tracking-widest flex items-center justify-center md:justify-start gap-3 italic underline underline-offset-8"><CheckCircle className="w-4 h-4 md:w-5 md:h-5" /> Strengths</h4>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-left">
-                           {result.strengths.map((s:any) => <div key={s} className="p-4 bg-green-500/5 rounded-2xl border border-green-500/5 text-xs md:text-sm font-bold text-white/60 flex items-center gap-3">✓ {s}</div>)}
+                           {result.strengths.slice(0, isPaid ? undefined : 3).map((s:any) => <div key={s} className="p-4 bg-green-500/5 rounded-2xl border border-green-500/5 text-xs md:text-sm font-bold text-white/60 flex items-center gap-3">✓ {s}</div>)}
                         </div>
+                        {!isPaid && (
+                           <div className="mt-4 text-center">
+                              <p className="text-[10px] font-bold text-white/20 uppercase tracking-widest italic">+ {result.strengths.length - 3} more hidden strengths</p>
+                           </div>
+                        )}
+                      </div>
+
+                      {/* WEAKNESSES: Locked/Blurred if not paid */}
+                      <div className={`p-6 md:p-10 bg-red-500/[0.03] rounded-[30px] md:rounded-[40px] border border-red-500/10 text-left relative overflow-hidden ${!isPaid ? 'select-none' : ''}`}>
+                        <h4 className="text-lg md:text-xl font-black text-red-400 mb-6 uppercase tracking-widest flex items-center gap-3 italic underline underline-offset-8"><AlertCircle className="w-4 h-4 md:w-5 md:h-5" /> Critical Weaknesses</h4>
+                        <div className={`grid grid-cols-1 gap-4 transition-all ${!isPaid ? 'blur-md opacity-40' : ''}`}>
+                           <div className="p-4 bg-red-500/5 rounded-2xl border border-red-500/5 text-xs md:text-sm font-bold text-white/60 flex items-center gap-3">⚠ Missing action verbs in experience</div>
+                           <div className="p-4 bg-red-500/5 rounded-2xl border border-red-500/5 text-xs md:text-sm font-bold text-white/60 flex items-center gap-3">⚠ Date formatting inconsistent</div>
+                           <div className="p-4 bg-red-500/5 rounded-2xl border border-red-500/5 text-xs md:text-sm font-bold text-white/60 flex items-center gap-3">⚠ Summary lacks quantification</div>
+                        </div>
+                        {!isPaid && (
+                           <div className="absolute inset-0 flex items-center justify-center bg-black/10 backdrop-blur-[2px]">
+                              <div className="flex items-center gap-2 px-4 py-2 bg-black/80 rounded-full border border-red-500/30 shadow-2xl">
+                                 <Lock className="w-3 h-3 text-red-500" />
+                                 <span className="text-[9px] font-black uppercase text-red-400 tracking-widest">Locked</span>
+                              </div>
+                           </div>
+                        )}
                       </div>
 
                       {(isPaid && (selectedPlan?.tier === 'ELITE' || selectedPlan?.tier === 'EXPERT')) ? (
@@ -506,8 +534,11 @@ export default function Home() {
                            </div>
                          </div>
                       ) : isPaid ? null : (
-                         <div className="p-6 md:p-10 bg-white/[0.02] rounded-[30px] md:rounded-[40px] border border-white/5 blur-sm opacity-20 select-none text-center lg:text-left">
+                         <div className="p-6 md:p-10 bg-white/[0.02] rounded-[30px] md:rounded-[40px] border border-white/5 blur-sm opacity-20 select-none text-center lg:text-left relative">
                             <h4 className="text-lg md:text-xl font-black mb-4 italic uppercase tracking-tighter">Elite Gap Analysis...</h4>
+                            <div className="absolute inset-0 flex items-center justify-center">
+                               <Lock className="w-8 h-8 text-white/20" />
+                            </div>
                          </div>
                       )}
                    </div>

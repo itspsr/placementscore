@@ -10,6 +10,19 @@ export const metadata: Metadata = {
   description: "Daily updated insights on ATS algorithms, resume optimization, and Indian campus placement strategies for 2026-2027.",
 };
 
+function formatRelativeTime(dateString: string) {
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffTime = Math.abs(now.getTime() - date.getTime());
+  const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+  if (diffDays === 0) return "Today";
+  if (diffDays === 1) return "Yesterday";
+  if (diffDays < 7) return `${diffDays} days ago`;
+  
+  return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+
 export default async function BlogPage() {
   const blogs = await getBlogs();
   
@@ -30,13 +43,13 @@ export default async function BlogPage() {
         </div>
         
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-10">
-          {blogs.map((blog: any) => (
+          {sortedBlogs.map((blog: any) => (
             <Link key={blog.slug} href={`/blog/${blog.slug}`}>
               <article className="h-full p-8 bg-[#0A0A0A] rounded-[40px] border border-white/5 hover:border-blue-500/50 transition-all space-y-6 group flex flex-col">
                 <div className="space-y-2">
                   <div className="flex items-center gap-3 text-[10px] font-black uppercase tracking-[0.2em] text-blue-500">
                     <Calendar className="w-3 h-3" />
-                    {new Date(blog.createdAt).toLocaleDateString()}
+                    {formatRelativeTime(blog.createdAt)}
                   </div>
                   <h2 className="text-2xl font-black text-white italic leading-tight group-hover:text-blue-400 transition-colors">
                     {blog.title}

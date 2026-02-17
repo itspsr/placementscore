@@ -1,23 +1,23 @@
+
 import { withAuth } from "next-auth/middleware";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 export default async function middleware(req: NextRequest) {
   const authHeader = req.headers.get("authorization");
-  
-  // 1. Bypass check for cron/automated requests
-  if (authHeader === `Bearer ${process.env.CRON_SECRET}`) {
+  const cronSecret = process.env.CRON_SECRET;
+
+  if (cronSecret && authHeader === `Bearer ${cronSecret}`) {
     return NextResponse.next();
   }
 
-  // 2. Otherwise, use next-auth's withAuth
+  // @ts-ignore
   return (withAuth as any)(req, {
     callbacks: {
       authorized: ({ token }: { token: any }) => {
         return (
           token?.email === "admin@placementscore.online" ||
-          token?.email === "itspsr@gmail.com" ||
-          token?.name === "urboss"
+          token?.email === "itspsr@gmail.com"
         );
       },
     },

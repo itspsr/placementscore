@@ -21,8 +21,20 @@ export default function ExpertResumeBuilder() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [result, setResult] = useState<any>(null);
   const [isCopied, setIsCopied] = useState(false);
+  const [isExpert, setIsExpert] = useState(false);
 
-  const isExpert = session?.user?.email === "admin@placementscore.online";
+  React.useEffect(() => {
+    if (session?.user?.email) {
+      if (session.user.email === "admin@placementscore.online") {
+        setIsExpert(true);
+      } else {
+        fetch(`/api/check-subscription?email=${session.user.email}`)
+          .then(res => res.json())
+          .then(data => setIsExpert(data.isExpert))
+          .catch(() => setIsExpert(false));
+      }
+    }
+  }, [session]);
 
   const handleGenerate = async () => {
     if (!session) return alert("Please sign in.");

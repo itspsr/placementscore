@@ -242,9 +242,16 @@ export default function Home() {
             <section className="pt-32 md:pt-48 pb-20 md:pb-32 px-4 md:px-6 text-center lg:text-left">
               <div className="max-w-7xl mx-auto flex flex-col lg:flex-row items-center gap-12 md:gap-20">
                 <div className="flex-1 space-y-6 md:space-y-10">
-                  <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 font-bold text-[9px] md:text-[10px] uppercase tracking-widest">
-                    <Sparkles className="w-3 h-3" /> 🔥 {analyzeCount.toLocaleString()}+ Resumes Analysed
-                  </motion.div>
+          <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 font-bold text-[9px] md:text-[10px] uppercase tracking-widest">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+            </span>
+            Neural Network Active
+          </div>
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 font-bold text-[9px] md:text-[10px] uppercase tracking-widest">
+            <Sparkles className="w-3 h-3" /> 🔥 {analyzeCount.toLocaleString()}+ Resumes Analysed
+          </div>
                   <h1 className="text-4xl sm:text-6xl md:text-[80px] font-[1000] leading-[1] md:leading-[0.9] tracking-tighter">
                     Get Your Real <br /> <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-indigo-500 italic">Placement Score.</span>
                   </h1>

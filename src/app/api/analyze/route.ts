@@ -1,5 +1,8 @@
 import { NextResponse } from 'next/server';
 import pdf from 'pdf-parse';
+import { GoogleGenerativeAI } from "@google/generative-ai";
+
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
 
 export async function POST(req: Request) {
   try {
@@ -20,102 +23,97 @@ export async function POST(req: Request) {
       text = data.text || "";
     } catch (parseError) {
       console.error("PDF Parse Error:", parseError);
-      // Fallback for unparsable PDFs (e.g. images) to allow the flow to continue
-      text = "Resume content could not be fully extracted. Visual analysis suggests standard formatting.";
+      return NextResponse.json({ 
+        success: false, 
+        error: "Unreadable PDF. Please ensure the file is not password protected or an image scan."
+      }, { status: 422 });
     }
 
+    // Basic length check
+    if (text.trim().length < 50) {
+      return NextResponse.json({ 
+        success: false, 
+        error: "Resume too short or unreadable. Please upload a standard text-based PDF."
+      }, { status: 422 });
+    }
+
+    // 2. AI Analysis via Gemini
+    if (!process.env.GEMINI_API_KEY) {
+       // Fallback to heuristic if key is missing (dev mode safety)
+       console.warn("GEMINI_API_KEY missing, using fallback heuristic.");
+       return heuristicAnalysis(text);
+    }
+
+    try {
+      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+      const prompt = `
+        Analyze this resume text for an ATS (Applicant Tracking System) score (0-100).
+        Target Role: General Software/Tech Industry.
+        
+        Resume Text:
+        "${text.slice(0, 8000).replace(/"/g, "'")}"
+        
+        Return a JSON object ONLY:
+        {
+          "score": number, // 0-100
+          "strengths": ["string", "string", "string"], // Max 3 key strengths
+          "keyword_gaps": ["string", "string", "string"], // Max 5 missing critical keywords for a general tech role
+          "weaknesses": ["string", "string", "string"] // Max 3 critical issues
+        }
+      `;
+
+      const result = await model.generateContent(prompt);
+      const response = await result.response;
+      const jsonText = response.text().replace(/```json/g, "").replace(/```/g, "").trim();
+      const aiData = JSON.parse(jsonText);
+
+      return NextResponse.json({ 
+        success: true, 
+        analysis: {
+          score: aiData.score,
+          strengths: aiData.strengths,
+          weaknesses: aiData.weaknesses || [],
+          keyword_gaps: aiData.keyword_gaps,
+          formatting_issues: ["AI analysis complete"],
+          rewrite_suggestions: ["See full report for details"]
+        }
+      });
+
+    } catch (aiError) {
+      console.error("AI Analysis Failed, reverting to heuristic:", aiError);
+      return heuristicAnalysis(text);
+    }
+
+  } catch (error) {
+    console.error("Critical Error:", error);
+    return NextResponse.json({ 
+      success: false, 
+      error: "Server processing error. Please try a different PDF."
+    }, { status: 500 });
+  }
+}
+
+// Fallback Heuristic Logic (Legacy)
+function heuristicAnalysis(text: string) {
     const lowerText = text.toLowerCase();
-
-    if (!text.trim()) {
-      return NextResponse.json({ 
-        success: false, 
-        error: "Empty Document. The PDF appears to be a scanned image. Please upload a text-based PDF for analysis."
-      }, { status: 422 });
-    }
-
-    // 2. Resume Validation Check (Intelligent Broadening)
-    // Core Required Markers (Expanded for common variations)
-    const hasSkills = lowerText.includes("skills") || lowerText.includes("tech stack") || lowerText.includes("expertise") || lowerText.includes("competencies") || lowerText.includes("knowledge");
-    const hasExperience = lowerText.includes("experience") || lowerText.includes("work history") || lowerText.includes("employment") || lowerText.includes("internship") || lowerText.includes("background");
-    const hasEducation = lowerText.includes("education") || lowerText.includes("academic") || lowerText.includes("university") || lowerText.includes("college") || lowerText.includes("qualification");
+    const keywords = ["react", "javascript", "python", "java", "sql", "aws", "node", "typescript", "git", "docker", "communication", "leadership"];
+    const verbs = ["developed", "managed", "led", "created", "optimized", "designed"];
     
-    // Job Title Detection (Broadened)
-    const commonTitles = ["engineer", "developer", "manager", "analyst", "intern", "associate", "specialist", "lead", "architect", "consultant", "trainee", "student"];
-    const hasPotentialJobTitle = commonTitles.some(title => lowerText.includes(title));
-
-    // Secondary indicators
-    const secondaryIndicators = ["projects", "summary", "objective", "certifications", "achievements", "contact", "linkedin", "github", "address", "phone"];
-    const foundSecondary = secondaryIndicators.filter(ind => lowerText.includes(ind));
-
-    // Valid Resume logic: Text density check + markers
-    const isHighDensity = text.trim().length > 50; // Relaxed from 600
+    const kwCount = keywords.filter(k => lowerText.includes(k)).length;
+    const verbCount = verbs.filter(v => lowerText.includes(v)).length;
     
-    // Condition: Relaxed validation to allow testing with simpler documents
-    const isValidProfessionalResume = text.trim().length > 20; 
-    
-    if (!isValidProfessionalResume) {
-      return NextResponse.json({ 
-        success: false, 
-        error: "Document too short. Please upload a valid resume PDF."
-      }, { status: 422 });
-    }
-
-    // 3. Local "AI" Logic (Heuristic Analysis)
-    // Stricter keyword list for more accurate scoring
-    const keywords = ["react", "next.js", "python", "java", "javascript", "sql", "aws", "docker", "c++", "internship", "node.js", "git", "cloud", "agile", "development", "data", "analysis", "leadership", "communication"];
-    const powerVerbs = ["managed", "developed", "led", "optimized", "increased", "implemented", "designed", "created", "spearheaded", "engineered", "collaborated"];
-    
-    let keywordMatches = keywords.filter(k => lowerText.includes(k));
-    let verbMatches = powerVerbs.filter(v => lowerText.includes(v));
-    let hasMetrics = (text.match(/\d+%/g) || text.match(/\$\d+/g) || text.match(/\d+\s?x/gi)) ? 1 : 0;
-    
-    // 4. Dynamic Scoring Calculation (40 - 78 range for raw)
-    let kwScore = (keywordMatches.length / keywords.length) * 100;
-    let verbScore = (verbMatches.length / powerVerbs.length) * 100;
-    let metricScore = hasMetrics ? 100 : 30;
-    let structScore = text.length > 800 ? 100 : 60;
-    let sectionScore = ((foundSecondary.length + (hasSkills ? 1 : 0) + (hasExperience ? 1 : 0) + (hasEducation ? 1 : 0)) / 10) * 100;
-
-    let rawScore = Math.floor(
-      (kwScore * 0.30) + 
-      (verbScore * 0.20) + 
-      (metricScore * 0.20) + 
-      (structScore * 0.15) +
-      (sectionScore * 0.15)
-    );
-
-    // Dynamic Range Mapping: 40 (Low) to 78 (High)
-    let finalScore = Math.max(40, Math.min(78, rawScore));
-
-    const strengths = [];
-    if (verbMatches.length > 4) strengths.push("Exceptional use of professional action verbs.");
-    else if (verbMatches.length > 1) strengths.push("Solid use of results-oriented language.");
-    
-    if (text.length > 800) strengths.push("Strong detail-to-length ratio detected.");
-    if (keywordMatches.length > 4) strengths.push("High density of critical industry keywords.");
-    
-    const weaknesses = [];
-    if (!hasMetrics) weaknesses.push("Missing impact metrics (ROI, percentages, growth).");
-    if (keywordMatches.length < 5) weaknesses.push("Core technical keywords are underrepresented.");
-    if (foundSecondary.length < 3) weaknesses.push("Section hierarchy needs standardization.");
+    let score = 40 + (kwCount * 4) + (verbCount * 3);
+    score = Math.min(85, Math.max(40, score)); // Cap between 40-85 for heuristic
 
     return NextResponse.json({ 
       success: true, 
       analysis: {
-        score: finalScore,
-        strengths,
-        weaknesses,
-        keyword_gaps: keywords.filter(k => !keywordMatches.includes(k)).slice(0, 5),
-        formatting_issues: ["Standardize date formats", "Avoid complex multi-column layouts"],
-        rewrite_suggestions: ["Quantify achievements using the XYZ formula."]
+        score,
+        strengths: [`Found ${kwCount} key industry terms.`, `Used ${verbCount} strong action verbs.`],
+        weaknesses: ["Keyword density could be higher.", "Consider adding more quantifiable metrics."],
+        keyword_gaps: keywords.filter(k => !lowerText.includes(k)).slice(0, 5),
+        formatting_issues: [],
+        rewrite_suggestions: []
       }
     });
-
-  } catch (error) {
-    console.error("Analysis Error:", error);
-    return NextResponse.json({ 
-      success: false, 
-      error: "Critical Parsing Error: The PDF structure is too complex or encrypted. Please use a standard text-based PDF."
-    }, { status: 500 });
-  }
 }

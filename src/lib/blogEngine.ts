@@ -11,12 +11,12 @@ export interface GeneratedBlog {
   slug: string;
   meta_description: string;
   content: string;
-  keywords: string;
+  keywords: string | string[];
   cluster: string;
   created_at: string;
   source: string;
   published: boolean;
-  faq_schema?: string;
+  faq_schema?: any;
 }
 
 async function generateWithGemini(prompt: string) {
@@ -108,10 +108,10 @@ Detailed insights will be updated shortly.
 
 Stay tuned for structured resume tips, ATS keywords, formatting strategies, and interview optimization.
       `.trim(),
-      keywords: topic,
+      keywords: [topic],
       cluster,
       created_at: new Date().toISOString(),
-      source: "Gemini Fallback",
+      source: "ai",
       published: true
     };
   }
@@ -120,11 +120,31 @@ Stay tuned for structured resume tips, ATS keywords, formatting strategies, and 
     const rawJson = result.replace(/```json/g, "").replace(/```/g, "").trim();
     const blogData = JSON.parse(rawJson);
 
+    // Ensure keywords is an array
+    let keywordsArray = [];
+    if (typeof blogData.keywords === 'string') {
+      keywordsArray = blogData.keywords.split(',').map((s: string) => s.trim()).filter(Boolean);
+    } else if (Array.isArray(blogData.keywords)) {
+      keywordsArray = blogData.keywords;
+    }
+
+    // Ensure faq_schema is a valid JSON object if it's a string
+    let faqSchemaObj = blogData.faq_schema;
+    if (typeof faqSchemaObj === 'string') {
+      try {
+        faqSchemaObj = JSON.parse(faqSchemaObj);
+      } catch (e) {
+        // Keep as string if parsing fails, Supabase jsonb might handle it or error
+      }
+    }
+
     return {
       ...blogData,
+      keywords: keywordsArray,
+      faq_schema: faqSchemaObj,
       cluster,
       created_at: new Date().toISOString(),
-      source: "Gemini 1.5 Flash",
+      source: "ai",
       published: true
     };
   } catch (e) {
@@ -136,10 +156,10 @@ Stay tuned for structured resume tips, ATS keywords, formatting strategies, and 
       slug: slug,
       meta_description: `Learn more about ${topic} and how it impacts your placement score.`,
       content: result || `Fallback content for ${topic}`,
-      keywords: topic,
+      keywords: [topic],
       cluster,
       created_at: new Date().toISOString(),
-      source: "Gemini Parsing Fallback",
+      source: "ai",
       published: true
     };
   }

@@ -7,11 +7,14 @@ export const dynamic = 'force-dynamic';
 
 export async function POST(req: Request) {
   // 1. Verify Request (Admin Session or Cron Secret)
-  const session = await getServerSession(authOptions);
   const authHeader = req.headers.get('authorization');
-  
-  const isAdmin = session?.user?.name === 'urboss' || session?.user?.email === 'itspsr@gmail.com' || session?.user?.email === 'admin@placementscore.online';
   const isCron = authHeader === `Bearer ${process.env.CRON_SECRET}`;
+
+  let isAdmin = false;
+  if (!isCron) {
+    const session = await getServerSession(authOptions);
+    isAdmin = session?.user?.name === 'urboss' || session?.user?.email === 'itspsr@gmail.com' || session?.user?.email === 'admin@placementscore.online';
+  }
 
   if (!isAdmin && !isCron) {
     return NextResponse.json({ error: "Unauthorized access" }, { status: 401 });

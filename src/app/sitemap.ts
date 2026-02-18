@@ -1,11 +1,10 @@
 import { MetadataRoute } from 'next';
 import { getBlogs } from '@/lib/blog';
-import { getProgrammaticPages } from '@/lib/programmatic';
+// NOTE: Keep sitemap focused on real, stable routes. Programmatic pages can introduce low-quality/duplicate URLs.
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = 'https://placementscore.online';
   const blogs = await getBlogs();
-  const pages = getProgrammaticPages();
   
   const companies = [
     'tcs',
@@ -62,12 +61,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.9,
   }));
 
-  const dynamicRoutes = pages.map((page: any) => ({
-    url: `${baseUrl}/${page.slug}`,
-    lastModified: new Date(page.createdAt),
-    changeFrequency: 'monthly' as const,
-    priority: 0.7,
-  }));
-
-  return [...staticRoutes, ...blogRoutes, ...dynamicRoutes];
+  return [...staticRoutes, ...blogRoutes];
 }

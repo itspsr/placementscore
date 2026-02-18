@@ -17,14 +17,25 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   const blog = await getBlogBySlug(params.slug);
   if (!blog) return { title: "Blog Not Found" };
 
+  const canonical = `https://placementscore.online/blog/${params.slug}`;
+
   return {
     title: `${blog.title} | PlacementScore.online`,
     description: blog.metaDescription || blog.meta_description,
+    alternates: {
+      canonical,
+    },
     openGraph: {
       title: blog.title,
       description: blog.metaDescription || blog.meta_description,
       type: 'article',
+      url: canonical,
       publishedTime: blog.createdAt || blog.created_at,
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: blog.title,
+      description: blog.metaDescription || blog.meta_description,
     }
   };
 }
@@ -44,14 +55,89 @@ export default async function BlogPost({ params }: { params: { slug: string } })
   const blog = await getBlogBySlug(params.slug);
   if (!blog) notFound();
 
+  const allBlogs = await getBlogs();
+  const blogKeywords: string[] = (blog.keywords || []).map((k: string) => String(k).toLowerCase());
+
+  const related = allBlogs
+    .filter((b: any) => b.slug !== blog.slug)
+    .map((b: any) => {
+      const kws: string[] = (b.keywords || []).map((k: string) => String(k).toLowerCase());
+      const overlap = kws.filter((k) => blogKeywords.includes(k)).length;
+      return { blog: b, overlap };
+    })
+    .sort((a: any, b: any) => b.overlap - a.overlap)
+    .slice(0, 3)
+    .map((x: any) => x.blog);
+
+  const publishedIso = blog.createdAt || blog.created_at;
+  const canonical = `https://placementscore.online/blog/${blog.slug}`;
+
+  const blogPostingSchema = {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    headline: blog.title,
+    description: blog.metaDescription || blog.meta_description,
+    datePublished: publishedIso,
+    dateModified: publishedIso,
+    mainEntityOfPage: {
+      "@type": "WebPage",
+      "@id": canonical,
+    },
+    author: {
+      "@type": "Organization",
+      name: "PlacementScore.online",
+    },
+    publisher: {
+      "@type": "Organization",
+      name: "PlacementScore.online",
+      logo: {
+        "@type": "ImageObject",
+        url: "https://placementscore.online/logo.png",
+      },
+    },
+  };
+
+  const breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: "Home",
+        item: "https://placementscore.online/",
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: "Blog",
+        item: "https://placementscore.online/blog",
+      },
+      {
+        "@type": "ListItem",
+        position: 3,
+        name: blog.title,
+        item: canonical,
+      },
+    ],
+  };
+
   const faqSchema = blog.faqSchema || blog.faq_schema;
 
   return (
     <article className="min-h-screen bg-[#050505] text-white p-4 md:p-6 pt-24 md:pt-32 overflow-x-hidden">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(blogPostingSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+      />
       {faqSchema && (
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: faqSchema }}
+          dangerouslySetInnerHTML={{ __html: typeof faqSchema === 'string' ? faqSchema : JSON.stringify(faqSchema) }}
         />
       )}
       
@@ -87,8 +173,24 @@ export default async function BlogPost({ params }: { params: { slug: string } })
           </ReactMarkdown>
         </div>
 
+        {related.length > 0 && (
+          <section className="pt-10 md:pt-16 border-t border-white/5">
+            <h2 className="text-2xl md:text-4xl font-[1000] italic uppercase tracking-tighter">Related Posts</h2>
+            <div className="mt-6 grid md:grid-cols-3 gap-6">
+              {related.map((r: any) => (
+                <Link key={r.slug} href={`/blog/${r.slug}`} className="p-6 bg-white/[0.02] border border-white/5 rounded-3xl hover:border-blue-500/30 transition-all">
+                  <div className="text-[10px] font-black uppercase tracking-widest text-blue-500">{r.cluster}</div>
+                  <div className="mt-2 font-black italic uppercase tracking-tighter text-white/80 leading-snug">
+                    {r.title}
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </section>
+        )}
+
         {/* CTA SECTION */}
-        <section className="mt-40 p-12 md:p-20 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-[60px] shadow-2xl shadow-blue-500/20 relative overflow-hidden group">
+        <section className="mt-16 md:mt-40 p-12 md:p-20 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-[60px] shadow-2xl shadow-blue-500/20 relative overflow-hidden group">
            <div className="absolute top-0 right-0 p-10 opacity-10 pointer-events-none group-hover:scale-110 transition-transform">
              <Sparkles className="w-64 h-64 text-white" />
            </div>

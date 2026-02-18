@@ -81,7 +81,6 @@ export default function RootLayout({
   return (
     <html lang="en" className="scroll-smooth">
       <head>
-        <link rel="canonical" href="https://placementscore.online" />
         {/* Google Analytics 4 */}
         <Script
           src={`https://www.googletagmanager.com/gtag/js?id=G-YOUR_GA4_ID`}
@@ -118,6 +117,24 @@ export default function RootLayout({
                 "contactType": "customer service",
                 "areaServed": "IN",
                 "availableLanguage": "en"
+              }
+            })
+          }}
+        />
+        <Script
+          id="website-schema"
+          type="application/ld+json"
+          strategy="beforeInteractive"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "WebSite",
+              "name": "PlacementScore.online",
+              "url": "https://placementscore.online",
+              "potentialAction": {
+                "@type": "SearchAction",
+                "target": "https://placementscore.online/blog?query={search_term_string}",
+                "query-input": "required name=search_term_string"
               }
             })
           }}

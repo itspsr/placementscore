@@ -1,15 +1,18 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  async redirects() {
+    return [
+      // Legacy company-score URLs → new SEO URLs
+      {
+        source: '/company-score/:company',
+        destination: '/ats-score-for-:company',
+        permanent: true,
+      },
+    ];
+  },
   async rewrites() {
     return [
-      {
-        source: '/ats-score-for-tcs',
-        destination: '/company-score/tcs',
-      },
-      {
-        source: '/ats-score-for-infosys',
-        destination: '/company-score/infosys',
-      },
+      // Keep any legacy content slugs working (optional)
       {
         source: '/google-internship-resume-guide',
         destination: '/blog/google-internship-resume-guide',

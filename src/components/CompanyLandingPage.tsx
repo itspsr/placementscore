@@ -66,8 +66,55 @@ export default function CompanyLandingPage({ company, type }: CompanyLandingPage
     ? `Check your resume's compatibility with ${displayCompany}'s recruitment software.`
     : `Create a perfect resume optimized for ${displayCompany} roles.`;
 
+  const canonical = type === 'ats-score'
+    ? `https://placementscore.online/ats-score-for-${company}`
+    : `https://placementscore.online/resume-for-${company}`;
+
+  const breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Home", item: "https://placementscore.online/" },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: type === 'ats-score' ? 'ATS Score by Company' : 'Resume Formats by Company',
+        item: "https://placementscore.online/",
+      },
+      { "@type": "ListItem", position: 3, name: displayCompany, item: canonical },
+    ],
+  };
+
+  const faqSchema = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: [
+      {
+        "@type": "Question",
+        name: type === 'ats-score' ? `How do I improve my ${displayCompany} ATS score?` : `How do I make my resume match ${displayCompany} requirements?`,
+        acceptedAnswer: {
+          "@type": "Answer",
+          text:
+            type === 'ats-score'
+              ? `Use a clean single-column format, add job-relevant keywords, quantify projects, and mirror the ${displayCompany} JD vocabulary (truthfully).`
+              : `Use ATS-safe formatting, highlight relevant skills and projects, and tailor your summary + skills section to ${displayCompany} roles and campus hiring patterns.`,
+        },
+      },
+      {
+        "@type": "Question",
+        name: `Is a PDF resume okay for ${displayCompany}?`,
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: `Yes—PDF is usually best for consistency. Avoid columns/tables and ensure text is selectable (not scanned images).`,
+        },
+      },
+    ],
+  };
+
   return (
     <main className="min-h-screen bg-[#050505] text-white p-6 pt-32 relative overflow-hidden">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
       <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-blue-600/[0.05] blur-[120px] rounded-full" />
       
       <div className="max-w-5xl mx-auto relative z-10 space-y-12">

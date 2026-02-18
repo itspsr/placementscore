@@ -1,63 +1,62 @@
+import type { Metadata } from 'next';
+import ChecklistToolClient from '@/components/tools/ChecklistToolClient';
 
-"use client";
+export const metadata: Metadata = {
+  title: 'ATS Resume Checklist (Before You Apply)',
+  description: 'Free ATS resume checklist for 2026. Verify formatting, sections, keywords, and content before submitting your resume.',
+  alternates: { canonical: 'https://placementscore.online/resume-checklist-tool' },
+  openGraph: {
+    title: 'ATS Resume Checklist',
+    description: 'Don’t hit apply until you check these ATS essentials.',
+    url: 'https://placementscore.online/resume-checklist-tool',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'ATS Resume Checklist',
+    description: 'Don’t hit apply until you check these ATS essentials.',
+  },
+};
 
-import React, { useState } from 'react';
-import { ArrowLeft, CheckSquare, Square } from 'lucide-react';
-import Link from 'next/link';
-
-const ITEMS = [
-  { cat: "Formatting", items: ["Use a standard font (Arial, Calibri)", "No columns or tables", "Consistent date format (MM/YYYY)", "PDF format (unless asked for Word)"] },
-  { cat: "Content", items: ["Contact info (Email, Phone, LinkedIn)", "Professional Summary (3 lines max)", "Quantified achievements (Numbers!)", "Relevant Skills section"] },
-  { cat: "ATS Optimization", items: ["Standard section headers", "Keywords from Job Description included", "No graphics/icons", "File name: Name_Role_Resume.pdf"] }
-];
-
-export default function ChecklistTool() {
-  const [checked, setChecked] = useState<Record<string, boolean>>({});
-
-  const toggle = (item: string) => {
-    setChecked(prev => ({ ...prev, [item]: !prev[item] }));
+export default function Page() {
+  const breadcrumbSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://placementscore.online/' },
+      { '@type': 'ListItem', position: 2, name: 'Tools', item: 'https://placementscore.online/' },
+      { '@type': 'ListItem', position: 3, name: 'Resume Checklist', item: 'https://placementscore.online/resume-checklist-tool' },
+    ],
   };
 
-  const progress = Math.round((Object.values(checked).filter(Boolean).length / ITEMS.flatMap(c => c.items).length) * 100);
+  const faqSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: [
+      {
+        '@type': 'Question',
+        name: 'What is the most important ATS resume rule?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'Use a clean single-column layout with standard section headings and include relevant keywords from the job description.',
+        },
+      },
+      {
+        '@type': 'Question',
+        name: 'Do columns hurt ATS?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'Many ATS parsers struggle with multi-column layouts and tables. A single-column format is the safest for parsing.',
+        },
+      },
+    ],
+  };
 
   return (
-    <main className="min-h-screen bg-[#050505] text-white p-6 pt-32 relative overflow-hidden">
-      <div className="max-w-3xl mx-auto relative z-10 space-y-12">
-        <Link href="/" className="inline-flex items-center gap-2 text-white/20 hover:text-white transition-colors">
-          <ArrowLeft className="w-4 h-4" /> Home
-        </Link>
-        
-        <div className="flex flex-col md:flex-row justify-between items-end gap-8">
-           <div className="space-y-4">
-              <h1 className="text-4xl md:text-6xl font-[1000] italic uppercase tracking-tighter">Resume <span className="text-blue-500">Checklist</span></h1>
-              <p className="text-xl text-white/40 font-medium italic">Don't hit send until you check these.</p>
-           </div>
-           <div className="text-right">
-              <div className="text-6xl font-[1000] italic tracking-tighter leading-none">{progress}%</div>
-              <p className="font-black uppercase tracking-widest text-xs text-white/20">Ready</p>
-           </div>
-        </div>
-
-        <div className="space-y-8">
-           {ITEMS.map((cat) => (
-              <div key={cat.cat} className="space-y-4">
-                 <h3 className="text-xl font-black uppercase italic tracking-tighter text-blue-500 border-b border-white/10 pb-4">{cat.cat}</h3>
-                 <div className="space-y-3">
-                    {cat.items.map((item) => (
-                       <div 
-                         key={item} 
-                         onClick={() => toggle(item)}
-                         className={`p-5 rounded-2xl border transition-all cursor-pointer flex items-center gap-4 ${checked[item] ? 'bg-green-500/10 border-green-500/20 text-white' : 'bg-[#0A0A0A] border-white/5 text-white/50 hover:bg-white/5'}`}
-                       >
-                          {checked[item] ? <CheckSquare className="w-6 h-6 text-green-500" /> : <Square className="w-6 h-6" />}
-                          <span className="font-bold text-lg leading-tight">{item}</span>
-                       </div>
-                    ))}
-                 </div>
-              </div>
-           ))}
-        </div>
-      </div>
-    </main>
+    <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
+      <ChecklistToolClient />
+    </>
   );
 }

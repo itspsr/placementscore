@@ -1,8 +1,12 @@
 import { Metadata } from "next";
 import Link from 'next/link';
 import { getBlogs } from "@/lib/blog";
-import { BookOpen, Calendar, ChevronRight } from 'lucide-react';
+import { Calendar, ChevronRight } from 'lucide-react';
 import { BackButton } from "@/components/BackButton";
+
+// Blog listing must stay fresh as new rows are inserted from cron.
+// Without this, Next.js may pre-render and serve a stale list until the next deploy.
+export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
 // ... existing

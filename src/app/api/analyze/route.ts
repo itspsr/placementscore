@@ -2,6 +2,12 @@ import { NextResponse } from 'next/server';
 import pdf from 'pdf-parse';
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
+const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+const OPENAI_MODEL = process.env.OPENAI_MODEL || 'gpt-4o-mini';
+
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
 
 export async function POST(req: Request) {
@@ -37,48 +43,25 @@ export async function POST(req: Request) {
       }, { status: 422 });
     }
 
-    // 2. AI Analysis via Gemini
-    if (!process.env.GEMINI_API_KEY) {
-       // Fallback to heuristic if key is missing (dev mode safety)
-       console.warn("GEMINI_API_KEY missing, using fallback heuristic.");
-       return heuristicAnalysis(text);
-    }
-
+    // 2. AI Analysis (Prefer OpenAI if configured to avoid Gemini rate limits)
     try {
-      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-      const prompt = `
-        Analyze this resume text for an ATS (Applicant Tracking System) score (0-100).
-        Target Role: General Software/Tech Industry.
-        
-        Resume Text:
-        "${text.slice(0, 8000).replace(/"/g, "'")}"
-        
-        Return a JSON object ONLY:
-        {
-          "score": number, // 0-100
-          "strengths": ["string", "string", "string"], // Max 3 key strengths
-          "keyword_gaps": ["string", "string", "string"], // Max 5 missing critical keywords for a general tech role
-          "weaknesses": ["string", "string", "string"] // Max 3 critical issues
-        }
-      `;
+      const ai = OPENAI_API_KEY
+        ? await analyzeWithOpenAI(text)
+        : await analyzeWithGemini(text);
 
-      const result = await model.generateContent(prompt);
-      const response = await result.response;
-      const jsonText = response.text().replace(/```json/g, "").replace(/```/g, "").trim();
-      const aiData = JSON.parse(jsonText);
+      if (!ai) return heuristicAnalysis(text);
 
-      return NextResponse.json({ 
-        success: true, 
+      return NextResponse.json({
+        success: true,
         analysis: {
-          score: aiData.score,
-          strengths: aiData.strengths,
-          weaknesses: aiData.weaknesses || [],
-          keyword_gaps: aiData.keyword_gaps,
+          score: ai.score,
+          strengths: ai.strengths,
+          weaknesses: ai.weaknesses || [],
+          keyword_gaps: ai.keyword_gaps,
           formatting_issues: ["AI analysis complete"],
-          rewrite_suggestions: ["See full report for details"]
-        }
+          rewrite_suggestions: ["See full report for details"],
+        },
       });
-
     } catch (aiError) {
       console.error("AI Analysis Failed, reverting to heuristic:", aiError);
       return heuristicAnalysis(text);
@@ -90,6 +73,97 @@ export async function POST(req: Request) {
       success: false, 
       error: "Server processing error. Please try a different PDF."
     }, { status: 500 });
+  }
+}
+
+type AIAnalysis = {
+  score: number;
+  strengths: string[];
+  weaknesses: string[];
+  keyword_gaps: string[];
+};
+
+async function analyzeWithOpenAI(text: string): Promise<AIAnalysis | null> {
+  if (!OPENAI_API_KEY) return null;
+
+  const resumeText = text.slice(0, 12000).replace(/"/g, "'");
+
+  const prompt = `Analyze this resume text for an ATS (Applicant Tracking System) score (0-100).\nTarget Role: General Software/Tech Industry.\n\nResume Text:\n"${resumeText}"\n\nReturn a JSON object ONLY:\n{\n  "score": number,\n  "strengths": ["string"],\n  "keyword_gaps": ["string"],\n  "weaknesses": ["string"]\n}`;
+
+  try {
+    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${OPENAI_API_KEY}`,
+      },
+      body: JSON.stringify({
+        model: OPENAI_MODEL,
+        temperature: 0.4,
+        max_tokens: 800,
+        response_format: { type: "json_object" },
+        messages: [
+          { role: "system", content: "Return ONLY valid JSON. No markdown. No backticks." },
+          { role: "user", content: prompt },
+        ],
+      }),
+    });
+
+    const raw = await response.text();
+    if (!response.ok) throw new Error(`OpenAI API error: ${response.status} ${raw}`);
+
+    const data = JSON.parse(raw);
+    const content = data?.choices?.[0]?.message?.content;
+    if (!content) return null;
+
+    const parsed = JSON.parse(content);
+    return {
+      score: Number(parsed.score ?? 0),
+      strengths: Array.isArray(parsed.strengths) ? parsed.strengths.slice(0, 3) : [],
+      weaknesses: Array.isArray(parsed.weaknesses) ? parsed.weaknesses.slice(0, 3) : [],
+      keyword_gaps: Array.isArray(parsed.keyword_gaps) ? parsed.keyword_gaps.slice(0, 5) : [],
+    };
+  } catch (e) {
+    console.error("OpenAI analysis failed:", e);
+    return null;
+  }
+}
+
+async function analyzeWithGemini(text: string): Promise<AIAnalysis | null> {
+  if (!process.env.GEMINI_API_KEY) return null;
+
+  try {
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const prompt = `
+      Analyze this resume text for an ATS (Applicant Tracking System) score (0-100).
+      Target Role: General Software/Tech Industry.
+
+      Resume Text:
+      "${text.slice(0, 8000).replace(/"/g, "'")}"
+
+      Return a JSON object ONLY:
+      {
+        "score": number,
+        "strengths": ["string", "string", "string"],
+        "keyword_gaps": ["string"],
+        "weaknesses": ["string"]
+      }
+    `;
+
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    const jsonText = response.text().replace(/```json/g, "").replace(/```/g, "").trim();
+    const parsed = JSON.parse(jsonText);
+
+    return {
+      score: Number(parsed.score ?? 0),
+      strengths: Array.isArray(parsed.strengths) ? parsed.strengths.slice(0, 3) : [],
+      weaknesses: Array.isArray(parsed.weaknesses) ? parsed.weaknesses.slice(0, 3) : [],
+      keyword_gaps: Array.isArray(parsed.keyword_gaps) ? parsed.keyword_gaps.slice(0, 5) : [],
+    };
+  } catch (e) {
+    console.error("Gemini analysis failed:", e);
+    return null;
   }
 }
 

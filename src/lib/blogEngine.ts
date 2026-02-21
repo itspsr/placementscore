@@ -1,6 +1,8 @@
 import { createClient } from "@supabase/supabase-js";
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+const OPENAI_MODEL = process.env.OPENAI_MODEL || "gpt-4o-mini";
 
 const supabase = process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY
   ? createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY)
@@ -17,6 +19,53 @@ export interface GeneratedBlog {
   source: string;
   published: boolean;
   faq_schema?: any;
+}
+
+async function generateWithOpenAI(prompt: string) {
+  if (!OPENAI_API_KEY) {
+    throw new Error("OPENAI_API_KEY is missing");
+  }
+
+  if (prompt.length > 20000) {
+    throw new Error("Prompt too long");
+  }
+
+  try {
+    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${OPENAI_API_KEY}`
+      },
+      body: JSON.stringify({
+        model: OPENAI_MODEL,
+        temperature: 0.7,
+        max_tokens: 1800,
+        response_format: { type: "json_object" },
+        messages: [
+          {
+            role: "system",
+            content: "You are an SEO blog generator. You must respond with ONLY valid JSON (no markdown, no backticks)."
+          },
+          { role: "user", content: prompt }
+        ]
+      })
+    });
+
+    const raw = await response.text();
+    if (!response.ok) {
+      // Common: 429 rate limit
+      throw new Error(`OpenAI API error: ${response.status} ${raw}`);
+    }
+
+    const data = JSON.parse(raw);
+    const text = data?.choices?.[0]?.message?.content || null;
+    if (!text) throw new Error("Empty OpenAI response");
+    return text;
+  } catch (err) {
+    console.error("OpenAI generation failed:", err);
+    return null;
+  }
 }
 
 async function generateWithGemini(prompt: string) {
@@ -37,11 +86,7 @@ async function generateWithGemini(prompt: string) {
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          contents: [
-            {
-              parts: [{ text: prompt }]
-            }
-          ],
+          contents: [{ parts: [{ text: prompt }] }],
           generationConfig: {
             maxOutputTokens: 1500,
             temperature: 0.7
@@ -51,7 +96,6 @@ async function generateWithGemini(prompt: string) {
     );
 
     const raw = await response.text();
-    console.log("GEMINI RAW:", raw);
 
     if (!response.ok) {
       throw new Error(`Gemini API error: ${response.status} ${raw}`);
@@ -92,7 +136,10 @@ export async function generateBlogArticle(topic: string, cluster: string): Promi
     JSON only, no markdown wrappers.
   `;
 
-  const result = await generateWithGemini(prompt);
+  // Prefer OpenAI if configured (to avoid Gemini rate limits), otherwise use Gemini.
+  const result = OPENAI_API_KEY
+    ? await generateWithOpenAI(prompt)
+    : await generateWithGemini(prompt);
   
   if (!result) {
     // Fallback logic

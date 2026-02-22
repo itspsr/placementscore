@@ -15,6 +15,12 @@ export const metadata: Metadata = {
   }
 };
 
+function withCtrTitle(title: string) {
+  const suffix = "2026 (Free AI Tips for India)";
+  const t = title || "";
+  return t.includes("2026") && t.toLowerCase().includes("free") && t.toLowerCase().includes("india") && t.toLowerCase().includes("ai") ? t : `${t} ${suffix}`.trim();
+}
+
 function formatRelativeTime(dateString: string) {
   const date = new Date(dateString);
   const now = new Date();
@@ -56,7 +62,7 @@ export default async function BlogPage() {
                     {formatRelativeTime(blog.createdAt)}
                   </div>
                   <h2 className="text-2xl font-black text-white italic leading-tight group-hover:text-blue-400 transition-colors">
-                    {blog.title}
+                    {withCtrTitle(blog.title)}
                   </h2>
                 </div>
                 <p className="text-white/30 text-sm leading-relaxed line-clamp-3 flex-1">

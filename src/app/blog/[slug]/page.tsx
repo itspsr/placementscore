@@ -12,16 +12,16 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   const blog = await getBlogBySlug(params.slug);
   if (!blog) return { title: "Blog Not Found" };
 
-  const canonical = `https://placementscore.online/blog/${params.slug}`;
+  const canonical = blog.canonical_url || `https://placementscore.online/blog/${params.slug}`;
 
   return {
-    title: `${blog.title} | PlacementScore.online`,
+    title: `${withCtrTitle(blog.title)} | PlacementScore.online`,
     description: blog.metaDescription || blog.meta_description,
     alternates: {
       canonical,
     },
     openGraph: {
-      title: blog.title,
+      title: withCtrTitle(blog.title),
       description: blog.metaDescription || blog.meta_description,
       type: 'article',
       url: canonical,
@@ -29,10 +29,16 @@ export async function generateMetadata({ params }: { params: { slug: string } })
     },
     twitter: {
       card: 'summary_large_image',
-      title: blog.title,
+      title: withCtrTitle(blog.title),
       description: blog.metaDescription || blog.meta_description,
     }
   };
+}
+
+function withCtrTitle(title: string) {
+  const suffix = "2026 (Free AI Tips for India)";
+  const t = title || "";
+  return t.includes("2026") && t.toLowerCase().includes("free") && t.toLowerCase().includes("india") && t.toLowerCase().includes("ai") ? t : `${t} ${suffix}`.trim();
 }
 
 function formatRelativeTime(dateString: string) {
@@ -65,78 +71,16 @@ export default async function BlogPost({ params }: { params: { slug: string } })
     .slice(0, 3)
     .map((x: any) => x.blog);
 
-  const publishedIso = blog.createdAt || blog.created_at;
-  const canonical = `https://placementscore.online/blog/${blog.slug}`;
+  const contentWithLinks = `${blog.content}
 
-  const blogPostingSchema = {
-    "@context": "https://schema.org",
-    "@type": "BlogPosting",
-    headline: blog.title,
-    description: blog.metaDescription || blog.meta_description,
-    datePublished: publishedIso,
-    dateModified: publishedIso,
-    mainEntityOfPage: {
-      "@type": "WebPage",
-      "@id": canonical,
-    },
-    author: {
-      "@type": "Organization",
-      name: "PlacementScore.online",
-    },
-    publisher: {
-      "@type": "Organization",
-      name: "PlacementScore.online",
-      logo: {
-        "@type": "ImageObject",
-        url: "https://placementscore.online/logo.png",
-      },
-    },
-  };
+[Check your ATS resume score](/)
 
-  const breadcrumbSchema = {
-    "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
-    itemListElement: [
-      {
-        "@type": "ListItem",
-        position: 1,
-        name: "Home",
-        item: "https://placementscore.online/",
-      },
-      {
-        "@type": "ListItem",
-        position: 2,
-        name: "Blog",
-        item: "https://placementscore.online/blog",
-      },
-      {
-        "@type": "ListItem",
-        position: 3,
-        name: blog.title,
-        item: canonical,
-      },
-    ],
-  };
+[Improve your ATS score instantly](/)`;
 
-  const faqSchema = blog.faqSchema || blog.faq_schema;
+  // Schema JSON moved to app/blog/[slug]/head.tsx
 
   return (
     <article className="min-h-screen bg-[#050505] text-white p-4 md:p-6 pt-24 md:pt-32 overflow-x-hidden">
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(blogPostingSchema) }}
-      />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
-      />
-      {faqSchema && (
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: typeof faqSchema === 'string' ? faqSchema : JSON.stringify(faqSchema) }}
-        />
-      )}
-      
       <div className="max-w-4xl mx-auto space-y-8 md:space-y-12">
         <BackButton />
 
@@ -151,7 +95,7 @@ export default async function BlogPost({ params }: { params: { slug: string } })
              <span className="text-white/30 italic">{blog.cluster}</span>
            </div>
            <h1 className="text-4xl md:text-5xl lg:text-8xl font-[1000] italic uppercase tracking-tighter leading-[0.9] text-balance break-words">
-             {blog.title}
+             {withCtrTitle(blog.title)}
            </h1>
            <p className="text-lg md:text-2xl text-white/40 font-medium italic border-l-4 border-blue-600 pl-6 md:pl-8 leading-relaxed">
              {blog.metaDescription || blog.meta_description}
@@ -162,10 +106,12 @@ export default async function BlogPost({ params }: { params: { slug: string } })
           <ReactMarkdown
             components={{
               // @ts-ignore
-              a: ({node, ...props}) => <Link href={props.href || '/'} {...props} className="text-blue-500 hover:underline" />
+              a: ({node, ...props}) => <Link href={props.href || '/'} {...props} className="text-blue-500 hover:underline" />,
+              // @ts-ignore
+              img: ({node, ...props}) => <img {...props} loading="lazy" alt={props.alt || ''} />
             }}
           >
-            {blog.content}
+            {contentWithLinks}
           </ReactMarkdown>
         </div>
 

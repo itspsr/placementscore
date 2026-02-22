@@ -211,7 +211,6 @@ export default function HomeClient() {
         headers
       });
       const data = await response.json();
-      console.log('[scan-resume] status', response.status, data);
       await minimumWait;
       if (!response.ok || data?.success === false) throw new Error(data?.error || data?.message || 'Analysis failed.');
       if (data.locked) {
@@ -359,7 +358,7 @@ export default function HomeClient() {
                   </div>
 
                   {/* Headline */}
-                  <h1 className="text-4xl sm:text-6xl md:text-[72px] font-[1000] leading-[1.03] md:leading-[0.95] tracking-tighter text-balance">
+                  <h1 className="text-4xl sm:text-6xl md:text-[72px] font-[1000] leading-[1.03] md:leading-[0.95] tracking-tighter text-balance">Free AI ATS Resume Score Checker
                     Increase Your <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-indigo-500 italic">Placement Score</span> with AI
                   </h1>
 

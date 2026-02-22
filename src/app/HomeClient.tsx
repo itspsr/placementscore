@@ -38,7 +38,7 @@ type ResumeAnalysis = {
 };
 
 export default function HomeClient() {
-  const { user, profile, loading: authLoading, logout } = useAuth();
+  const { user, session, profile, loading: authLoading, logout } = useAuth();
   const [userPlan, setUserPlan] = useState<string>("free");
   const [view, setView] = useState<AppState>('landing');
   const [file, setFile] = useState<File | null>(null);
@@ -301,7 +301,9 @@ export default function HomeClient() {
           <div className="h-4 w-px bg-white/10" />
           {user ? (
             <div className="flex items-center gap-3 bg-white/5 px-4 py-2 rounded-full border border-white/10">
-              <span className="text-xs text-white/80">{user.email}</span>
+              <span className="text-xs text-white/80">
+                {user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split('@')[0]}
+              </span>
               {user.email === "admin@placementscore.online" && (
                 <Link href="/admin" className="text-[10px] text-white/20 hover:text-white">Admin</Link>
               )}

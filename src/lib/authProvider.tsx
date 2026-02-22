@@ -14,6 +14,7 @@ type Profile = {
 
 type AuthContextValue = {
   user: any | null;
+  session: any | null;
   profile: Profile | null;
   loading: boolean;
   logout: () => Promise<void>;
@@ -21,6 +22,7 @@ type AuthContextValue = {
 
 const AuthContext = createContext<AuthContextValue>({
   user: null,
+  session: null,
   profile: null,
   loading: true,
   logout: async () => {}
@@ -28,6 +30,7 @@ const AuthContext = createContext<AuthContextValue>({
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<any | null>(null);
+  const [session, setSession] = useState<any | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -49,12 +52,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     supabase.auth.getSession().then(({ data }) => {
       const session = data.session;
+      setSession(session || null);
       setUser(session?.user || null);
       if (session?.user?.id) fetchProfile(session.user.id);
       setLoading(false);
     });
 
     const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session || null);
       setUser(session?.user || null);
       if (session?.user?.id) fetchProfile(session.user.id);
       else setProfile(null);
@@ -72,7 +77,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setProfile(null);
   };
 
-  const value = useMemo(() => ({ user, profile, loading, logout }), [user, profile, loading]);
+  const value = useMemo(() => ({ user, session, profile, loading, logout }), [user, session, profile, loading]);
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 

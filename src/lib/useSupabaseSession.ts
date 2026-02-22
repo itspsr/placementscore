@@ -10,6 +10,7 @@ export function useSupabaseSession() {
   useEffect(() => {
     let mounted = true;
     const supabase = getSupabaseBrowser();
+    if (!supabase) return;
     supabase.auth.getSession().then(({ data }) => {
       if (mounted) setSession(data.session || null);
     });

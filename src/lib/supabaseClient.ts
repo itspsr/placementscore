@@ -1,17 +1,19 @@
 import { createClient } from '@supabase/supabase-js';
 
-import { requireEnv } from './env';
+import { requireServerEnv } from './serverEnv';
 
 export function getSupabaseBrowser() {
-  requireEnv();
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  if (!url || !key) throw new Error('Supabase env missing');
+  if (!url || !key) {
+    console.warn('Supabase browser env missing');
+    return null;
+  }
   return createClient(url, key);
 }
 
 export function getSupabaseAdmin() {
-  requireEnv();
+  requireServerEnv();
   const url = process.env.SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE;
   if (!url || !key) throw new Error('Supabase env missing');

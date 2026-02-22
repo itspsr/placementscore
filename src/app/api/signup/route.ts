@@ -23,9 +23,10 @@ export async function POST(req: Request) {
   });
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
 
-  if (data.user?.id) {
-    await supabase.from('users').upsert({ id: data.user.id, plan: 'free' });
-    await supabase.from('profiles').upsert({ id: data.user.id, name, email, contact_no: contact_no || null, job_role: job_role || null, plan: 'free' });
+  const userId = data.user?.id || null;
+  if (userId) {
+    await supabase.from('users').upsert({ id: userId, plan: 'free' });
+    await supabase.from('profiles').upsert({ id: userId, name, email, contact_no: contact_no || null, job_role: job_role || null, plan: 'free' });
   }
 
   return NextResponse.json({ success: true, user: data.user });

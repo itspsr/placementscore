@@ -20,8 +20,9 @@ export async function POST(req: Request) {
   if (error && /Email not confirmed/i.test(error.message)) {
     const list: any = await supabase.auth.admin.listUsers({ page: 1, perPage: 1000 });
     const user = list?.data?.users?.find((u: any) => u.email === email);
-    if (user) {
-      await supabase.auth.admin.updateUserById(user.id, { email_confirm: true });
+    const userId = user?.id || null;
+    if (userId) {
+      await supabase.auth.admin.updateUserById(userId, { email_confirm: true });
       const retry = await supabase.auth.signInWithPassword({ email, password });
       data = retry.data;
       error = retry.error;
@@ -29,9 +30,10 @@ export async function POST(req: Request) {
   }
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
 
-  if (data.user?.id) {
-    await supabase.from('users').upsert({ id: data.user.id, plan: 'free' });
-    await supabase.from('profiles').upsert({ id: data.user.id, name: data.user.user_metadata?.name || data.user.email || 'User', email: data.user.email, plan: 'free' });
+  const userId = data.user?.id || null;
+  if (userId) {
+    await supabase.from('users').upsert({ id: userId, plan: 'free' });
+    await supabase.from('profiles').upsert({ id: userId, name: data.user?.user_metadata?.name || data.user?.email || 'User', email: data.user?.email, plan: 'free' });
   }
   return NextResponse.json({ success: true, user: data.user });
 }

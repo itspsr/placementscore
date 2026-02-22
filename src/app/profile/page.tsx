@@ -6,6 +6,7 @@ import { getSupabaseBrowser } from '@/lib/supabaseClient';
 
 export default function ProfilePage() {
   const { user, profile } = useAuth();
+  const userId = user?.id || null;
   const [contactNo, setContactNo] = useState(profile?.contact_no || '');
   const [jobRole, setJobRole] = useState(profile?.job_role || '');
   const [status, setStatus] = useState('');
@@ -16,13 +17,13 @@ export default function ProfilePage() {
   }, [profile]);
 
   const handleSave = async () => {
-    if (!user) return;
+    if (!userId) return;
     const supabase = getSupabaseBrowser();
     if (!supabase) return;
     const { error } = await supabase
       .from('profiles')
       .update({ contact_no: contactNo || null, job_role: jobRole || null })
-      .eq('id', user.id);
+      .eq('id', userId);
     setStatus(error ? 'Update failed' : 'Profile updated');
   };
 

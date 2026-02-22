@@ -52,16 +52,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     supabase.auth.getSession().then(({ data }) => {
       const session = data.session;
+      const userId = session?.user?.id || null;
       setSession(session || null);
       setUser(session?.user || null);
-      if (session?.user?.id) fetchProfile(session.user.id);
+      if (userId) fetchProfile(userId);
       setLoading(false);
     });
 
     const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+      const userId = session?.user?.id || null;
       setSession(session || null);
       setUser(session?.user || null);
-      if (session?.user?.id) fetchProfile(session.user.id);
+      if (userId) fetchProfile(userId);
       else setProfile(null);
       setLoading(false);
     });

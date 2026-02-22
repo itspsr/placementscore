@@ -65,8 +65,9 @@ export async function POST(req: NextRequest) {
 
       const users: any = await supabase.auth.admin.listUsers({ page: 1, perPage: 1000 });
       const user = users.data?.users?.find((u: any) => u.email === email);
-      if (user) {
-        await supabase.from('users').upsert({ id: user.id, plan: 'pro' });
+      const userId = user?.id || null;
+      if (userId) {
+        await supabase.from('users').upsert({ id: userId, plan: 'pro' });
       }
     }
 

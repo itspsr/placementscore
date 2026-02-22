@@ -55,3 +55,19 @@ create policy "Users can view their own resumes" on public.resumes for select us
 
 alter table public.blogs enable row level security;
 create policy "Anyone can read published blogs" on public.blogs for select using (published = true);
+
+-- Resume Reports
+create table if not exists resume_reports (
+  id uuid default gen_random_uuid() primary key,
+  user_id uuid,
+  ats_score int,
+  strengths text[] default '{}',
+  weaknesses text[] default '{}',
+  missing_keywords text[] default '{}',
+  suggestions text[] default '{}',
+  raw_text text,
+  created_at timestamptz default now()
+);
+
+create index if not exists resume_reports_user_id_idx on resume_reports (user_id);
+create index if not exists resume_reports_created_at_idx on resume_reports (created_at);

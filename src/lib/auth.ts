@@ -1,5 +1,6 @@
 import CredentialsProvider from "next-auth/providers/credentials";
 import { NextAuthOptions } from "next-auth";
+import { createClient } from "@supabase/supabase-js";
 
 // Safe-mode validation (no hard fails)
 if (process.env.NODE_ENV === "production") {
@@ -8,23 +9,39 @@ if (process.env.NODE_ENV === "production") {
   }
 }
 
+const getSupabaseAuth = () => {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  if (!url || !anon) return null;
+  return createClient(url, anon);
+};
+
 export const authOptions: NextAuthOptions = {
   // Use environment variables directly with fallbacks for local development
   // In production, NextAuth will throw if these are missing
   providers: [
     CredentialsProvider({
-      name: "Safe Mode",
+      name: "Email & Password",
       credentials: {
-        email: { label: "Email", type: "text" },
+        email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" }
       },
       async authorize(credentials) {
-        // Safe-mode auth: accept any email/password
-        if (!credentials?.email) return null;
+        if (!credentials?.email || !credentials?.password) return null;
+        const supabase = getSupabaseAuth();
+        if (!supabase) {
+          console.warn("Supabase auth not configured; denying login.");
+          return null;
+        }
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email: credentials.email,
+          password: credentials.password
+        });
+        if (error || !data.user) return null;
         return {
-          id: credentials.email,
-          name: credentials.email.split("@")[0],
-          email: credentials.email
+          id: data.user.id,
+          name: data.user.user_metadata?.name || data.user.email?.split("@")[0],
+          email: data.user.email
         } as any;
       }
     })

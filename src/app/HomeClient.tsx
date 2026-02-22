@@ -19,11 +19,19 @@ import Link from 'next/link';
 // --- Types ---
 type AppState = 'landing' | 'analyzing' | 'result' | 'payment';
 
+type ResumeAnalysis = {
+  score: number;
+  strengths: string[];
+  weaknesses: string[];
+  missing_keywords: string[];
+  suggestions: string[];
+};
+
 export default function HomeClient() {
   const { data: session } = useSession();
   const [view, setView] = useState<AppState>('landing');
   const [file, setFile] = useState<File | null>(null);
-  const [result, setResult] = useState<any>(null);
+  const [result, setResult] = useState<ResumeAnalysis | null>(null);
   const [paymentStep, setPaymentStep] = useState(1);
   const [utr, setUtr] = useState("");
   const [transactionId, setTransactionId] = useState("");
@@ -85,7 +93,7 @@ export default function HomeClient() {
   }, [isPaid, view]);
 
   // --- Actions ---
-  const handleGoogleLogin = () => signIn('google');
+  const handleLogin = () => signIn('credentials');
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -144,19 +152,15 @@ export default function HomeClient() {
 
   const runAnalysis = async () => {
     if (!file) return;
-    const isGeneratedByUs = file.name.toLowerCase().includes("placementscore") || file.name.toLowerCase().includes("optimized");
     setView('analyzing');
     const minimumWait = new Promise(resolve => setTimeout(resolve, 2500));
     try {
       const formData = new FormData();
       formData.append('file', file);
-      const response = await fetch('/api/analyze', { method: 'POST', body: formData });
+      const response = await fetch('/api/scan-resume', { method: 'POST', body: formData });
       const data = await response.json();
       await minimumWait;
-      if (!response.ok || !data.success) throw new Error(data.error);
-      if (isGeneratedByUs) {
-        data.analysis.score = Math.floor(Math.random() * (92 - 86 + 1)) + 86;
-      }
+      if (!response.ok || !data.success) throw new Error(data.error || data.message);
       setResult(data.analysis);
       setView('result');
     } catch (err: any) {
@@ -215,7 +219,7 @@ export default function HomeClient() {
               <button onClick={() => signOut()} className="text-[10px] text-red-500/50 hover:text-red-500">Sign Out</button>
             </div>
           ) : (
-            <button onClick={handleGoogleLogin} className="bg-white text-black px-6 py-2.5 rounded-xl font-black hover:bg-blue-500 hover:text-white transition-all">Sign In</button>
+            <Link href="/login" className="bg-white text-black px-6 py-2.5 rounded-xl font-black hover:bg-blue-500 hover:text-white transition-all">Sign In</Link>
           )}
         </div>
 
@@ -602,9 +606,9 @@ export default function HomeClient() {
                       <div className={`p-6 md:p-10 bg-red-500/[0.03] rounded-[30px] md:rounded-[40px] border border-red-500/10 text-left relative overflow-hidden ${!isPaid ? 'select-none' : ''}`}>
                         <h4 className="text-lg md:text-xl font-black text-red-400 mb-6 uppercase tracking-widest flex items-center gap-3 italic underline underline-offset-8"><AlertCircle className="w-4 h-4 md:w-5 md:h-5" /> Critical Weaknesses</h4>
                         <div className={`grid grid-cols-1 gap-4 transition-all ${!isPaid ? 'blur-md opacity-40' : ''}`}>
-                           <div className="p-4 bg-red-500/5 rounded-2xl border border-red-500/5 text-xs md:text-sm font-bold text-white/60 flex items-center gap-3">⚠ Missing action verbs in experience</div>
-                           <div className="p-4 bg-red-500/5 rounded-2xl border border-red-500/5 text-xs md:text-sm font-bold text-white/60 flex items-center gap-3">⚠ Date formatting inconsistent</div>
-                           <div className="p-4 bg-red-500/5 rounded-2xl border border-red-500/5 text-xs md:text-sm font-bold text-white/60 flex items-center gap-3">⚠ Summary lacks quantification</div>
+                           {result.weaknesses.slice(0, 3).map((w:any) => (
+                             <div key={w} className="p-4 bg-red-500/5 rounded-2xl border border-red-500/5 text-xs md:text-sm font-bold text-white/60 flex items-center gap-3">⚠ {w}</div>
+                           ))}
                         </div>
                         {!isPaid && (
                            <div className="absolute inset-0 flex items-center justify-center bg-black/10 backdrop-blur-[2px]">
@@ -618,9 +622,9 @@ export default function HomeClient() {
 
                       {(isPaid && (selectedPlan?.tier === 'ELITE' || selectedPlan?.tier === 'EXPERT')) ? (
                          <div className="p-6 md:p-10 bg-amber-500/[0.03] rounded-[30px] md:rounded-[40px] border border-amber-500/10 text-left">
-                           <h4 className="text-lg md:text-xl font-black text-amber-400 mb-6 uppercase tracking-widest flex items-center gap-3 italic underline underline-offset-8"><Target className="w-4 h-4 md:w-5 md:h-5" /> Skill Gaps</h4>
+                           <h4 className="text-lg md:text-xl font-black text-amber-400 mb-6 uppercase tracking-widest flex items-center gap-3 italic underline underline-offset-8"><Target className="w-4 h-4 md:w-5 md:h-5" /> Missing Keywords</h4>
                            <div className="flex flex-wrap gap-2 md:gap-4">
-                              {result.keyword_gaps.map((k:any) => <span key={k} className="px-4 md:px-6 py-2 md:py-3 bg-amber-500/10 rounded-full border border-amber-500/10 text-xs md:text-sm font-black text-amber-500/80 uppercase italic tracking-widest">{k}</span>)}
+                              {result.missing_keywords.map((k:any) => <span key={k} className="px-4 md:px-6 py-2 md:py-3 bg-amber-500/10 rounded-full border border-amber-500/10 text-xs md:text-sm font-black text-amber-500/80 uppercase italic tracking-widest">{k}</span>)}
                            </div>
                          </div>
                       ) : isPaid ? null : (
@@ -659,27 +663,13 @@ export default function HomeClient() {
 
                    {(isPaid && selectedPlan?.tier === 'EXPERT') && (
                       <div className="p-8 md:p-12 rounded-[40px] md:rounded-[50px] bg-gradient-to-br from-indigo-600/20 via-blue-600/10 to-transparent border border-white/10 space-y-10 relative overflow-hidden backdrop-blur-fix text-center md:text-left">
-                         <div className="relative z-10 space-y-8 md:space-y-12">
-                            <h3 className="text-3xl md:text-4xl font-[1000] italic uppercase tracking-tighter leading-none text-balance">Neural Builder <Sparkles className="inline text-indigo-400 animate-pulse" /></h3>
-                            {!isGenerating && !isGenerated && (
-                               <button onClick={handleGenerateAI} className="w-full py-6 md:py-7 bg-white text-black rounded-3xl font-[1000] text-xl md:text-2xl hover:bg-blue-600 hover:text-white transition-all shadow-2xl uppercase italic">Generate Optimized Profile</button>
-                            )}
-                            {isGenerating && (
-                               <div className="flex flex-col items-center gap-4 py-6">
-                                  <div className="w-12 h-12 border-4 border-white border-t-transparent rounded-full animate-spin" />
-                                  <p className="font-black text-xs uppercase tracking-widest animate-pulse">Rearchitecting Resume...</p>
-                               </div>
-                            )}
-                            {isGenerated && (
-                               <div className="flex flex-col sm:flex-row gap-4">
-                                  <button onClick={handleDownload} className="flex-1 py-6 md:py-7 bg-green-500 text-white rounded-3xl font-[1000] text-xl md:text-2xl hover:bg-green-600 transition-all flex items-center justify-center gap-4 shadow-2xl uppercase italic leading-none">
-                                     <CheckCircle className="w-6 h-6" /> Download PDF
-                                  </button>
-                                  <Link href="/expert-resume-builder" className="flex-1 py-6 md:py-7 bg-blue-600 text-white rounded-3xl font-[1000] text-xl md:text-2xl hover:bg-blue-700 transition-all flex items-center justify-center gap-4 shadow-2xl uppercase italic leading-none">
-                                     AI Builder <Sparkles className="w-6 h-6" />
-                                  </Link>
-                               </div>
-                            )}
+                         <div className="relative z-10 space-y-6">
+                            <h3 className="text-3xl md:text-4xl font-[1000] italic uppercase tracking-tighter leading-none text-balance">Improvement Suggestions <Sparkles className="inline text-indigo-400 animate-pulse" /></h3>
+                            <div className="grid grid-cols-1 gap-4">
+                              {result.suggestions.slice(0, 5).map((s:any) => (
+                                <div key={s} className="p-4 bg-white/5 rounded-2xl border border-white/10 text-sm font-bold text-white/70">→ {s}</div>
+                              ))}
+                            </div>
                          </div>
                       </div>
                    )}

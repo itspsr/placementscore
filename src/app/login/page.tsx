@@ -29,17 +29,42 @@ export default function LoginPage() {
              <p className="text-white/30 font-bold uppercase tracking-widest text-[10px]">Secure Access for PlacementScore.online</p>
           </div>
 
-          <button
-            onClick={() => signIn("credentials", { callbackUrl: "/" })}
-            className="w-full py-6 bg-white text-black rounded-3xl font-[1000] text-xl hover:bg-blue-600 hover:text-white transition-all shadow-2xl flex items-center justify-center gap-4 group"
+          <form
+            className="space-y-4"
+            onSubmit={async (e) => {
+              e.preventDefault();
+              const form = e.currentTarget as HTMLFormElement;
+              const email = (form.elements.namedItem('email') as HTMLInputElement).value;
+              const password = (form.elements.namedItem('password') as HTMLInputElement).value;
+              await signIn("credentials", { callbackUrl: "/", email, password });
+            }}
           >
-            <Sparkles className="w-6 h-6" />
-            Continue (Safe Mode)
-          </button>
+            <input
+              name="email"
+              type="email"
+              required
+              placeholder="Email"
+              className="w-full p-4 rounded-2xl bg-black border border-white/10 outline-none focus:border-blue-600"
+            />
+            <input
+              name="password"
+              type="password"
+              required
+              placeholder="Password"
+              className="w-full p-4 rounded-2xl bg-black border border-white/10 outline-none focus:border-blue-600"
+            />
+            <button
+              type="submit"
+              className="w-full py-6 bg-white text-black rounded-3xl font-[1000] text-xl hover:bg-blue-600 hover:text-white transition-all shadow-2xl flex items-center justify-center gap-4 group"
+            >
+              <Sparkles className="w-6 h-6" />
+              Continue
+            </button>
+          </form>
 
           <div className="pt-6 border-t border-white/5 flex items-center justify-center gap-4 text-[10px] font-black uppercase tracking-[0.2em] text-white/20">
              <Shield className="w-4 h-4 text-blue-500" />
-             Safe Mode Login (No OAuth)
+             Email/Password via Supabase Auth
           </div>
         </motion.div>
       </div>

@@ -78,7 +78,10 @@ export async function POST(req: Request) {
     }});
 
   } catch (e: any) {
-    return NextResponse.json({ success: false, message: e.message || 'Server error' }, { status: 500 });
+    const msg = e?.message?.includes('OpenAI error')
+      ? 'AI processing failed. Check OPENAI_API_KEY and model access.'
+      : (e.message || 'Server error');
+    return NextResponse.json({ success: false, message: msg }, { status: 502 });
   }
 }
 
@@ -94,7 +97,7 @@ async function extractAndAnalyze(base64: string) {
     body: JSON.stringify({
       model: process.env.OPENAI_MODEL || 'gpt-4o-mini',
       temperature: 0.2,
-      max_tokens: 900,
+      max_tokens: 700,
       response_format: { type: 'json_object' },
       messages: [
         { role: 'system', content: 'Return JSON only.' },
@@ -104,7 +107,7 @@ async function extractAndAnalyze(base64: string) {
   });
 
   const raw = await res.text();
-  if (!res.ok) throw new Error('OpenAI error');
+  if (!res.ok) throw new Error(`OpenAI error: ${res.status}`);
   const data = JSON.parse(raw);
   const content = data?.choices?.[0]?.message?.content;
   const parsed = content ? JSON.parse(content) : {};

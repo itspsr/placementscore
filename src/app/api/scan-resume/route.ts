@@ -23,7 +23,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ success: false, message: 'File too large (max 5MB)' }, { status: 400 });
     }
 
-    if (!process.env.OPENAI_API_KEY) {
+    if (!process.env.OPENAI_API_KEY || !process.env.OPENAI_MODEL) {
       return NextResponse.json({ success: false, message: 'AI disabled' }, { status: 200 });
     }
 
@@ -36,15 +36,14 @@ export async function POST(req: Request) {
     }
 
     const extracted = await extractAndAnalyze(base64);
-    const cleanText = (extracted.text || '').trim();
-
-    if (cleanText.length < 300) {
+    if (!extracted.valid) {
       return NextResponse.json({ success: false, message: 'Invalid or empty resume detected.' }, { status: 422 });
     }
 
+    const cleanText = (extracted.text || '').trim();
     const lower = cleanText.toLowerCase();
     const hits = REQUIRED_KEYWORDS.filter(k => lower.includes(k)).length;
-    if (hits < 3) {
+    if (cleanText.length < 300 || hits < 3) {
       return NextResponse.json({ success: false, message: 'Invalid or empty resume detected.' }, { status: 422 });
     }
 
@@ -73,11 +72,11 @@ export async function POST(req: Request) {
       ats_score: extracted.ats_score,
       strengths: extracted.strengths,
       weaknesses: extracted.weaknesses,
-      missing_keywords: extracted.missing_keywords || [],
       improvements: extracted.improvements
     }});
 
   } catch (e: any) {
+    console.error('scan-resume error:', e);
     const msg = e?.message?.includes('OpenAI error')
       ? 'AI processing failed. Check OPENAI_API_KEY and model access.'
       : (e.message || 'Server error');
@@ -86,7 +85,7 @@ export async function POST(req: Request) {
 }
 
 async function extractAndAnalyze(base64: string) {
-  const prompt = `You are an ATS resume evaluator. The input is a base64-encoded PDF. Extract readable resume text, then return JSON only: {"text":"","score":0-100,"ats_score":0-100,"strengths":[],"weaknesses":[],"missing_keywords":[],"improvements":[]}. Keep arrays short.`;
+  const prompt = `Extract resume text from base64 PDF and score it. Return JSON only: {"valid":true,"text":"","score":0-100,"ats_score":0-100,"strengths":[],"weaknesses":[],"improvements":[]}. If not a resume, return {"valid":false}.`;
 
   const res = await fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
@@ -95,9 +94,9 @@ async function extractAndAnalyze(base64: string) {
       'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
     },
     body: JSON.stringify({
-      model: process.env.OPENAI_MODEL || 'gpt-4o-mini',
+      model: process.env.OPENAI_MODEL,
       temperature: 0.2,
-      max_tokens: 700,
+      max_tokens: 600,
       response_format: { type: 'json_object' },
       messages: [
         { role: 'system', content: 'Return JSON only.' },
@@ -107,12 +106,13 @@ async function extractAndAnalyze(base64: string) {
   });
 
   const raw = await res.text();
-  if (!res.ok) throw new Error(`OpenAI error: ${res.status}`);
+  if (!res.ok) throw new Error(`OpenAI error: ${res.status} ${raw}`);
   const data = JSON.parse(raw);
   const content = data?.choices?.[0]?.message?.content;
   const parsed = content ? JSON.parse(content) : {};
 
   return {
+    valid: parsed.valid !== false,
     text: parsed.text || '',
     score: parsed.score || 0,
     ats_score: parsed.ats_score || 0,

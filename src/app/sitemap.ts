@@ -60,6 +60,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: 'weekly' as const,
       priority: 0.9,
     }));
+  } else {
+    console.warn('Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE for sitemap');
   }
 
   return [...staticRoutes, ...blogRoutes];

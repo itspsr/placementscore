@@ -15,11 +15,7 @@ export default function AutomationDemo() {
 
   const fetchLastBlog = async () => {
     try {
-      const response = await fetch('/api/blog'); // Assuming this exists or using direct lib
-      // Since it's client side, we hit the API
-      const res = await fetch('/api/cron/generate-blog', { method: 'HEAD' }); // Just checking
-      // For now, let's just use a fetch to get list
-      const blogs = await (await fetch('/api/blogs-list')).json(); // I might need to create this
+      const blogs = await (await fetch('/api/blogs-list')).json();
       if (blogs && blogs.length > 0) {
         setLastBlog(blogs[0]);
       }
@@ -118,7 +114,7 @@ export default function AutomationDemo() {
               <h3 className="font-black uppercase tracking-widest text-sm">System Status</h3>
             </div>
             <div className="text-4xl font-[1000] italic uppercase tracking-tighter text-green-500">Live</div>
-            <p className="text-xs text-white/40 leading-relaxed">Content pipeline is active. Next scheduled run: 8 AM IST.</p>
+            <p className="text-xs text-white/40 leading-relaxed">Content pipeline is active. Manual runs only.</p>
           </div>
         </div>
 

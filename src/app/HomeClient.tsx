@@ -178,14 +178,15 @@ export default function HomeClient() {
     try {
       const formData = new FormData();
       formData.append('file', file);
-      if (!session?.access_token) {
-        throw new Error('Login required to scan your resume.');
+      const headers: Record<string, string> = {};
+      if (session?.access_token) {
+        headers.Authorization = `Bearer ${session.access_token}`;
       }
       const response = await fetch('/api/scan-resume', {
         method: 'POST',
         body: formData,
         credentials: 'include',
-        headers: { Authorization: `Bearer ${session.access_token}` }
+        headers
       });
       const data = await response.json();
       console.log('[scan-resume] status', response.status, data);

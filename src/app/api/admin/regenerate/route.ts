@@ -7,10 +7,12 @@ import { authOptions } from "@/lib/auth";
 
 export const dynamic = 'force-dynamic';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+const getSupabase = () => {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !key) return null;
+  return createClient(url, key);
+};
 
 export async function POST(req: Request) {
   try {
@@ -33,6 +35,12 @@ export async function POST(req: Request) {
     
     if (!generated) {
       return NextResponse.json({ error: 'Generation failed' }, { status: 500 });
+    }
+
+    const supabase = getSupabase();
+    if (!supabase) {
+      console.warn("Supabase not configured; skipping regeneration.");
+      return NextResponse.json({ success: false, safeMode: true }, { status: 200 });
     }
 
     // Update in Supabase

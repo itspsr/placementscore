@@ -2,10 +2,13 @@ import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
 import { createClient } from "@supabase/supabase-js";
 
-// Initialize Supabase Admin Client
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
-const supabase = createClient(supabaseUrl, supabaseServiceKey);
+// Initialize Supabase Admin Client (safe mode)
+const getSupabase = () => {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!supabaseUrl || !supabaseServiceKey) return null;
+  return createClient(supabaseUrl, supabaseServiceKey);
+};
 
 export async function POST(req: NextRequest) {
   try {
@@ -37,10 +40,12 @@ export async function POST(req: NextRequest) {
       
       console.log(`Payment verified for ${email} (Order: ${orderId})`);
 
-      // Update User Subscription in Supabase
-      // Assuming a 'users' or 'subscriptions' table exists. 
-      // If user doesn't exist, we create/update based on email.
-      
+      const supabase = getSupabase();
+      if (!supabase) {
+        console.warn("Supabase not configured; skipping subscription update.");
+        return NextResponse.json({ status: "ok", safeMode: true });
+      }
+
       const { data, error } = await supabase
         .from("subscriptions")
         .upsert({ 

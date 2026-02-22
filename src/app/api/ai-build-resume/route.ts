@@ -2,11 +2,12 @@ import { NextResponse } from 'next/server';
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { createClient } from '@supabase/supabase-js';
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+const getSupabase = () => {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !key) return null;
+  return createClient(url, key);
+};
 
 // Simple In-Memory Rate Limiter
 const rateLimitMap = new Map<string, { count: number; lastReset: number }>();
@@ -47,6 +48,11 @@ export async function POST(req: Request) {
 
     // Allow admin bypass
     if (userId !== "admin@placementscore.online") {
+        const supabase = getSupabase();
+        if (!supabase) {
+          console.warn("Supabase not configured; denying expert access in safe mode.");
+          return NextResponse.json({ error: "Access Denied. Subscription check unavailable." }, { status: 403 });
+        }
         const { data: sub, error } = await supabase
             .from('subscriptions')
             .select('status, plan')
@@ -60,11 +66,12 @@ export async function POST(req: Request) {
     }
 
     if (!process.env.GEMINI_API_KEY) {
-      console.error("GEMINI_API_KEY is missing");
-      return NextResponse.json({ error: "AI service configuration error" }, { status: 500 });
+      console.warn("GEMINI_API_KEY is missing; AI disabled.");
+      return NextResponse.json({ message: "AI disabled" }, { status: 200 });
     }
 
     // 2. Call Gemini API
+    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
     const prompt = `

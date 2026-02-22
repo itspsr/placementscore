@@ -4,9 +4,12 @@ const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 const OPENAI_MODEL = process.env.OPENAI_MODEL || "gpt-4o-mini";
 
-const supabase = process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY
-  ? createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY)
-  : null;
+const getSupabase = () => {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !key) return null;
+  return createClient(url, key);
+};
 
 export interface GeneratedBlog {
   title: string;
@@ -23,11 +26,13 @@ export interface GeneratedBlog {
 
 async function generateWithOpenAI(prompt: string) {
   if (!OPENAI_API_KEY) {
-    throw new Error("OPENAI_API_KEY is missing");
+    console.warn("OPENAI_API_KEY is missing; AI disabled.");
+    return null;
   }
 
   if (prompt.length > 20000) {
-    throw new Error("Prompt too long");
+    console.warn("Prompt too long; skipping OpenAI generation.");
+    return null;
   }
 
   try {
@@ -70,11 +75,13 @@ async function generateWithOpenAI(prompt: string) {
 
 async function generateWithGemini(prompt: string) {
   if (!GEMINI_API_KEY) {
-    throw new Error("GEMINI_API_KEY is missing");
+    console.warn("GEMINI_API_KEY is missing; AI disabled.");
+    return null;
   }
 
   if (prompt.length > 10000) {
-    throw new Error("Prompt too long");
+    console.warn("Prompt too long; skipping Gemini generation.");
+    return null;
   }
 
   try {
@@ -215,24 +222,29 @@ Stay tuned for structured resume tips, ATS keywords, formatting strategies, and 
 }
 
 export async function saveBlog(blog: GeneratedBlog) {
+  const supabase = getSupabase();
   if (!supabase) {
-    console.error("Supabase configuration missing. Cannot save blog.");
-    throw new Error("Database connection not configured.");
+    console.warn("Supabase not configured; skipping blog save.");
+    return { success: false, data: null } as any;
   }
 
   const { data, error } = await supabase.from("blogs").insert([blog]).select();
   
   if (error) {
     console.error("Supabase Save Error:", error);
-    throw error;
+    return { success: false, error } as any;
   }
   
   return { success: true, data };
 }
 
 export async function deleteBlog(id: string | number) {
-  if (!supabase) throw new Error("Database connection not configured.");
+  const supabase = getSupabase();
+  if (!supabase) {
+    console.warn("Supabase not configured; skipping delete.");
+    return { success: false } as any;
+  }
   const { error } = await supabase.from("blogs").delete().eq("id", id);
-  if (error) throw error;
+  if (error) return { success: false, error } as any;
   return { success: true };
 }

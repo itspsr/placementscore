@@ -8,12 +8,12 @@ import {
   Trash2, Copy, Check
 } from 'lucide-react';
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
-import { useSupabaseSession } from "@/lib/useSupabaseSession";
+import { useAuth } from "@/lib/authProvider";
 import Link from 'next/link';
 import { ExpertGate } from "@/components/ExpertGate";
 
 export default function ExpertResumeBuilder() {
-  const session = useSupabaseSession();
+  const { session } = useAuth();
   const [originalText, setOriginalText] = useState("");
   const [targetRole, setTargetRole] = useState("");
   const [experienceLevel, setExperienceLevel] = useState("Fresher / Entry Level");

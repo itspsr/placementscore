@@ -8,11 +8,11 @@ import {
   AlertCircle
 } from 'lucide-react';
 import Link from 'next/link';
-import { useSupabaseSession } from "@/lib/useSupabaseSession";
+import { useAuth } from "@/lib/authProvider";
 import { ExpertGate } from "@/components/ExpertGate";
 
 export default function LinkedInAnalyzer() {
-  const session = useSupabaseSession();
+  const { session } = useAuth();
   const [content, setContent] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<any>(null);

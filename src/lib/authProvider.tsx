@@ -63,6 +63,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(session?.user || null);
       if (session?.user?.id) fetchProfile(session.user.id);
       else setProfile(null);
+      setLoading(false);
     });
 
     return () => {
@@ -73,8 +74,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const logout = async () => {
     const supabase = getSupabaseBrowser();
     if (supabase) await supabase.auth.signOut();
+    setSession(null);
     setUser(null);
     setProfile(null);
+    setLoading(false);
   };
 
   const value = useMemo(() => ({ user, session, profile, loading, logout }), [user, session, profile, loading]);

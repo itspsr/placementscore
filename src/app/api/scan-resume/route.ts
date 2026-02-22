@@ -76,49 +76,41 @@ export async function POST(req: Request) {
       });
     }
 
-    if (!process.env.OPENAI_API_KEY || !process.env.OPENAI_MODEL) {
-      return NextResponse.json({ success: false, error: 'AI disabled' }, { status: 200 });
-    }
-
     const rawText = extractBasicText(buffer);
     const cleanText = trimResumeText(rawText);
     if (!cleanText) {
       return NextResponse.json({ success: false, error: 'Invalid or empty resume detected.' }, { status: 422 });
     }
 
-    const extracted = await extractAndAnalyze(cleanText);
-    if (!extracted.valid) {
-      return NextResponse.json({ success: false, error: 'Invalid or empty resume detected.' }, { status: 422 });
+    const finalScore = computeFinalScore(cleanText);
+    const clampedFree = Math.min(62, Math.max(38, finalScore));
+    if (plan !== 'pro') {
+      return NextResponse.json({
+        success: true,
+        plan: 'free',
+        score: clampedFree,
+        locked: true
+      });
     }
 
-    const finalText = (extracted.text || cleanText || '').trim();
-    const lower = finalText.toLowerCase();
-    const hits = REQUIRED_KEYWORDS.filter(k => lower.includes(k)).length;
-    if (finalText.length < 300 || hits < 3) {
-      return NextResponse.json({ success: false, error: 'Invalid or empty resume detected.' }, { status: 422 });
-    }
-
-    const baseScore = extracted.score || 0;
-    const finalScore = Math.min(95, Math.max(baseScore, 75));
+    const bonus = deterministicBonus(cleanText);
+    const improvedScore = Math.min(clampedFree + bonus, 92);
 
     await supabase.from('resume_reports').insert({
       user_id: user.id,
-      ats_score: finalScore,
-      strengths: extracted.strengths,
-      weaknesses: extracted.weaknesses,
-      improvements: extracted.improvements,
-      raw_text: finalText.slice(0, 5000),
+      ats_score: improvedScore,
+      raw_text: cleanText.slice(0, 5000),
       created_at: new Date().toISOString()
     });
 
     return NextResponse.json({
       success: true,
       plan: 'pro',
-      score: finalScore,
-      baseScore,
+      score: improvedScore,
+      baseScore: clampedFree,
       locked: false,
-      optimizedResume: extracted.optimized_resume,
-      originalText: finalText
+      optimizedResume: '',
+      originalText: cleanText
     });
 
   } catch (e: any) {
@@ -141,60 +133,35 @@ function trimResumeText(text: string, maxChars = 8000) {
   return normalized.slice(0, maxChars);
 }
 
-async function extractAndAnalyze(resumeText: string) {
-  const prompt = 'Evaluate resume text and return JSON: {"valid":true,"text":"","score":0-100,"strengths":[],"weaknesses":[],"improvements":[],"optimized_resume":""}. If not a resume, return {"valid":false}.';
 
-  const res = await fetch('https://api.openai.com/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
-    },
-    body: JSON.stringify({
-      model: process.env.OPENAI_MODEL,
-      temperature: 0.2,
-      max_tokens: 1000,
-      response_format: { type: 'json_object' },
-      messages: [
-        { role: 'system', content: 'Return JSON only.' },
-        { role: 'user', content: `${prompt}\nResume text:\n${resumeText}` }
-      ]
-    })
-  });
+function computeFinalScore(text: string) {
+  const words = text.split(/\s+/).filter(Boolean).length;
+  const wordScore = words < 150 ? 8 : words < 300 ? 18 : words < 500 ? 24 : words < 800 ? 20 : 16;
 
-  const raw = await res.text();
-  if (!res.ok) throw new Error(`OpenAI error: ${res.status} ${raw}`);
-  const data = safeJsonParse(raw);
-  const content = data?.choices?.[0]?.message?.content;
-  const parsed = content ? safeJsonParse(content) : null;
+  const lower = text.toLowerCase();
+  const keywordHits = REQUIRED_KEYWORDS.filter(k => lower.includes(k)).length;
+  const keywordScore = Math.round((keywordHits / REQUIRED_KEYWORDS.length) * 25);
 
-  if (!parsed || typeof parsed !== 'object') {
-    return {
-      valid: true,
-      text: resumeText,
-      score: 75,
-      strengths: [],
-      weaknesses: [],
-      improvements: [],
-      optimized_resume: ''
-    };
-  }
+  const metrics = (text.match(/\d+(?:\.\d+)?%?/g) || []).length;
+  const metricScore = Math.min(20, metrics * 2);
 
-  return {
-    valid: parsed.valid !== false,
-    text: parsed.text || resumeText,
-    score: parsed.score || 75,
-    strengths: Array.isArray(parsed.strengths) ? parsed.strengths : [],
-    weaknesses: Array.isArray(parsed.weaknesses) ? parsed.weaknesses : [],
-    improvements: Array.isArray(parsed.improvements) ? parsed.improvements : [],
-    optimized_resume: parsed.optimized_resume || ''
-  };
+  const sections = ['summary','experience','education','skills','projects','certification'].filter(s => lower.includes(s)).length;
+  const structureScore = Math.min(20, sections * 4);
+
+  let penalty = 0;
+  if (words < 120) penalty += 10;
+  if (words < 80) penalty += 8;
+  if (words > 1200) penalty += 6;
+  if (keywordHits < 2) penalty += 8;
+
+  const raw = wordScore + keywordScore + metricScore + structureScore - penalty;
+  return Math.max(0, Math.min(100, Math.round(raw)));
 }
 
-function safeJsonParse(raw: string) {
-  try {
-    return JSON.parse(raw);
-  } catch {
-    return null;
+function deterministicBonus(text: string) {
+  let hash = 0;
+  for (let i = 0; i < text.length; i++) {
+    hash = (hash * 31 + text.charCodeAt(i)) >>> 0;
   }
+  return 18 + (hash % 8); // 18-25
 }

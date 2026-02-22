@@ -4,7 +4,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion';
 import { 
-  Upload, CheckCircle, Zap, ShieldCheck, Star, 
+  Upload, CheckCircle, Zap, ShieldCheck, Star, Loader2, 
   ArrowRight, Sparkles, Layout, Target, FileText, 
   Search, Users, TrendingUp, Lock, CreditCard, Clock, Check,
   ChevronRight, Play, Award, BarChart3, Globe, Sparkle, AlertCircle,
@@ -58,6 +58,7 @@ export default function HomeClient() {
   const [analyzeCount, setAnalyzeCount] = useState(2437);
   const [scrolled, setScrolled] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
+  const [pricingLoading, setPricingLoading] = useState<string | null>(null);
 
   // --- Persistence & Query Params ---
   useEffect(() => {
@@ -66,10 +67,11 @@ export default function HomeClient() {
     const viewParam = params.get('view');
     
     // Check if user already paid in this session
-    const savedPaidStatus = localStorage.getItem('ps_is_paid_expert');
-    if (savedPaidStatus === 'true') {
+    const savedPlan = localStorage.getItem('ps_plan');
+    if (savedPlan) {
       setIsPaid(true);
-      setSelectedPlan({ tier: 'EXPERT', price: 399 });
+      const priceMap: any = { BASE: 99, ELITE: 199, EXPERT: 399 };
+      setSelectedPlan({ tier: savedPlan, price: priceMap[savedPlan] || 99 });
     }
 
     if (viewParam === 'payment' && planParam === 'expert') {
@@ -225,8 +227,11 @@ export default function HomeClient() {
     setPaymentStep(3);
     setTimeout(() => { 
       setIsPaid(true); 
-      if (selectedPlan?.tier === 'EXPERT') {
-        localStorage.setItem('ps_is_paid_expert', 'true');
+      if (selectedPlan?.tier) {
+        localStorage.setItem('ps_plan', selectedPlan.tier);
+        if (selectedPlan.tier === 'EXPERT') {
+          localStorage.setItem('ps_is_paid_expert', 'true');
+        }
       }
       setPaymentStep(4); 
     }, 3000);
@@ -546,9 +551,9 @@ export default function HomeClient() {
                </div>
                
                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-10 mb-20">
-                  <PricingCard file={file} setView={setView} setSelectedPlan={setSelectedPlan} tier="BASE" price="99" perks={['Real ATS Score', 'Formatting Audit', '30-Day Storage']} />
-                  <PricingCard file={file} setView={setView} setSelectedPlan={setSelectedPlan} tier="ELITE" price="199" perks={['Everything in Base', 'Detailed Insight Report', 'Keyword Gap Analysis', 'Improvement Plan']} />
-                  <PricingCard file={file} setView={setView} setSelectedPlan={setSelectedPlan} tier="EXPERT" price="399" popular perks={['Everything in Elite', 'AI Resume Rearchitect', 'Unlimited PDF Downloads', 'Priority Support']} />
+                  <PricingCard file={file} setView={setView} setSelectedPlan={setSelectedPlan} setPricingLoading={setPricingLoading} pricingLoading={pricingLoading} tier="BASE" price="99" perks={['Real ATS Score', 'Formatting Audit', '30-Day Storage']} />
+                  <PricingCard file={file} setView={setView} setSelectedPlan={setSelectedPlan} setPricingLoading={setPricingLoading} pricingLoading={pricingLoading} tier="ELITE" price="199" perks={['Everything in Base', 'Detailed Insight Report', 'Keyword Gap Analysis', 'Improvement Plan']} />
+                  <PricingCard file={file} setView={setView} setSelectedPlan={setSelectedPlan} setPricingLoading={setPricingLoading} pricingLoading={pricingLoading} tier="EXPERT" price="399" popular perks={['Everything in Elite', 'AI Resume Rearchitect', 'Unlimited PDF Downloads', 'Priority Support']} />
                </div>
 
                <div className="mt-20 md:mt-40 overflow-x-auto rounded-[30px] md:rounded-[50px] border border-white/10 bg-white/[0.01] shadow-2xl no-scrollbar backdrop-blur-fix">
@@ -892,7 +897,7 @@ const TestimonialCard = ({ quote, name, college }: any) => (
    </div>
 );
 
-const PricingCard = ({ tier, price, perks, popular, setView, setSelectedPlan, file }: any) => (
+const PricingCard = ({ tier, price, perks, popular, setView, setSelectedPlan, file, pricingLoading, setPricingLoading }: any) => (
   <div className={`p-8 md:p-16 rounded-[40px] md:rounded-[70px] bg-[#0A0A0A] border ${popular ? 'border-blue-600 ring-[12px] md:ring-[20px] ring-blue-600/5' : 'border-white/5'} transition-all hover:scale-[1.03] duration-700 flex flex-col shadow-2xl relative overflow-hidden group backdrop-blur-fix`}>
      {popular && <div className="absolute top-4 md:top-8 left-1/2 -translate-x-1/2 bg-blue-600 text-white py-1.5 px-6 md:px-8 rounded-full text-[8px] md:text-[10px] font-[1000] uppercase italic tracking-[0.3em] shadow-2xl shadow-blue-500/40 z-10 whitespace-nowrap">Highly Recommended</div>}
      <h3 className="text-[10px] md:text-[11px] font-[1000] tracking-[0.4em] md:tracking-[0.5em] uppercase text-white/20 mb-4 md:mb-6 italic text-center md:text-left">{tier === 'ELITE' || tier === 'GROWTH' ? 'Elite' : tier}</h3>
@@ -908,13 +913,15 @@ const PricingCard = ({ tier, price, perks, popular, setView, setSelectedPlan, fi
            if (!file) {
               window.scrollTo({ top: 0, behavior: 'smooth' });
            } else {
-              setSelectedPlan({ tier: tier === 'GROWTH' || tier === 'ELITE' ? 'ELITE' : tier, price }); 
+              setPricingLoading(tier);
+              setSelectedPlan({ tier: tier === 'GROWTH' || tier === 'ELITE' ? 'ELITE' : tier, price: Number(price) }); 
               setView('payment');
+              setTimeout(() => setPricingLoading(null), 300);
            }
         }} 
         className={`w-full py-5 md:py-7 rounded-[24px] md:rounded-[30px] font-[1000] text-xl md:text-2xl transition-all flex items-center justify-center gap-3 uppercase italic tracking-tighter ${popular ? 'bg-blue-600 text-white shadow-2xl shadow-blue-500/40 hover:bg-blue-500' : 'bg-white/5 border border-white/10 hover:bg-white hover:text-black hover:border-white shadow-xl'}`}
      >
-        {tier === 'BASE' ? 'Start' : tier === 'EXPERT' ? 'Go Expert' : 'Get Elite'}
+        {pricingLoading === tier ? (<><Loader2 className="w-5 h-5 animate-spin" /> Processing</>) : (tier === 'BASE' ? 'Start' : tier === 'EXPERT' ? 'Go Expert' : 'Get Elite')}
      </button>
   </div>
 );

@@ -29,5 +29,8 @@ export async function POST(req: Request) {
   }
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
 
+  if (data.user?.id) {
+    await supabase.from('users').upsert({ id: data.user.id, plan: 'free' });
+  }
   return NextResponse.json({ success: true, user: data.user });
 }

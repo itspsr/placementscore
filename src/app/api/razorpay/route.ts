@@ -62,6 +62,12 @@ export async function POST(req: NextRequest) {
         console.error("Failed to update subscription:", error);
         return NextResponse.json({ error: "Database update failed" }, { status: 500 });
       }
+
+      const users: any = await supabase.auth.admin.listUsers({ page: 1, perPage: 1000 });
+      const user = users.data?.users?.find((u: any) => u.email === email);
+      if (user) {
+        await supabase.from('users').upsert({ id: user.id, plan: 'pro' });
+      }
     }
 
     return NextResponse.json({ status: "ok" });

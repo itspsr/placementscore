@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 
-export function AtsMeter({ score }: { score: number }) {
+export function AtsMeter({ score = 0 }: { score?: number }) {
   const [display, setDisplay] = useState(0);
 
   useEffect(() => {
@@ -12,7 +12,7 @@ export function AtsMeter({ score }: { score: number }) {
     const tick = (now: number) => {
       const progress = Math.min((now - start) / duration, 1);
       const eased = 1 - Math.pow(1 - progress, 3); // easeOut
-      setDisplay(Math.round(score * eased));
+      setDisplay(Math.round((score || 0) * eased));
       if (progress < 1) requestAnimationFrame(tick);
     };
 

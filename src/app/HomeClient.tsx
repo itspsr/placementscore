@@ -175,11 +175,11 @@ export default function HomeClient() {
       const response = await fetch('/api/scan-resume', { method: 'POST', body: formData });
       const data = await response.json();
       await minimumWait;
-      if (!response.ok) throw new Error(data.error || data.message);
+      if (!response.ok) throw new Error(data?.error || data?.message);
       if (data.locked) {
-        setResult({ score: data.score, plan: data.plan, locked: true, message: data.message });
+        setResult({ score: data?.score, plan: data?.plan, locked: true, message: data?.message });
       } else {
-        setResult({ score: data.score, baseScore: data.baseScore, plan: data.plan, locked: false, optimizedResume: data.optimizedResume, originalText: data.originalText });
+        setResult({ score: data?.score, baseScore: data?.baseScore, plan: data?.plan, locked: false, optimizedResume: data?.optimizedResume, originalText: data?.originalText });
       }
       setView('result');
     } catch (err: any) {
@@ -595,7 +595,7 @@ export default function HomeClient() {
               <div className="text-center space-y-8 md:space-y-10 xl:w-[420px] mx-auto">
                 <div className="relative inline-block">
                   <div className="absolute -inset-4 bg-blue-600/20 rounded-full blur-2xl animate-pulse" />
-                  <AtsMeter score={result?.score || 0} />
+                  <AtsMeter score={result?.score} />
                 </div>
                 <div className="space-y-4">
                   <p className="font-black text-[10px] uppercase tracking-[0.5em] text-white/20">ATS Compatibility Index</p>
@@ -649,16 +649,18 @@ export default function HomeClient() {
                         <p className="text-sm text-white/50 whitespace-pre-wrap">{result?.originalText || 'Original resume text extracted.'}</p>
                         <div className="mt-4 text-[10px] font-black uppercase tracking-widest text-white/20">Original Score: {result?.baseScore ?? 0}</div>
                       </div>
-                      <div className="p-6 md:p-8 bg-green-500/5 rounded-[30px] md:rounded-[40px] border border-green-500/20 text-left">
-                        <p className="text-[10px] font-black uppercase tracking-widest text-green-400 mb-3">Optimized Resume</p>
-                        <p className="text-sm text-white/60 whitespace-pre-wrap">{result?.optimizedResume || 'Optimized resume generated.'}</p>
-                        <div className="mt-4 flex items-center gap-3 text-[10px] font-black uppercase tracking-widest text-green-400">
-                          <span>New Score: {result?.score}</span>
-                          <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-green-500/10 border border-green-500/30">
-                            +{Math.max(0, (result?.score || 0) - (result?.baseScore ?? 0))} ATS Boost
-                          </span>
+                      {!result?.locked && result?.optimizedResume && (
+                        <div className="p-6 md:p-8 bg-green-500/5 rounded-[30px] md:rounded-[40px] border border-green-500/20 text-left">
+                          <p className="text-[10px] font-black uppercase tracking-widest text-green-400 mb-3">Optimized Resume</p>
+                          <p className="text-sm text-white/60 whitespace-pre-wrap">{result?.optimizedResume}</p>
+                          <div className="mt-4 flex items-center gap-3 text-[10px] font-black uppercase tracking-widest text-green-400">
+                            <span>New Score: {result?.score ?? 0}</span>
+                            <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-green-500/10 border border-green-500/30">
+                              +{Math.max(0, (result?.score ?? 0) - (result?.baseScore ?? 0))} ATS Boost
+                            </span>
+                          </div>
                         </div>
-                      </div>
+                      )}
                     </div>
                   </>
                 )}

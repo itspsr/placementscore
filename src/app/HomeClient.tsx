@@ -186,8 +186,11 @@ export default function HomeClient() {
         setView('result');
         return;
       }
-      if (!data?.score || !data?.optimizedResume) {
+      if (!data?.score) {
         throw new Error('AI response incomplete. Please try again.');
+      }
+      if (!data?.optimizedResume) {
+        setScanError('Optimization text missing. Showing score only.');
       }
       setResult({ score: data?.score ?? 0, baseScore: data?.baseScore ?? 0, plan: data?.plan, locked: false, optimizedResume: data?.optimizedResume ?? '', originalText: data?.originalText ?? '' });
       setView('result');

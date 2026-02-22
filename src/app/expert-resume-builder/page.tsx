@@ -8,12 +8,12 @@ import {
   Trash2, Copy, Check
 } from 'lucide-react';
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
-import { useSession } from "next-auth/react";
+import { useSupabaseSession } from "@/lib/useSupabaseSession";
 import Link from 'next/link';
 import { ExpertGate } from "@/components/ExpertGate";
 
 export default function ExpertResumeBuilder() {
-  const { data: session, status } = useSession();
+  const session = useSupabaseSession();
   const [originalText, setOriginalText] = useState("");
   const [targetRole, setTargetRole] = useState("");
   const [experienceLevel, setExperienceLevel] = useState("Fresher / Entry Level");
@@ -109,8 +109,6 @@ export default function ExpertResumeBuilder() {
     setIsCopied(true);
     setTimeout(() => setIsCopied(false), 2000);
   };
-
-  if (status === "loading") return <div className="min-h-screen bg-black flex items-center justify-center font-black italic animate-pulse">Checking credentials...</div>;
 
   return (
     <div className="min-h-screen bg-[#050505] text-white p-6 pt-32 relative overflow-hidden">

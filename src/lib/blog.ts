@@ -1,14 +1,15 @@
 import fs from 'fs';
 import path from 'path';
-import { createClient } from '@supabase/supabase-js';
+import { getSupabaseAdmin } from './supabaseClient';
 
 const DATA_PATH = path.join(process.cwd(), 'src/data/blogs.json');
 
 const getSupabase = () => {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !key) return null;
-  return createClient(url, key);
+  try {
+    return getSupabaseAdmin();
+  } catch {
+    return null;
+  }
 };
 
 export async function getBlogs() {

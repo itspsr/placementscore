@@ -43,7 +43,7 @@ function formatRelativeTime(dateString: string) {
 
   if (diffDays === 0) return "Today";
   if (diffDays === 1) return "Yesterday";
-  if (diffDays === 2) return "2 days ago";
+  if (diffDays <= 7) return `${diffDays} days ago`;
   return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
 }
 

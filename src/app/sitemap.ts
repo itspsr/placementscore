@@ -1,30 +1,8 @@
 import { MetadataRoute } from 'next';
-import { getBlogs } from '@/lib/blog';
-// NOTE: Keep sitemap focused on real, stable routes. Programmatic pages can introduce low-quality/duplicate URLs.
+import { createClient } from '@supabase/supabase-js';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = 'https://placementscore.online';
-  const blogs = await getBlogs();
-  
-  const companies = [
-    'tcs',
-    'infosys',
-    'wipro',
-    'accenture',
-    'google-internship',
-  ];
-
-  const toolRoutes = [
-    '/resume-word-count-checker',
-    '/ats-keyword-checker',
-    '/resume-headline-generator',
-    '/resume-checklist-tool',
-  ];
-
-  const companyLandingRoutes = companies.flatMap((c) => [
-    `/ats-score-for-${c}`,
-    `/resume-for-${c}`,
-  ]);
 
   const staticRoutes = [
     '',
@@ -39,14 +17,26 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     '/cover-letter',
     '/linkedin-analyzer',
     '/ultimate-ats-resume-guide-2026',
-    ...toolRoutes,
-    ...companyLandingRoutes,
+    '/resume-word-count-checker',
+    '/ats-keyword-checker',
+    '/resume-headline-generator',
+    '/resume-checklist-tool',
+    '/ats-score-for-tcs',
+    '/resume-for-tcs',
+    '/ats-score-for-infosys',
+    '/resume-for-infosys',
+    '/ats-score-for-wipro',
+    '/resume-for-wipro',
+    '/ats-score-for-accenture',
+    '/resume-for-accenture',
+    '/ats-score-for-google-internship',
+    '/resume-for-google-internship',
     // legacy routes
     '/company-score/tcs',
     '/company-score/infosys',
     '/company-score/accenture',
     '/company-score/deloitte',
-    '/company-score/google',
+    '/company-score/google'
   ].map((route) => ({
     url: `${baseUrl}${route}`,
     lastModified: new Date(),
@@ -54,12 +44,23 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: route === '' ? 1 : 0.8,
   }));
 
-  const blogRoutes = blogs.map((blog: any) => ({
-    url: `${baseUrl}/blog/${blog.slug}`,
-    lastModified: new Date(blog.createdAt),
-    changeFrequency: 'weekly' as const,
-    priority: 0.9,
-  }));
+  let blogRoutes: MetadataRoute.Sitemap = [];
+  const url = process.env.SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_ROLE;
+  if (url && key) {
+    const supabase = createClient(url, key);
+    const { data } = await supabase
+      .from('blogs')
+      .select('slug, updated_at')
+      .eq('published', true);
+
+    blogRoutes = (data || []).map((blog: any) => ({
+      url: `${baseUrl}/blog/${blog.slug}`,
+      lastModified: blog.updated_at || new Date(),
+      changeFrequency: 'weekly' as const,
+      priority: 0.9,
+    }));
+  }
 
   return [...staticRoutes, ...blogRoutes];
 }

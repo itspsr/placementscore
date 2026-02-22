@@ -1,24 +1,17 @@
 
 import { NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
 import { generateBlogArticle } from '@/lib/blogEngine';
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/lib/auth";
+import { getRouteHandlerSupabase, isAdminEmail } from '@/lib/adminAuth';
+import { getSupabaseAdmin } from '@/lib/supabaseClient';
 
 export const dynamic = 'force-dynamic';
 
-const getSupabase = () => {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !key) return null;
-  return createClient(url, key);
-};
-
 export async function POST(req: Request) {
   try {
-    const session = await getServerSession(authOptions);
-    const isAdmin = session?.user?.name === 'urboss' || session?.user?.email === 'itspsr@gmail.com' || session?.user?.email === 'admin@placementscore.online';
-    if (!isAdmin) {
+    const auth = getRouteHandlerSupabase();
+    const { data } = await auth.auth.getUser();
+    const email = data?.user?.email;
+    if (!isAdminEmail(email)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -36,8 +29,10 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Generation failed' }, { status: 500 });
     }
 
-    const supabase = getSupabase();
-    if (!supabase) {
+    let supabase;
+    try {
+      supabase = getSupabaseAdmin();
+    } catch {
       console.warn("Supabase not configured; skipping backfill.");
       return NextResponse.json({ success: false, safeMode: true }, { status: 200 });
     }

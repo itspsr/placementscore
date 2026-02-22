@@ -13,8 +13,9 @@ import {
   FileCode, Briefcase, GraduationCap, Trophy, Verified, Menu, Building2
 } from 'lucide-react';
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
-import { signOut, useSession } from "next-auth/react";
 import Link from 'next/link';
+import { getSupabaseBrowser } from '@/lib/supabaseClient';
+import { useSupabaseSession } from '@/lib/useSupabaseSession';
 
 // --- Types ---
 type AppState = 'landing' | 'analyzing' | 'result' | 'payment';
@@ -29,7 +30,7 @@ type ResumeAnalysis = {
 };
 
 export default function HomeClient() {
-  const { data: session } = useSession();
+  const session = useSupabaseSession();
   const [view, setView] = useState<AppState>('landing');
   const [file, setFile] = useState<File | null>(null);
   const [result, setResult] = useState<ResumeAnalysis | null>(null);
@@ -212,11 +213,19 @@ export default function HomeClient() {
           <div className="h-4 w-px bg-white/10" />
           {session?.user ? (
             <div className="flex items-center gap-3 bg-white/5 px-4 py-2 rounded-full border border-white/10">
-              <span className="text-xs text-white/80">{session.user.name}</span>
+              <span className="text-xs text-white/80">{session.user.email}</span>
               {session.user.email === "admin@placementscore.online" && (
                 <Link href="/admin" className="text-[10px] text-white/20 hover:text-white">Admin</Link>
               )}
-              <button onClick={() => signOut()} className="text-[10px] text-red-500/50 hover:text-red-500">Sign Out</button>
+              <button
+                onClick={async () => {
+                  await fetch('/api/logout', { method: 'POST' });
+                  window.location.href = '/';
+                }}
+                className="text-[10px] text-red-500/50 hover:text-red-500"
+              >
+                Sign Out
+              </button>
             </div>
           ) : (
             <div className="flex items-center gap-3">

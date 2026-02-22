@@ -1,16 +1,16 @@
 import { NextResponse } from 'next/server';
 import { generateBlogArticle, saveBlog } from '@/lib/blogEngine';
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/lib/auth";
+import { getRouteHandlerSupabase, isAdminEmail } from '@/lib/adminAuth';
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(req: Request) {
   // 1. Verify Request (Admin Session)
-  const session = await getServerSession(authOptions);
-  const isAdmin = session?.user?.name === 'urboss' || session?.user?.email === 'itspsr@gmail.com' || session?.user?.email === 'admin@placementscore.online';
+  const supabase = getRouteHandlerSupabase();
+  const { data } = await supabase.auth.getUser();
+  const email = data?.user?.email;
 
-  if (!isAdmin) {
+  if (!isAdminEmail(email)) {
     return NextResponse.json({ error: "Unauthorized access" }, { status: 401 });
   }
 

@@ -1,6 +1,5 @@
 "use client";
 
-import { signIn } from "next-auth/react";
 import { Shield, Sparkles, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { motion } from "framer-motion";
@@ -36,7 +35,13 @@ export default function LoginPage() {
               const form = e.currentTarget as HTMLFormElement;
               const email = (form.elements.namedItem('email') as HTMLInputElement).value;
               const password = (form.elements.namedItem('password') as HTMLInputElement).value;
-              await signIn("credentials", { callbackUrl: "/", email, password });
+              const res = await fetch('/api/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
+              });
+              if (!res.ok) return alert('Login failed');
+              window.location.href = '/';
             }}
           >
             <input

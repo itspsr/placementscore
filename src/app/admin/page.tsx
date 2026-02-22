@@ -1,14 +1,17 @@
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { Shield, Users, IndianRupee, Verified, ArrowLeft, Lock, BookOpen, Sparkles } from "lucide-react";
 import Link from "next/link";
+import { getServerComponentSupabase, isAdminEmail } from "@/lib/adminAuth";
+
+export const dynamic = 'force-dynamic';
 
 export default async function AdminPage() {
-  const session = await getServerSession(authOptions);
+  const supabase = getServerComponentSupabase();
+  const { data } = await supabase.auth.getUser();
+  const email = data?.user?.email;
 
   // HYPER-STRICT GATING: Only allow specific admin email
-  if (!session || session.user?.email !== "admin@placementscore.online") {
+  if (!isAdminEmail(email)) {
     redirect("/");
   }
 
@@ -25,7 +28,7 @@ export default async function AdminPage() {
             </Link>
             <h1 className="text-5xl font-[1000] italic uppercase tracking-tighter">Admin Dashboard</h1>
             <p className="text-white/30 font-bold uppercase tracking-widest text-[10px] flex items-center gap-2">
-               <Lock className="w-3 h-3 text-blue-500" /> Secure Terminal: {session.user?.email}
+               <Lock className="w-3 h-3 text-blue-500" /> Secure Terminal: {email}
             </p>
           </div>
           <div className="flex items-center gap-4 px-6 py-3 bg-white/5 border border-white/10 rounded-2xl">

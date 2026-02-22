@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { signIn } from "next-auth/react";
 import Link from "next/link";
 import { ArrowLeft, Shield, Sparkles } from "lucide-react";
 
@@ -48,7 +47,18 @@ export default function SignupPage() {
                 setLoading(false);
                 return;
               }
-              await signIn('credentials', { callbackUrl: '/', email, password });
+              const loginRes = await fetch('/api/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
+              });
+              if (!loginRes.ok) {
+                const err = await loginRes.json().catch(() => ({}));
+                setError(err.error || 'Login failed');
+                setLoading(false);
+                return;
+              }
+              window.location.href = '/';
               setLoading(false);
             }}
           >

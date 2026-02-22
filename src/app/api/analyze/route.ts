@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server';
-import pdf from 'pdf-parse';
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
 export const runtime = 'nodejs';
@@ -19,23 +18,29 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "No file provided" }, { status: 400 });
     }
 
-    // 1. Extract Text from PDF
-    const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
-    
-    let text = "";
-    try {
-      const data = await pdf(buffer);
-      text = data.text || "";
-    } catch (parseError) {
-      console.error("PDF Parse Error:", parseError);
-      return NextResponse.json({ 
-        success: false, 
-        error: "Unreadable PDF. Please ensure the file is not password protected or an image scan."
-      }, { status: 422 });
+    if (file.type !== 'application/pdf') {
+      return NextResponse.json({ error: "Only PDF files are allowed" }, { status: 400 });
     }
 
-    // Basic length check
+    if (file.size > 5 * 1024 * 1024) {
+      return NextResponse.json({ error: "File too large (max 5MB)" }, { status: 400 });
+    }
+
+    // 1. Extract Text from PDF using OpenAI (Vercel-safe)
+    if (!OPENAI_API_KEY && !process.env.GEMINI_API_KEY) {
+      return NextResponse.json({ success: false, error: "AI disabled" }, { status: 200 });
+    }
+
+    const bytes = await file.arrayBuffer();
+    const buffer = Buffer.from(bytes);
+    const base64 = buffer.toString('base64');
+
+    if (Buffer.byteLength(base64, 'utf8') > 5 * 1024 * 1024) {
+      return NextResponse.json({ error: "File too large (base64 > 5MB)" }, { status: 400 });
+    }
+
+    const text = await extractText(base64);
+
     if (text.trim().length < 50) {
       return NextResponse.json({ 
         success: false, 
@@ -82,6 +87,37 @@ type AIAnalysis = {
   weaknesses: string[];
   keyword_gaps: string[];
 };
+
+async function extractText(base64: string) {
+  if (!OPENAI_API_KEY) return '';
+  const prompt = `Extract readable text from the base64-encoded PDF. Return JSON only: {"text":""}.`;
+
+  const res = await fetch("https://api.openai.com/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${OPENAI_API_KEY}`,
+    },
+    body: JSON.stringify({
+      model: OPENAI_MODEL,
+      temperature: 0,
+      max_tokens: 600,
+      response_format: { type: "json_object" },
+      messages: [
+        { role: "system", content: "Return JSON only." },
+        { role: "user", content: `${prompt}\nPDF_BASE64:\n${base64}` }
+      ],
+    }),
+  });
+
+  const raw = await res.text();
+  if (!res.ok) throw new Error(`OpenAI API error: ${res.status} ${raw}`);
+
+  const data = JSON.parse(raw);
+  const content = data?.choices?.[0]?.message?.content;
+  const parsed = content ? JSON.parse(content) : { text: "" };
+  return parsed.text || "";
+}
 
 async function analyzeWithOpenAI(text: string): Promise<AIAnalysis | null> {
   if (!OPENAI_API_KEY) return null;

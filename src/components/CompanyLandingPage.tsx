@@ -7,7 +7,7 @@ import {
   Target, ShieldCheck, CheckCircle2, Star
 } from 'lucide-react';
 import Link from 'next/link';
-import { useSession } from "next-auth/react";
+import { useSupabaseSession } from "@/lib/useSupabaseSession";
 import { ExpertGate } from "@/components/ExpertGate";
 
 interface CompanyLandingPageProps {
@@ -16,7 +16,7 @@ interface CompanyLandingPageProps {
 }
 
 export default function CompanyLandingPage({ company, type }: CompanyLandingPageProps) {
-  const { data: session } = useSession();
+  const session = useSupabaseSession();
   const [file, setFile] = useState<File | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<any>(null);

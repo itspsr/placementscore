@@ -1,13 +1,13 @@
 import { NextResponse } from 'next/server';
 import { deleteBlog } from '@/lib/blogEngine';
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/lib/auth";
+import { getRouteHandlerSupabase, isAdminEmail } from '@/lib/adminAuth';
 
 export async function DELETE(req: Request, { params }: { params: { id: string } }) {
-  const session = await getServerSession(authOptions);
-  const isAdmin = session?.user?.name === 'urboss' || session?.user?.email === 'itspsr@gmail.com' || session?.user?.email === 'admin@placementscore.online';
+  const auth = getRouteHandlerSupabase();
+  const { data } = await auth.auth.getUser();
+  const email = data?.user?.email;
 
-  if (!isAdmin) {
+  if (!isAdminEmail(email)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

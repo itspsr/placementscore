@@ -14,7 +14,8 @@ import {
 } from 'lucide-react';
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
 import Link from 'next/link';
-import { useSupabaseSession } from '@/lib/useSupabaseSession';
+import { useAuth } from '@/lib/authProvider';
+import { getSupabaseBrowser } from '@/lib/supabaseClient';
 import { AtsMeter } from '@/components/AtsMeter';
 import ErrorBoundary from '@/components/ErrorBoundary';
 
@@ -37,7 +38,7 @@ type ResumeAnalysis = {
 };
 
 export default function HomeClient() {
-  const session = useSupabaseSession();
+  const { user, profile, loading: authLoading, logout } = useAuth();
   const [view, setView] = useState<AppState>('landing');
   const [file, setFile] = useState<File | null>(null);
   const [result, setResult] = useState<ResumeAnalysis | null>(null);
@@ -179,8 +180,11 @@ export default function HomeClient() {
       const formData = new FormData();
       formData.append('file', file);
       const headers: Record<string, string> = {};
-      if (session?.access_token) {
-        headers.Authorization = `Bearer ${session.access_token}`;
+            const supabase = getSupabaseBrowser();
+      if (supabase) {
+        const { data } = await supabase.auth.getSession();
+        const token = data?.session?.access_token;
+        if (token) headers.Authorization = `Bearer ${token}`;
       }
       const response = await fetch('/api/scan-resume', {
         method: 'POST',
@@ -249,21 +253,21 @@ export default function HomeClient() {
           <button onClick={() => scrollToSection('pricing')} className="hover:text-white transition">Pricing</button>
           <Link href="/blog" className="hover:text-white transition">Blog</Link>
           <button onClick={() => scrollToSection('faq')} className="hover:text-white transition">FAQ</button>
-          {session?.user && (
+          {user && (
             <Link href="/expert-resume-builder" className="text-blue-500 hover:text-blue-400 flex items-center gap-2">
               AI Builder <Sparkles className="w-4 h-4" />
             </Link>
           )}
           <div className="h-4 w-px bg-white/10" />
-          {session?.user ? (
+          {user ? (
             <div className="flex items-center gap-3 bg-white/5 px-4 py-2 rounded-full border border-white/10">
-              <span className="text-xs text-white/80">{session.user.email}</span>
-              {session.user.email === "admin@placementscore.online" && (
+              <span className="text-xs text-white/80">{user.email}</span>
+              {user.email === "admin@placementscore.online" && (
                 <Link href="/admin" className="text-[10px] text-white/20 hover:text-white">Admin</Link>
               )}
               <button
                 onClick={async () => {
-                  await fetch('/api/logout', { method: 'POST' });
+                  await logout();
                   window.location.href = '/';
                 }}
                 className="text-[10px] text-red-500/50 hover:text-red-500"

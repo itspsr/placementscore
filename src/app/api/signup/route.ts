@@ -3,9 +3,9 @@ import { cookies } from 'next/headers';
 import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
 
 export async function POST(req: Request) {
-  const { email, password } = await req.json();
-  if (!email || !password) {
-    return NextResponse.json({ error: 'Email and password required' }, { status: 400 });
+  const { name, email, password, contact_no, job_role } = await req.json();
+  if (!name || !email || !password) {
+    return NextResponse.json({ error: 'Name, email and password required' }, { status: 400 });
   }
 
   const supabase = createRouteHandlerClient(
@@ -25,6 +25,7 @@ export async function POST(req: Request) {
 
   if (data.user?.id) {
     await supabase.from('users').upsert({ id: data.user.id, plan: 'free' });
+    await supabase.from('profiles').upsert({ id: data.user.id, name, email, contact_no: contact_no || null, job_role: job_role || null, plan: 'free' });
   }
 
   return NextResponse.json({ success: true, user: data.user });

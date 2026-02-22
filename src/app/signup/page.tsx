@@ -7,6 +7,11 @@ import { ArrowLeft, Shield, Sparkles } from "lucide-react";
 export default function SignupPage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [contactNo, setContactNo] = useState('');
+  const [jobRole, setJobRole] = useState('');
 
   return (
     <main className="min-h-screen bg-[#050505] text-white flex items-center justify-center p-6 relative overflow-hidden">
@@ -32,14 +37,16 @@ export default function SignupPage() {
               e.preventDefault();
               setError(null);
               setLoading(true);
-              const form = e.currentTarget as HTMLFormElement;
-              const email = (form.elements.namedItem('email') as HTMLInputElement).value;
-              const password = (form.elements.namedItem('password') as HTMLInputElement).value;
+              if (!name || !email || !password) {
+                setError('Name, email and password required');
+                setLoading(false);
+                return;
+              }
 
               const res = await fetch('/api/signup', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, password })
+                body: JSON.stringify({ name, email, password, contact_no: contactNo, job_role: jobRole })
               });
               const data = await res.json();
               if (!res.ok) {
@@ -47,25 +54,25 @@ export default function SignupPage() {
                 setLoading(false);
                 return;
               }
-              const loginRes = await fetch('/api/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, password })
-              });
-              if (!loginRes.ok) {
-                const err = await loginRes.json().catch(() => ({}));
-                setError(err.error || 'Login failed');
-                setLoading(false);
-                return;
-              }
-              window.location.href = '/';
+              window.location.href = '/login';
               setLoading(false);
             }}
           >
             <input
+              name="name"
+              type="text"
+              required
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Name"
+              className="w-full p-4 rounded-2xl bg-black border border-white/10 outline-none focus:border-blue-600"
+            />
+            <input
               name="email"
               type="email"
               required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               placeholder="Email"
               className="w-full p-4 rounded-2xl bg-black border border-white/10 outline-none focus:border-blue-600"
             />
@@ -73,7 +80,25 @@ export default function SignupPage() {
               name="password"
               type="password"
               required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
               placeholder="Password"
+              className="w-full p-4 rounded-2xl bg-black border border-white/10 outline-none focus:border-blue-600"
+            />
+            <input
+              name="contactNo"
+              type="text"
+              value={contactNo}
+              onChange={(e) => setContactNo(e.target.value)}
+              placeholder="Contact No (optional)"
+              className="w-full p-4 rounded-2xl bg-black border border-white/10 outline-none focus:border-blue-600"
+            />
+            <input
+              name="jobRole"
+              type="text"
+              value={jobRole}
+              onChange={(e) => setJobRole(e.target.value)}
+              placeholder="Job Role (optional)"
               className="w-full p-4 rounded-2xl bg-black border border-white/10 outline-none focus:border-blue-600"
             />
             {error && (

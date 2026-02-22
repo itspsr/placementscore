@@ -18,7 +18,7 @@ export async function POST(req: Request) {
       }
     );
     const { data: authData } = await supabaseAuth.auth.getUser();
-    let user = authData?.user;
+    let user = authData?.user || null;
     if (!user) {
       const authHeader = req.headers.get('authorization') || '';
       const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : authHeader;
@@ -27,9 +27,6 @@ export async function POST(req: Request) {
         const { data: tokenUser } = await admin.auth.getUser(token);
         user = tokenUser?.user || null;
       }
-    }
-    if (!user) {
-      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
     }
 
     const formData = await req.formData();

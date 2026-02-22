@@ -31,6 +31,7 @@ export async function POST(req: Request) {
 
   if (data.user?.id) {
     await supabase.from('users').upsert({ id: data.user.id, plan: 'free' });
+    await supabase.from('profiles').upsert({ id: data.user.id, name: data.user.user_metadata?.name || data.user.email || 'User', email: data.user.email, plan: 'free' });
   }
   return NextResponse.json({ success: true, user: data.user });
 }

@@ -9,30 +9,34 @@ import { BackButton } from "@/components/BackButton";
 export const dynamic = 'force-dynamic';
 
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
-  const blog = await getBlogBySlug(params.slug);
-  if (!blog) return { title: "Blog Not Found" };
+  try {
+    const blog = await getBlogBySlug(params.slug);
+    if (!blog) return { title: "Blog Not Found" };
 
-  const canonical = blog.canonical_url || `https://placementscore.online/blog/${params.slug}`;
+    const canonical = blog?.canonical_url || `https://placementscore.online/blog/${params.slug}`;
 
-  return {
-    title: `${withCtrTitle(blog.title)} | PlacementScore.online`,
-    description: blog.metaDescription || blog.meta_description,
-    alternates: {
-      canonical,
-    },
-    openGraph: {
-      title: withCtrTitle(blog.title),
-      description: blog.metaDescription || blog.meta_description,
-      type: 'article',
-      url: canonical,
-      publishedTime: blog.createdAt || blog.created_at,
-    },
-    twitter: {
-      card: 'summary_large_image',
-      title: withCtrTitle(blog.title),
-      description: blog.metaDescription || blog.meta_description,
-    }
-  };
+    return {
+      title: `${withCtrTitle(blog?.title || '')} | PlacementScore.online`,
+      description: blog?.metaDescription || blog?.meta_description,
+      alternates: {
+        canonical,
+      },
+      openGraph: {
+        title: withCtrTitle(blog?.title || ''),
+        description: blog?.metaDescription || blog?.meta_description,
+        type: 'article',
+        url: canonical,
+        publishedTime: blog?.createdAt || blog?.created_at,
+      },
+      twitter: {
+        card: 'summary_large_image',
+        title: withCtrTitle(blog?.title || ''),
+        description: blog?.metaDescription || blog?.meta_description,
+      }
+    };
+  } catch (e) {
+    return { title: "Blog Not Found" };
+  }
 }
 
 function withCtrTitle(title: string) {
@@ -54,35 +58,36 @@ function formatRelativeTime(dateString: string) {
 }
 
 export default async function BlogPost({ params }: { params: { slug: string } }) {
-  const blog = await getBlogBySlug(params.slug);
-  if (!blog) notFound();
+  try {
+    const blog = await getBlogBySlug(params.slug);
+    if (!blog) return notFound();
 
-  const allBlogs = await getBlogs();
-  const blogKeywords: string[] = (blog.keywords || []).map((k: string) => String(k).toLowerCase());
+    const allBlogs = await getBlogs();
+    const blogKeywords: string[] = (blog?.keywords || []).map((k: string) => String(k).toLowerCase());
 
-  const related = allBlogs
-    .filter((b: any) => b.slug !== blog.slug)
-    .map((b: any) => {
-      const kws: string[] = (b.keywords || []).map((k: string) => String(k).toLowerCase());
-      const overlap = kws.filter((k) => blogKeywords.includes(k)).length;
-      return { blog: b, overlap };
-    })
-    .sort((a: any, b: any) => b.overlap - a.overlap)
-    .slice(0, 3)
-    .map((x: any) => x.blog);
+    const related = allBlogs
+      .filter((b: any) => b.slug !== blog?.slug)
+      .map((b: any) => {
+        const kws: string[] = (b.keywords || []).map((k: string) => String(k).toLowerCase());
+        const overlap = kws.filter((k) => blogKeywords.includes(k)).length;
+        return { blog: b, overlap };
+      })
+      .sort((a: any, b: any) => b.overlap - a.overlap)
+      .slice(0, 3)
+      .map((x: any) => x.blog);
 
-  const contentWithLinks = `${blog.content}
+    const contentWithLinks = `${blog?.content || ''}
 
 [Check your ATS resume score](/)
 
 [Improve your ATS score instantly](/)`;
 
-  // Schema JSON moved to app/blog/[slug]/head.tsx
+    // Schema JSON moved to app/blog/[slug]/head.tsx
 
-  return (
-    <article className="min-h-screen bg-[#050505] text-white p-4 md:p-6 pt-24 md:pt-32 overflow-x-hidden">
-      <div className="max-w-4xl mx-auto space-y-8 md:space-y-12">
-        <BackButton />
+    return (
+      <article className="min-h-screen bg-[#050505] text-white p-4 md:p-6 pt-24 md:pt-32 overflow-x-hidden">
+        <div className="max-w-4xl mx-auto space-y-8 md:space-y-12">
+          <BackButton />
 
         <Link href="/blog" className="inline-flex items-center gap-2 text-white/20 hover:text-white transition-colors group text-sm">
           <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" /> Back to Insights
@@ -90,15 +95,15 @@ export default async function BlogPost({ params }: { params: { slug: string } })
 
         <header className="space-y-6 md:space-y-8">
            <div className="flex items-center gap-4 text-[9px] md:text-[10px] font-black uppercase tracking-[0.4em] text-blue-500">
-             <Calendar className="w-3 h-3 md:w-4 md:h-4" /> {formatRelativeTime(blog.createdAt || blog.created_at)}
+             <Calendar className="w-3 h-3 md:w-4 md:h-4" /> {formatRelativeTime(blog?.createdAt || blog?.created_at)}
              <span className="text-white/10">•</span>
-             <span className="text-white/30 italic">{blog.cluster}</span>
+             <span className="text-white/30 italic">{blog?.cluster}</span>
            </div>
            <h1 className="text-4xl md:text-5xl lg:text-8xl font-[1000] italic uppercase tracking-tighter leading-[0.9] text-balance break-words">
-             {withCtrTitle(blog.title)}
+             {withCtrTitle(blog?.title || '')}
            </h1>
            <p className="text-lg md:text-2xl text-white/40 font-medium italic border-l-4 border-blue-600 pl-6 md:pl-8 leading-relaxed">
-             {blog.metaDescription || blog.meta_description}
+             {blog?.metaDescription || blog?.meta_description}
            </p>
         </header>
 
@@ -147,5 +152,9 @@ export default async function BlogPost({ params }: { params: { slug: string } })
         </section>
       </div>
     </article>
-  );
+    );
+  } catch (err) {
+    console.error('Blog fetch failed', err);
+    return notFound();
+  }
 }

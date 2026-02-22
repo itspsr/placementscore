@@ -17,6 +17,7 @@ import Link from 'next/link';
 import { useAuth } from '@/lib/authProvider';
 import { getSupabaseBrowser } from '@/lib/supabaseClient';
 import { AtsMeter } from '@/components/AtsMeter';
+import ExampleDemo from '@/components/ExampleDemo';
 import ErrorBoundary from '@/components/ErrorBoundary';
 
 // --- Types ---
@@ -596,6 +597,8 @@ export default function HomeClient() {
                 </div>
               </div>
             </section>
+
+            <ExampleDemo />
 
             {/* Trust stack */}
             <motion.section

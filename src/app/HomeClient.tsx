@@ -63,6 +63,11 @@ export default function HomeClient() {
   const [scrolled, setScrolled] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
   const [pricingLoading, setPricingLoading] = useState<string | null>(null);
+  const [demoRole, setDemoRole] = useState('Software Developer');
+  const [demoVisible, setDemoVisible] = useState(false);
+  const [demoBeforeScore, setDemoBeforeScore] = useState(0);
+  const [demoAfterScore, setDemoAfterScore] = useState(0);
+  const demoRef = useRef<HTMLDivElement | null>(null);
 
   // --- Persistence & Query Params ---
   useEffect(() => {
@@ -94,6 +99,112 @@ export default function HomeClient() {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  const demoSnippets: Record<string, { before: string[]; after: string[] }> = {
+    'Software Developer': {
+      before: [
+        'Built a college project in React',
+        'Worked with databases',
+        'Good team player',
+        'Participated in hackathons',
+        'Interested in backend development',
+        'Basic knowledge of APIs'
+      ],
+      after: [
+        'Built React dashboard used by 1,200+ users',
+        'Optimized SQL queries reducing latency by 32%',
+        'Implemented REST APIs in Node.js and Express',
+        'Added CI/CD with GitHub Actions and Docker',
+        'Improved Lighthouse performance score to 94',
+        'Deployed on AWS EC2 with auto-scaling'
+      ]
+    },
+    'Data Analyst': {
+      before: [
+        'Worked on data projects',
+        'Familiar with Excel',
+        'Created charts',
+        'Analyzed datasets',
+        'Basic SQL knowledge',
+        'Team collaboration experience'
+      ],
+      after: [
+        'Automated dashboards in Power BI for 5 teams',
+        'Cleaned 200k+ rows using Python and Pandas',
+        'Built SQL pipelines improving query time by 40%',
+        'Delivered KPI reports with 98% accuracy',
+        'Applied regression models for demand forecasting',
+        'Improved reporting turnaround by 3 days'
+      ]
+    },
+    'MBA Marketing': {
+      before: [
+        'Worked on marketing projects',
+        'Social media experience',
+        'Conducted surveys',
+        'Made presentations',
+        'Interested in brand management',
+        'Good communication skills'
+      ],
+      after: [
+        'Increased campaign CTR by 28% on Meta ads',
+        'Ran A/B tests improving conversions by 19%',
+        'Built GTM plan for a new D2C launch',
+        'Optimized CRM flows increasing retention by 14%',
+        'Managed 2L monthly ad budget with 3.2x ROAS',
+        'Analyzed cohort data to reduce churn by 12%'
+      ]
+    },
+    'Mechanical Engineer': {
+      before: [
+        'Completed internships in production',
+        'Worked on CAD models',
+        'Assisted in plant operations',
+        'Prepared maintenance reports',
+        'Learned manufacturing processes',
+        'Team collaboration experience'
+      ],
+      after: [
+        'Reduced downtime by 22% via preventive maintenance',
+        'Designed CAD assembly with 15% weight reduction',
+        'Implemented 5S improving throughput by 18%',
+        'Optimized BOM reducing cost by ₹1.6L annually',
+        'Led Kaizen project cutting waste by 12%',
+        'Built SPC charts for quality compliance'
+      ]
+    }
+  };
+
+  useEffect(() => {
+    const node = demoRef.current;
+    if (!node) return;
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) setDemoVisible(true);
+    }, { threshold: 0.2 });
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (!demoVisible) return;
+    const targetBefore = 48;
+    const targetAfter = 82;
+    setDemoBeforeScore(0);
+    setDemoAfterScore(0);
+    const duration = 800;
+    const steps = 40;
+    const stepMs = duration / steps;
+    let current = 0;
+    const timer = setInterval(() => {
+      current += 1;
+      const nextBefore = Math.min(targetBefore, Math.round((targetBefore * current) / steps));
+      const nextAfter = Math.min(targetAfter, Math.round((targetAfter * current) / steps));
+      setDemoBeforeScore(nextBefore);
+      setDemoAfterScore(nextAfter);
+      if (current >= steps) clearInterval(timer);
+    }, stepMs);
+    return () => clearInterval(timer);
+  }, [demoVisible, demoRole]);
 
   useEffect(() => {
     if (profile?.plan) setUserPlan(profile.plan);
@@ -584,6 +695,126 @@ export default function HomeClient() {
                    <TrustBadge icon={Zap} title="95%+ Parity" />
                    <TrustBadge icon={Star} title="4.9 Rating" />
                 </div>
+            </section>
+
+
+            {/* Live ATS Resume Score Demo */}
+            <section ref={demoRef} className="py-24 md:py-36 px-4 md:px-6">
+              <div className="max-w-[1100px] mx-auto space-y-10">
+                <div className="text-center space-y-4">
+                  <h2 className="text-3xl md:text-5xl font-[1000] italic uppercase tracking-tighter">See How Your Resume Score Improves Instantly</h2>
+                  <p className="text-white/40 text-base md:text-lg">Most resumes fail ATS screening below 60. See a real example.</p>
+                </div>
+
+                <div className="flex items-center justify-center">
+                  <div className="inline-flex items-center gap-3 bg-white/5 border border-white/10 px-4 py-2 rounded-full text-xs font-black uppercase tracking-widest text-white/60">
+                    <span>Select Target Role</span>
+                    <select
+                      value={demoRole}
+                      onChange={(e) => setDemoRole(e.target.value)}
+                      className="bg-black/40 border border-white/10 rounded-full px-3 py-1 text-white text-xs"
+                    >
+                      {Object.keys(demoSnippets).map((role) => (
+                        <option key={role} value={role}>{role}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                <div className="grid md:grid-cols-2 gap-8">
+                  <div className={`transition-all duration-700 ${demoVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'} bg-white/[0.02] border border-white/10 rounded-[36px] p-8 space-y-6`}>
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-lg font-black uppercase tracking-widest text-white/60">Before Optimization</h3>
+                      <div className="relative w-16 h-16">
+                        <svg viewBox="0 0 100 100" className="w-full h-full">
+                          <circle cx="50" cy="50" r="42" stroke="#2a2a2a" strokeWidth="10" fill="transparent" />
+                          <circle
+                            cx="50" cy="50" r="42" stroke="#ef4444" strokeWidth="10" fill="transparent"
+                            strokeDasharray="264"
+                            strokeDashoffset={264 - (264 * demoBeforeScore) / 100}
+                            strokeLinecap="round"
+                            className="transition-all duration-700"
+                          />
+                        </svg>
+                        <div className="absolute inset-0 flex items-center justify-center text-xs font-black text-red-400">{demoBeforeScore}%</div>
+                      </div>
+                    </div>
+                    <ul className="space-y-2 text-sm text-white/60">
+                      {demoSnippets[demoRole].before.map((item) => (
+                        <li key={item} className="flex items-start gap-2"><span className="text-white/20">•</span>{item}</li>
+                      ))}
+                    </ul>
+                    <div className="space-y-2 text-sm font-bold">
+                      <div className="text-red-400">❌ Weak summary</div>
+                      <div className="text-red-400">❌ No measurable impact</div>
+                      <div className="text-red-400">❌ Missing keywords</div>
+                    </div>
+                  </div>
+
+                  <div className={`transition-all duration-700 ${demoVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'} bg-white/[0.02] border border-white/10 rounded-[36px] p-8 space-y-6`}>
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-lg font-black uppercase tracking-widest text-white/60">After AI Optimization</h3>
+                      <div className="relative w-16 h-16">
+                        <svg viewBox="0 0 100 100" className="w-full h-full">
+                          <circle cx="50" cy="50" r="42" stroke="#2a2a2a" strokeWidth="10" fill="transparent" />
+                          <circle
+                            cx="50" cy="50" r="42" stroke="#22c55e" strokeWidth="10" fill="transparent"
+                            strokeDasharray="264"
+                            strokeDashoffset={264 - (264 * demoAfterScore) / 100}
+                            strokeLinecap="round"
+                            className="transition-all duration-700"
+                          />
+                        </svg>
+                        <div className="absolute inset-0 flex items-center justify-center text-xs font-black text-emerald-400">{demoAfterScore}%</div>
+                      </div>
+                    </div>
+                    <ul className="space-y-2 text-sm text-white/60">
+                      {demoSnippets[demoRole].after.map((item) => (
+                        <li key={item} className="flex items-start gap-2"><span className="text-white/20">•</span>{item}</li>
+                      ))}
+                    </ul>
+                    <div className="space-y-2 text-sm font-bold">
+                      <div className="text-emerald-400">✅ Strong summary</div>
+                      <div className="text-emerald-400">✅ 6 ATS keywords added</div>
+                      <div className="text-emerald-400">✅ Impact metrics added</div>
+                      <div className="text-emerald-400">✅ Optimized formatting</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid md:grid-cols-3 gap-6 text-center text-xs md:text-sm font-black uppercase tracking-widest text-white/50">
+                  <div className="bg-white/[0.02] border border-white/10 rounded-2xl p-4">✔ 2,431 resumes analyzed this week</div>
+                  <div className="bg-white/[0.02] border border-white/10 rounded-2xl p-4">✔ 78% improved score after upgrade</div>
+                  <div className="bg-white/[0.02] border border-white/10 rounded-2xl p-4">✔ Used by students across India</div>
+                </div>
+
+                <div className="flex justify-center">
+                  <button
+                    type="button"
+                    onClick={() => scrollToSection('upload')}
+                    className="px-8 py-4 bg-white text-black rounded-2xl font-black uppercase tracking-widest text-sm hover:bg-blue-600 hover:text-white transition-all"
+                  >
+                    Check Your Resume Score Now
+                  </button>
+                </div>
+
+                <div className="text-white/45 text-sm md:text-base leading-relaxed space-y-4">
+                  <p>
+                    If your resume score below 60 keeps showing up, you are not alone. A strong ATS resume score checker highlights
+                    exactly why recruiters never see your profile. In India, resume optimization is not optional anymore; it is the
+                    fastest way to improve ATS score and move into the interview shortlist. Most candidates fail because they use
+                    generic summaries, skip key skills, and avoid quantifying outcomes. The demo above shows how the same resume looks
+                    once optimized for ATS parsing.
+                  </p>
+                  <p>
+                    PlacementScore.online helps students understand how to improve ATS score with a structured checklist and targeted
+                    keyword upgrades. A small change in phrasing, measurable impact, and formatting can lift a resume score below 60
+                    into the 80+ range. If you want a deeper guide, read our
+                    <Link href="/ats-resume-score-checker-india" className="text-blue-400 hover:underline"> ATS resume score checker India</Link>
+                    page for a full breakdown on resume optimization India.
+                  </p>
+                </div>
+              </div>
             </section>
 
             {/* Pricing Section */}

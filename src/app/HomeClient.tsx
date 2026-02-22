@@ -42,6 +42,7 @@ export default function HomeClient() {
   const [file, setFile] = useState<File | null>(null);
   const [result, setResult] = useState<ResumeAnalysis | null>(null);
   const [scanError, setScanError] = useState<string | null>(null);
+  const [isScanning, setIsScanning] = useState(false);
   const [countdown, setCountdown] = useState(24 * 60 * 60);
   const [paymentStep, setPaymentStep] = useState(1);
   const [utr, setUtr] = useState("");
@@ -171,6 +172,7 @@ export default function HomeClient() {
   const runAnalysis = async () => {
     if (!file) return;
     setScanError(null);
+    setIsScanning(true);
     setView('analyzing');
     const minimumWait = new Promise(resolve => setTimeout(resolve, 2500));
     try {
@@ -206,6 +208,8 @@ export default function HomeClient() {
       console.error('[scan-resume] error', err);
       setScanError(err.message || "Analysis failed.");
       setView('landing');
+    } finally {
+      setIsScanning(false);
     }
   };
 
@@ -509,7 +513,7 @@ export default function HomeClient() {
                         <FileText className="w-16 h-16 md:w-24 md:h-24 text-blue-500 mx-auto animate-bounce-slow" />
                         <h3 className="text-xl md:text-3xl font-[1000] italic uppercase truncate px-4">{file.name}</h3>
                         <div className="flex flex-col sm:flex-row gap-4 md:gap-6 max-w-md mx-auto">
-                           <button onClick={runAnalysis} className="flex-1 py-5 md:py-6 bg-white text-black rounded-2xl md:rounded-3xl font-[1000] text-xl md:text-2xl hover:bg-blue-600 hover:text-white transition-all shadow-2xl">SCAN NOW</button>
+                           <button type="button" onClick={runAnalysis} disabled={!file || isScanning} className="flex-1 py-5 md:py-6 bg-white text-black rounded-2xl md:rounded-3xl font-[1000] text-xl md:text-2xl hover:bg-blue-600 hover:text-white transition-all shadow-2xl disabled:opacity-50 disabled:cursor-not-allowed">SCAN NOW</button>
                            <label htmlFor="hero-up" className="px-8 md:px-10 py-5 md:py-6 bg-white/5 border border-white/10 rounded-2xl md:rounded-3xl font-black text-lg md:text-xl hover:bg-white/10 transition-all cursor-pointer flex items-center justify-center italic uppercase">CHANGE</label>
                         </div>
                       </div>

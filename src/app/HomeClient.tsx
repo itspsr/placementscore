@@ -39,6 +39,7 @@ type ResumeAnalysis = {
 
 export default function HomeClient() {
   const { user, profile, loading: authLoading, logout } = useAuth();
+  const [userPlan, setUserPlan] = useState<string>("free");
   const [view, setView] = useState<AppState>('landing');
   const [file, setFile] = useState<File | null>(null);
   const [result, setResult] = useState<ResumeAnalysis | null>(null);
@@ -80,12 +81,20 @@ export default function HomeClient() {
     }
   }, []);
 
+  useEffect(() => {
+    if (profile?.plan) setUserPlan(profile.plan);
+  }, [profile]);
+
   // --- Scroll & Sticky Nav ---
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 50);
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  useEffect(() => {
+    if (profile?.plan) setUserPlan(profile.plan);
+  }, [profile]);
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'instant' });
@@ -113,6 +122,10 @@ export default function HomeClient() {
     }, 1000);
     return () => clearInterval(timer);
   }, []);
+
+  useEffect(() => {
+    if (profile?.plan) setUserPlan(profile.plan);
+  }, [profile]);
 
   // --- Actions ---
 
@@ -242,6 +255,9 @@ export default function HomeClient() {
     const el = document.getElementById(id);
     if (el) el.scrollIntoView({ behavior: 'smooth' });
   };
+
+  const planRank = (plan: string) => ({ free: 0, base: 1, elite: 2, expert: 3 }[plan] || 0);
+  const hasPlan = (required: string) => planRank(userPlan) >= planRank(required);
 
   const Navbar = () => (
     <nav className={`fixed top-0 w-full z-[100] border-b border-white/5 transition-all duration-500 ${scrolled ? 'bg-black/80 backdrop-blur-xl py-4 shadow-[0_10px_30px_rgba(0,0,0,0.5)]' : 'bg-transparent py-6'}`}>
@@ -676,8 +692,23 @@ export default function HomeClient() {
                     >
                       Unlock AI Optimization — ₹399
                     </button>
+
+                    {!hasPlan('expert') && (
+                      <div className="mt-10">
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                          {!hasPlan('base') && (
+                            <PricingCard file={file} setView={setView} setSelectedPlan={setSelectedPlan} setPricingLoading={setPricingLoading} pricingLoading={pricingLoading} tier="BASE" price="99" perks={['Real ATS Score', 'Formatting Audit', '30-Day Storage']} />
+                          )}
+                          {!hasPlan('elite') && (
+                            <PricingCard file={file} setView={setView} setSelectedPlan={setSelectedPlan} setPricingLoading={setPricingLoading} pricingLoading={pricingLoading} tier="ELITE" price="199" perks={['Everything in Base', 'Detailed Insight Report', 'Keyword Gap Analysis', 'Improvement Plan']} />
+                          )}
+                          <PricingCard file={file} setView={setView} setSelectedPlan={setSelectedPlan} setPricingLoading={setPricingLoading} pricingLoading={pricingLoading} tier="EXPERT" price="399" popular perks={['Everything in Elite', 'AI Resume Rearchitect', 'Unlimited PDF Downloads', 'Priority Support']} />
+                        </div>
+                      </div>
+                    )}
                   </>
                 ) : (
+                  
                   <>
                     <div className="space-y-4 text-center xl:text-left">
                       <h2 className="text-4xl md:text-6xl font-[1000] tracking-tighter italic uppercase">Pro Optimized</h2>
@@ -691,7 +722,7 @@ export default function HomeClient() {
                         <div className="mt-4 text-[10px] font-black uppercase tracking-widest text-white/20">Original Score: {result?.baseScore ?? 0}</div>
                       </div>
                       {!result?.locked && result?.optimizedResume && (
-                        <div className="p-6 md:p-8 bg-green-500/5 rounded-[30px] md:rounded-[40px] border border-green-500/20 text-left">
+                        <LockedSection requiredPlan="expert" userPlan={userPlan}><div className="p-6 md:p-8 bg-green-500/5 rounded-[30px] md:rounded-[40px] border border-green-500/20 text-left">
                           <p className="text-[10px] font-black uppercase tracking-widest text-green-400 mb-3">Optimized Resume</p>
                           <p className="text-sm text-white/60 whitespace-pre-wrap">{result?.optimizedResume}</p>
                           <div className="mt-4 flex items-center gap-3 text-[10px] font-black uppercase tracking-widest text-green-400">
@@ -700,7 +731,7 @@ export default function HomeClient() {
                               +{Math.max(0, (result?.score ?? 0) - (result?.baseScore ?? 0))} ATS Boost
                             </span>
                           </div>
-                        </div>
+                        </div></LockedSection>
                       )}
                     </div>
                   </>
@@ -925,6 +956,17 @@ const PricingCard = ({ tier, price, perks, popular, setView, setSelectedPlan, fi
      </button>
   </div>
 );
+
+const LockedSection = ({ requiredPlan, userPlan, children }: any) => {
+  const rank = { free: 0, base: 1, elite: 2, expert: 3 } as any;
+  if ((rank[userPlan] || 0) >= (rank[requiredPlan] || 0)) return children;
+  return (
+    <div className="blurred-content">
+      <div className="overlay-lock">🔒 Upgrade to unlock</div>
+      {children}
+    </div>
+  );
+};
 
 const PaymentTimer = () => {
   const [timeLeft, setTimeLeft] = useState(600); // 10 minutes

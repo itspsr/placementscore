@@ -20,22 +20,22 @@ export async function POST(req: Request) {
     const { data: authData } = await supabaseAuth.auth.getUser();
     const user = authData?.user;
     if (!user) {
-      return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
     }
 
     const formData = await req.formData();
     const file = formData.get('file') as File | null;
 
     if (!file) {
-      return NextResponse.json({ success: false, message: 'No file provided' }, { status: 400 });
+      return NextResponse.json({ success: false, error: 'No file provided' }, { status: 400 });
     }
 
     if (file.type !== 'application/pdf') {
-      return NextResponse.json({ success: false, message: 'Only PDF files are allowed' }, { status: 400 });
+      return NextResponse.json({ success: false, error: 'Only PDF files are allowed' }, { status: 400 });
     }
 
     if (file.size > 5 * 1024 * 1024) {
-      return NextResponse.json({ success: false, message: 'File too large (max 5MB)' }, { status: 400 });
+      return NextResponse.json({ success: false, error: 'File too large (max 5MB)' }, { status: 400 });
     }
 
     const bytes = await file.arrayBuffer();
@@ -62,6 +62,7 @@ export async function POST(req: Request) {
       score = Math.min(score, 60);
 
       return NextResponse.json({
+        success: true,
         plan: 'free',
         score,
         locked: true,
@@ -70,25 +71,25 @@ export async function POST(req: Request) {
     }
 
     if (!process.env.OPENAI_API_KEY || !process.env.OPENAI_MODEL) {
-      return NextResponse.json({ success: false, message: 'AI disabled' }, { status: 200 });
+      return NextResponse.json({ success: false, error: 'AI disabled' }, { status: 200 });
     }
 
     const rawText = extractBasicText(buffer);
     const cleanText = trimResumeText(rawText);
     if (!cleanText) {
-      return NextResponse.json({ success: false, message: 'Invalid or empty resume detected.' }, { status: 422 });
+      return NextResponse.json({ success: false, error: 'Invalid or empty resume detected.' }, { status: 422 });
     }
 
     const extracted = await extractAndAnalyze(cleanText);
     if (!extracted.valid) {
-      return NextResponse.json({ success: false, message: 'Invalid or empty resume detected.' }, { status: 422 });
+      return NextResponse.json({ success: false, error: 'Invalid or empty resume detected.' }, { status: 422 });
     }
 
     const finalText = (extracted.text || cleanText || '').trim();
     const lower = finalText.toLowerCase();
     const hits = REQUIRED_KEYWORDS.filter(k => lower.includes(k)).length;
     if (finalText.length < 300 || hits < 3) {
-      return NextResponse.json({ success: false, message: 'Invalid or empty resume detected.' }, { status: 422 });
+      return NextResponse.json({ success: false, error: 'Invalid or empty resume detected.' }, { status: 422 });
     }
 
     const baseScore = extracted.score || 0;
@@ -105,6 +106,7 @@ export async function POST(req: Request) {
     });
 
     return NextResponse.json({
+      success: true,
       plan: 'pro',
       score: finalScore,
       baseScore,
@@ -118,7 +120,7 @@ export async function POST(req: Request) {
     const msg = e?.message?.includes('OpenAI error')
       ? 'AI processing failed. Check OPENAI_API_KEY and model access.'
       : (e.message || 'Server error');
-    return NextResponse.json({ success: false, message: msg }, { status: 502 });
+    return NextResponse.json({ success: false, error: msg }, { status: 502 });
   }
 }
 

@@ -180,13 +180,13 @@ export default function HomeClient() {
       const data = await response.json();
       console.log('[scan-resume] status', response.status, data);
       await minimumWait;
-      if (!response.ok) throw new Error(data?.error || data?.message);
+      if (!response.ok || data?.success === false) throw new Error(data?.error || data?.message || 'Analysis failed.');
       if (data.locked) {
         setResult({ score: data?.score ?? 0, plan: data?.plan, locked: true, message: data?.message });
         setView('result');
         return;
       }
-      if (!data?.score) {
+      if (!(data?.success === true && data?.score)) {
         throw new Error('AI response incomplete. Please try again.');
       }
       if (!data?.optimizedResume) {

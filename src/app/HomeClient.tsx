@@ -41,6 +41,7 @@ export default function HomeClient() {
   const [view, setView] = useState<AppState>('landing');
   const [file, setFile] = useState<File | null>(null);
   const [result, setResult] = useState<ResumeAnalysis | null>(null);
+  const [scanError, setScanError] = useState<string | null>(null);
   const [countdown, setCountdown] = useState(24 * 60 * 60);
   const [paymentStep, setPaymentStep] = useState(1);
   const [utr, setUtr] = useState("");
@@ -129,6 +130,7 @@ export default function HomeClient() {
     setPaymentError("");
     setIsGenerated(false);
     setIsGenerating(false);
+    setScanError(null);
     setView('landing');
   };
 
@@ -168,6 +170,7 @@ export default function HomeClient() {
 
   const runAnalysis = async () => {
     if (!file) return;
+    setScanError(null);
     setView('analyzing');
     const minimumWait = new Promise(resolve => setTimeout(resolve, 2500));
     try {
@@ -175,17 +178,23 @@ export default function HomeClient() {
       formData.append('file', file);
       const response = await fetch('/api/scan-resume', { method: 'POST', body: formData });
       const data = await response.json();
+      console.log('[scan-resume] status', response.status, data);
       await minimumWait;
       if (!response.ok) throw new Error(data?.error || data?.message);
       if (data.locked) {
         setResult({ score: data?.score ?? 0, plan: data?.plan, locked: true, message: data?.message });
-      } else {
-        setResult({ score: data?.score ?? 0, baseScore: data?.baseScore ?? 0, plan: data?.plan, locked: false, optimizedResume: data?.optimizedResume ?? '', originalText: data?.originalText ?? '' });
+        setView('result');
+        return;
       }
+      if (!data?.score || !data?.optimizedResume) {
+        throw new Error('AI response incomplete. Please try again.');
+      }
+      setResult({ score: data?.score ?? 0, baseScore: data?.baseScore ?? 0, plan: data?.plan, locked: false, optimizedResume: data?.optimizedResume ?? '', originalText: data?.originalText ?? '' });
       setView('result');
     } catch (err: any) {
+      console.error('[scan-resume] error', err);
+      setScanError(err.message || "Analysis failed.");
       setView('landing');
-      setTimeout(() => alert(err.message || "Analysis failed."), 100);
     }
   };
 
@@ -496,6 +505,11 @@ export default function HomeClient() {
                     )}
                   </div>
                 </div>
+                  {scanError && (
+                    <div className="mt-6 p-4 bg-red-500/10 border border-red-500/20 text-red-400 text-xs font-black uppercase tracking-widest rounded-2xl">
+                      {scanError}
+                    </div>
+                  )}
                 <div className="flex flex-wrap justify-center gap-4 md:gap-8 pt-8">
                    <TrustBadge icon={ShieldCheck} title="Verified 2026" />
                    <TrustBadge icon={Lock} title="RAM Processing" />

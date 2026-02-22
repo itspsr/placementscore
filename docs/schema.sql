@@ -64,7 +64,7 @@ create table if not exists resume_reports (
   strengths text[] default '{}',
   weaknesses text[] default '{}',
   missing_keywords text[] default '{}',
-  suggestions text[] default '{}',
+  improvements text[] default '{}',
   raw_text text,
   created_at timestamptz default now()
 );

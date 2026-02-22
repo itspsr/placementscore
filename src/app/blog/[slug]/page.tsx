@@ -6,12 +6,7 @@ import Link from 'next/link';
 import ReactMarkdown from 'react-markdown';
 import { BackButton } from "@/components/BackButton";
 
-export async function generateStaticParams() {
-  const blogs = await getBlogs();
-  return blogs.map((blog: any) => ({
-    slug: blog.slug,
-  }));
-}
+export const dynamic = 'force-dynamic';
 
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
   const blog = await getBlogBySlug(params.slug);
@@ -44,11 +39,12 @@ function formatRelativeTime(dateString: string) {
   const date = new Date(dateString);
   const now = new Date();
   const diffTime = Math.abs(now.getTime() - date.getTime());
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
 
-  if (diffDays <= 1) return "Today";
-  if (diffDays === 2) return "Yesterday";
-  return `${diffDays} days ago`;
+  if (diffDays === 0) return "Today";
+  if (diffDays === 1) return "Yesterday";
+  if (diffDays === 2) return "2 days ago";
+  return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
 export default async function BlogPost({ params }: { params: { slug: string } }) {

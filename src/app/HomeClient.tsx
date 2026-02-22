@@ -13,7 +13,7 @@ import {
   FileCode, Briefcase, GraduationCap, Trophy, Verified, Menu, Building2
 } from 'lucide-react';
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
-import { signIn, signOut, useSession } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 import Link from 'next/link';
 
 // --- Types ---
@@ -21,10 +21,11 @@ type AppState = 'landing' | 'analyzing' | 'result' | 'payment';
 
 type ResumeAnalysis = {
   score: number;
+  ats_score: number;
   strengths: string[];
   weaknesses: string[];
   missing_keywords: string[];
-  suggestions: string[];
+  improvements: string[];
 };
 
 export default function HomeClient() {
@@ -93,7 +94,6 @@ export default function HomeClient() {
   }, [isPaid, view]);
 
   // --- Actions ---
-  const handleLogin = () => signIn('credentials');
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -219,7 +219,10 @@ export default function HomeClient() {
               <button onClick={() => signOut()} className="text-[10px] text-red-500/50 hover:text-red-500">Sign Out</button>
             </div>
           ) : (
-            <Link href="/login" className="bg-white text-black px-6 py-2.5 rounded-xl font-black hover:bg-blue-500 hover:text-white transition-all">Sign In</Link>
+            <div className="flex items-center gap-3">
+              <Link href="/signup" className="px-4 py-2 rounded-xl font-black text-white/80 border border-white/10 hover:border-blue-500/50 hover:text-white transition-all">Sign Up</Link>
+              <Link href="/login" className="bg-white text-black px-6 py-2.5 rounded-xl font-black hover:bg-blue-500 hover:text-white transition-all">Sign In</Link>
+            </div>
           )}
         </div>
 
@@ -566,7 +569,7 @@ export default function HomeClient() {
                    <div className="relative inline-block">
                       <div className="absolute -inset-4 bg-blue-600/20 rounded-full blur-2xl animate-pulse" />
                       <div className="w-48 h-48 md:w-64 md:h-64 rounded-full border-[10px] md:border-[15px] border-blue-600 flex items-center justify-center relative z-10 bg-black shadow-inner">
-                         <span className="text-7xl md:text-9xl font-[1000] italic tracking-tighter leading-none">{result.score}</span>
+                         <span className="text-7xl md:text-9xl font-[1000] italic tracking-tighter leading-none">{result.ats_score ?? result.score}</span>
                       </div>
                    </div>
                    <div className="space-y-4">
@@ -666,7 +669,7 @@ export default function HomeClient() {
                          <div className="relative z-10 space-y-6">
                             <h3 className="text-3xl md:text-4xl font-[1000] italic uppercase tracking-tighter leading-none text-balance">Improvement Suggestions <Sparkles className="inline text-indigo-400 animate-pulse" /></h3>
                             <div className="grid grid-cols-1 gap-4">
-                              {result.suggestions.slice(0, 5).map((s:any) => (
+                              {result.improvements.slice(0, 5).map((s:any) => (
                                 <div key={s} className="p-4 bg-white/5 rounded-2xl border border-white/10 text-sm font-bold text-white/70">→ {s}</div>
                               ))}
                             </div>

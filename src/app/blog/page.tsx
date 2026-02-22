@@ -8,9 +8,11 @@ import { BackButton } from "@/components/BackButton";
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
-// ... existing
   title: "Career Blog & Placement Guides | PlacementScore.online",
   description: "Daily updated insights on ATS algorithms, resume optimization, and Indian campus placement strategies for 2026-2027.",
+  alternates: {
+    canonical: "https://placementscore.online/blog"
+  }
 };
 
 function formatRelativeTime(dateString: string) {
@@ -21,8 +23,7 @@ function formatRelativeTime(dateString: string) {
 
   if (diffDays === 0) return "Today";
   if (diffDays === 1) return "Yesterday";
-  if (diffDays < 7) return `${diffDays} days ago`;
-  
+  if (diffDays === 2) return "2 days ago";
   return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
 }
 

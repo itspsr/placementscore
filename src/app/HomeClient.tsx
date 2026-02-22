@@ -16,6 +16,7 @@ import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
 import Link from 'next/link';
 import { useSupabaseSession } from '@/lib/useSupabaseSession';
 import { AtsMeter } from '@/components/AtsMeter';
+import ErrorBoundary from '@/components/ErrorBoundary';
 
 // --- Types ---
 type AppState = 'landing' | 'analyzing' | 'result' | 'payment';
@@ -177,9 +178,9 @@ export default function HomeClient() {
       await minimumWait;
       if (!response.ok) throw new Error(data?.error || data?.message);
       if (data.locked) {
-        setResult({ score: data?.score, plan: data?.plan, locked: true, message: data?.message });
+        setResult({ score: data?.score ?? 0, plan: data?.plan, locked: true, message: data?.message });
       } else {
-        setResult({ score: data?.score, baseScore: data?.baseScore, plan: data?.plan, locked: false, optimizedResume: data?.optimizedResume, originalText: data?.originalText });
+        setResult({ score: data?.score ?? 0, baseScore: data?.baseScore ?? 0, plan: data?.plan, locked: false, optimizedResume: data?.optimizedResume ?? '', originalText: data?.originalText ?? '' });
       }
       setView('result');
     } catch (err: any) {
@@ -590,7 +591,8 @@ export default function HomeClient() {
         )}
 
         {view === 'result' && (
-          <motion.div key="result" className="pt-24 md:pt-40 pb-20 md:pb-32 px-4 md:px-6 max-w-7xl mx-auto relative z-10 text-center">
+          <ErrorBoundary>
+            <motion.div key="result" className="pt-24 md:pt-40 pb-20 md:pb-32 px-4 md:px-6 max-w-7xl mx-auto relative z-10 text-center">
             <div className="bg-[#0A0A0A] p-8 md:p-20 rounded-[40px] md:rounded-[70px] border border-white/5 flex flex-col xl:flex-row gap-12 md:gap-24 shadow-2xl backdrop-blur-fix">
               <div className="text-center space-y-8 md:space-y-10 xl:w-[420px] mx-auto">
                 <div className="relative inline-block">
@@ -667,6 +669,7 @@ export default function HomeClient() {
               </div>
             </div>
           </motion.div>
+          </ErrorBoundary>
         )}
 
         {view === 'payment' && (

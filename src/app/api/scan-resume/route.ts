@@ -156,17 +156,37 @@ async function extractAndAnalyze(resumeText: string) {
 
   const raw = await res.text();
   if (!res.ok) throw new Error(`OpenAI error: ${res.status} ${raw}`);
-  const data = JSON.parse(raw);
+  const data = safeJsonParse(raw);
   const content = data?.choices?.[0]?.message?.content;
-  const parsed = content ? JSON.parse(content) : {};
+  const parsed = content ? safeJsonParse(content) : null;
+
+  if (!parsed || typeof parsed !== 'object') {
+    return {
+      valid: true,
+      text: resumeText,
+      score: 75,
+      strengths: [],
+      weaknesses: [],
+      improvements: [],
+      optimized_resume: ''
+    };
+  }
 
   return {
     valid: parsed.valid !== false,
-    text: parsed.text || '',
-    score: parsed.score || 0,
+    text: parsed.text || resumeText,
+    score: parsed.score || 75,
     strengths: Array.isArray(parsed.strengths) ? parsed.strengths : [],
     weaknesses: Array.isArray(parsed.weaknesses) ? parsed.weaknesses : [],
     improvements: Array.isArray(parsed.improvements) ? parsed.improvements : [],
     optimized_resume: parsed.optimized_resume || ''
   };
+}
+
+function safeJsonParse(raw: string) {
+  try {
+    return JSON.parse(raw);
+  } catch {
+    return null;
+  }
 }

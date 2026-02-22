@@ -40,11 +40,6 @@ export async function POST(req: Request) {
 
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
-    const base64 = buffer.toString('base64');
-
-    if (Buffer.byteLength(base64, 'utf8') > 5 * 1024 * 1024) {
-      return NextResponse.json({ success: false, message: 'File too large (base64 > 5MB)' }, { status: 400 });
-    }
 
     const supabase = getSupabaseAdmin();
     const { data: profile } = await supabase
@@ -78,15 +73,21 @@ export async function POST(req: Request) {
       return NextResponse.json({ success: false, message: 'AI disabled' }, { status: 200 });
     }
 
-    const extracted = await extractAndAnalyze(base64);
+    const rawText = extractBasicText(buffer);
+    const cleanText = trimResumeText(rawText);
+    if (!cleanText) {
+      return NextResponse.json({ success: false, message: 'Invalid or empty resume detected.' }, { status: 422 });
+    }
+
+    const extracted = await extractAndAnalyze(cleanText);
     if (!extracted.valid) {
       return NextResponse.json({ success: false, message: 'Invalid or empty resume detected.' }, { status: 422 });
     }
 
-    const cleanText = (extracted.text || '').trim();
-    const lower = cleanText.toLowerCase();
+    const finalText = (extracted.text || cleanText || '').trim();
+    const lower = finalText.toLowerCase();
     const hits = REQUIRED_KEYWORDS.filter(k => lower.includes(k)).length;
-    if (cleanText.length < 300 || hits < 3) {
+    if (finalText.length < 300 || hits < 3) {
       return NextResponse.json({ success: false, message: 'Invalid or empty resume detected.' }, { status: 422 });
     }
 
@@ -99,7 +100,7 @@ export async function POST(req: Request) {
       strengths: extracted.strengths,
       weaknesses: extracted.weaknesses,
       improvements: extracted.improvements,
-      raw_text: cleanText.slice(0, 5000),
+      raw_text: finalText.slice(0, 5000),
       created_at: new Date().toISOString()
     });
 
@@ -109,7 +110,7 @@ export async function POST(req: Request) {
       baseScore,
       locked: false,
       optimizedResume: extracted.optimized_resume,
-      originalText: cleanText
+      originalText: finalText
     });
 
   } catch (e: any) {
@@ -126,8 +127,14 @@ function extractBasicText(buffer: Buffer) {
   return raw.replace(/[^\x20-\x7E\n\r]/g, ' ');
 }
 
-async function extractAndAnalyze(base64: string) {
-  const prompt = `Extract resume text from base64 PDF, evaluate, and optimize. Return JSON only: {"valid":true,"text":"","score":0-100,"strengths":[],"weaknesses":[],"improvements":[],"optimized_resume":""}. If not a resume, return {"valid":false}.`;
+function trimResumeText(text: string, maxChars = 8000) {
+  const normalized = text.replace(/\s+/g, ' ').trim();
+  if (!normalized) return '';
+  return normalized.slice(0, maxChars);
+}
+
+async function extractAndAnalyze(resumeText: string) {
+  const prompt = 'Evaluate resume text and return JSON: {"valid":true,"text":"","score":0-100,"strengths":[],"weaknesses":[],"improvements":[],"optimized_resume":""}. If not a resume, return {"valid":false}.';
 
   const res = await fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
@@ -138,11 +145,11 @@ async function extractAndAnalyze(base64: string) {
     body: JSON.stringify({
       model: process.env.OPENAI_MODEL,
       temperature: 0.2,
-      max_tokens: 600,
+      max_tokens: 1000,
       response_format: { type: 'json_object' },
       messages: [
         { role: 'system', content: 'Return JSON only.' },
-        { role: 'user', content: `${prompt}\nPDF_BASE64:\n${base64}` }
+        { role: 'user', content: `${prompt}\nResume text:\n${resumeText}` }
       ]
     })
   });

@@ -43,6 +43,10 @@ export default function HomeClient() {
   const [view, setView] = useState<AppState>('landing');
   const [file, setFile] = useState<File | null>(null);
   const [result, setResult] = useState<ResumeAnalysis | null>(null);
+  const [scanCompleted, setScanCompleted] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState<any>(null);
+  const [selectedPlanType, setSelectedPlanType] = useState<"FREE" | "BASE" | "ELITE" | "EXPERT">("FREE");
+  const [score, setScore] = useState<number | null>(null);
   const [scanError, setScanError] = useState<string | null>(null);
   const [isScanning, setIsScanning] = useState(false);
   const [countdown, setCountdown] = useState(24 * 60 * 60);
@@ -51,8 +55,7 @@ export default function HomeClient() {
   const [transactionId, setTransactionId] = useState("");
   const [paymentError, setPaymentError] = useState("");
   const [isPaid, setIsPaid] = useState(false);
-  const [selectedPlan, setSelectedPlan] = useState<any>(null);
-  const [isGenerating, setIsGenerating] = useState(false);
+    const [isGenerating, setIsGenerating] = useState(false);
   const [isGenerated, setIsGenerated] = useState(false);
   const [activeFaq, setActiveFaq] = useState<number | null>(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -214,6 +217,8 @@ export default function HomeClient() {
       if (data.locked) {
         setResult({ score: data?.score ?? 0, plan: data?.plan, locked: true, message: data?.message });
         setView('result');
+      setScanCompleted(true);
+      setScore(data?.score ?? null);
         return;
       }
       if (!(data?.success === true && data?.score)) {
@@ -224,6 +229,8 @@ export default function HomeClient() {
       }
       setResult({ score: data?.score ?? 0, baseScore: data?.baseScore ?? 0, plan: data?.plan, locked: false, optimizedResume: data?.optimizedResume ?? '', originalText: data?.originalText ?? '' });
       setView('result');
+      setScanCompleted(true);
+      setScore(data?.score ?? null);
     } catch (err: any) {
       console.error('[scan-resume] error', err);
       setScanError(err.message || "Analysis failed.");
@@ -258,6 +265,18 @@ export default function HomeClient() {
 
   const planRank = (plan: string) => ({ free: 0, base: 1, elite: 2, expert: 3 }[plan] || 0);
   const hasPlan = (required: string) => planRank(userPlan) >= planRank(required);
+
+  function LockSection({ required, current, children }: any) {
+    const levels: any = { FREE: 0, BASE: 1, ELITE: 2, EXPERT: 3 };
+    if (levels[current] < levels[required]) {
+      return (
+        <div className="relative blur-sm opacity-60 pointer-events-none">
+          {children}
+        </div>
+      );
+    }
+    return <>{children}</>;
+  }
 
   const Navbar = () => (
     <nav className={`fixed top-0 w-full z-[100] border-b border-white/5 transition-all duration-500 ${scrolled ? 'bg-black/80 backdrop-blur-xl py-4 shadow-[0_10px_30px_rgba(0,0,0,0.5)]' : 'bg-transparent py-6'}`}>
@@ -544,6 +563,13 @@ export default function HomeClient() {
                         </div>
                       </div>
                     )}
+                  {scanCompleted && selectedPlanType === "FREE" && (
+                    <div className="grid grid-cols-3 gap-4 mt-6">
+                      <button onClick={() => setSelectedPlanType("BASE")}>₹99</button>
+                      <button onClick={() => setSelectedPlanType("ELITE")}>₹199</button>
+                      <button onClick={() => setSelectedPlanType("EXPERT")}>₹399</button>
+                    </div>
+                  )}
                   </div>
                 </div>
                   {scanError && (
@@ -656,6 +682,15 @@ export default function HomeClient() {
                 </div>
                 <div className="space-y-4">
                   <p className="font-black text-[10px] uppercase tracking-[0.5em] text-white/20">ATS Compatibility Index</p>
+                  {scanCompleted && score !== null && (
+                    <div className="mt-4 space-y-2 text-sm">
+                      {score < 60 && <p className="text-red-400">High rejection risk detected.</p>}
+                      {score >= 60 && score < 75 && <p className="text-yellow-400">Moderate improvement needed.</p>}
+                      {score >= 75 && <p className="text-green-400">You're close to top tier candidates.</p>}
+                      <p className="text-gray-400">Recruiters reject 78% resumes below 80 score.</p>
+                      <p className="text-blue-400">Improve now before applying.</p>
+                    </div>
+                  )}
                   <button onClick={resetAnalysis} className="flex items-center gap-2 mx-auto px-6 md:px-8 py-3 bg-white/5 hover:bg-white/10 border border-white/5 rounded-full text-blue-500 font-black uppercase tracking-widest text-[9px] md:text-[10px] transition-all">
                     <Upload className="w-3 h-3" /> Scan New Resume
                   </button>
@@ -716,13 +751,13 @@ export default function HomeClient() {
                     </div>
 
                     <div className="grid md:grid-cols-2 gap-6">
-                      <div className="p-6 md:p-8 bg-white/[0.02] rounded-[30px] md:rounded-[40px] border border-white/5 text-left">
+                      <LockSection required="BASE" current={selectedPlanType}><div className="p-6 md:p-8 bg-white/[0.02] rounded-[30px] md:rounded-[40px] border border-white/5 text-left">
                         <p className="text-[10px] font-black uppercase tracking-widest text-white/30 mb-3">Original Resume</p>
                         <p className="text-sm text-white/50 whitespace-pre-wrap">{result?.originalText || 'Original resume text extracted.'}</p>
                         <div className="mt-4 text-[10px] font-black uppercase tracking-widest text-white/20">Original Score: {result?.baseScore ?? 0}</div>
-                      </div>
+                      </div></LockSection>
                       {!result?.locked && result?.optimizedResume && (
-                        <LockedSection requiredPlan="expert" userPlan={userPlan}><div className="p-6 md:p-8 bg-green-500/5 rounded-[30px] md:rounded-[40px] border border-green-500/20 text-left">
+                        <LockSection required="EXPERT" current={selectedPlanType}><div className="p-6 md:p-8 bg-green-500/5 rounded-[30px] md:rounded-[40px] border border-green-500/20 text-left">
                           <p className="text-[10px] font-black uppercase tracking-widest text-green-400 mb-3">Optimized Resume</p>
                           <p className="text-sm text-white/60 whitespace-pre-wrap">{result?.optimizedResume}</p>
                           <div className="mt-4 flex items-center gap-3 text-[10px] font-black uppercase tracking-widest text-green-400">
@@ -731,7 +766,7 @@ export default function HomeClient() {
                               +{Math.max(0, (result?.score ?? 0) - (result?.baseScore ?? 0))} ATS Boost
                             </span>
                           </div>
-                        </div></LockedSection>
+                        </div></LockSection>
                       )}
                     </div>
                   </>

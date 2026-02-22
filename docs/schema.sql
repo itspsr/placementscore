@@ -8,6 +8,13 @@ create table if not exists public.profiles (
   created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
+-- 1b. Users plan table
+create table if not exists public.users (
+  id uuid references auth.users on delete cascade primary key,
+  plan text default 'free'
+);
+alter table public.users add column if not exists plan text default 'free';
+
 -- 2. Resumes table
 create table if not exists public.resumes (
   id uuid default gen_random_uuid() primary key,

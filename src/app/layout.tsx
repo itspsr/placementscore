@@ -3,6 +3,9 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/Providers";
 import Script from "next/script";
+import { requireEnv } from "@/lib/env";
+
+requireEnv();
 
 const inter = Inter({ subsets: ["latin"] });
 

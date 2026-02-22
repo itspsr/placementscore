@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabaseClient';
+import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
+import { cookies } from 'next/headers';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -8,6 +10,19 @@ const REQUIRED_KEYWORDS = ["experience", "education", "skills", "project", "inte
 
 export async function POST(req: Request) {
   try {
+    const supabaseAuth = createRouteHandlerClient(
+      { cookies },
+      {
+        supabaseUrl: process.env.SUPABASE_URL,
+        supabaseKey: process.env.SUPABASE_SERVICE_ROLE
+      }
+    );
+    const { data: authData } = await supabaseAuth.auth.getUser();
+    const user = authData?.user;
+    if (!user) {
+      return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 });
+    }
+
     const formData = await req.formData();
     const file = formData.get('file') as File | null;
 
@@ -23,16 +38,44 @@ export async function POST(req: Request) {
       return NextResponse.json({ success: false, message: 'File too large (max 5MB)' }, { status: 400 });
     }
 
-    if (!process.env.OPENAI_API_KEY || !process.env.OPENAI_MODEL) {
-      return NextResponse.json({ success: false, message: 'AI disabled' }, { status: 200 });
-    }
-
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
     const base64 = buffer.toString('base64');
 
     if (Buffer.byteLength(base64, 'utf8') > 5 * 1024 * 1024) {
       return NextResponse.json({ success: false, message: 'File too large (base64 > 5MB)' }, { status: 400 });
+    }
+
+    const supabase = getSupabaseAdmin();
+    const { data: profile } = await supabase
+      .from('users')
+      .select('plan')
+      .eq('id', user.id)
+      .single();
+
+    const plan = profile?.plan || 'free';
+
+    if (plan !== 'pro') {
+      const text = extractBasicText(buffer);
+      const wordCount = text.split(/\s+/).filter(Boolean).length;
+      const hasSkills = /(sql|python|excel|react|java)/i.test(text);
+      const hasExperience = /(experience|intern|worked)/i.test(text);
+      let score = 40;
+      if (wordCount > 250) score += 5;
+      if (hasSkills) score += 10;
+      if (hasExperience) score += 5;
+      score = Math.min(score, 60);
+
+      return NextResponse.json({
+        plan: 'free',
+        score,
+        locked: true,
+        message: 'Upgrade to Pro to unlock AI optimization.'
+      });
+    }
+
+    if (!process.env.OPENAI_API_KEY || !process.env.OPENAI_MODEL) {
+      return NextResponse.json({ success: false, message: 'AI disabled' }, { status: 200 });
     }
 
     const extracted = await extractAndAnalyze(base64);
@@ -47,33 +90,27 @@ export async function POST(req: Request) {
       return NextResponse.json({ success: false, message: 'Invalid or empty resume detected.' }, { status: 422 });
     }
 
-    let supabase;
-    try {
-      supabase = getSupabaseAdmin();
-    } catch {
-      supabase = null;
-    }
+    const baseScore = extracted.score || 0;
+    const finalScore = Math.min(95, Math.max(baseScore, 75));
 
-    if (supabase) {
-      await supabase.from('resume_reports').insert({
-        user_id: null,
-        ats_score: extracted.ats_score,
-        strengths: extracted.strengths,
-        weaknesses: extracted.weaknesses,
-        missing_keywords: extracted.missing_keywords || [],
-        improvements: extracted.improvements,
-        raw_text: cleanText.slice(0, 5000),
-        created_at: new Date().toISOString()
-      });
-    }
-
-    return NextResponse.json({ success: true, analysis: {
-      score: extracted.score,
-      ats_score: extracted.ats_score,
+    await supabase.from('resume_reports').insert({
+      user_id: user.id,
+      ats_score: finalScore,
       strengths: extracted.strengths,
       weaknesses: extracted.weaknesses,
-      improvements: extracted.improvements
-    }});
+      improvements: extracted.improvements,
+      raw_text: cleanText.slice(0, 5000),
+      created_at: new Date().toISOString()
+    });
+
+    return NextResponse.json({
+      plan: 'pro',
+      score: finalScore,
+      baseScore,
+      locked: false,
+      optimizedResume: extracted.optimized_resume,
+      originalText: cleanText
+    });
 
   } catch (e: any) {
     console.error('scan-resume error:', e);
@@ -84,8 +121,13 @@ export async function POST(req: Request) {
   }
 }
 
+function extractBasicText(buffer: Buffer) {
+  const raw = buffer.toString('latin1');
+  return raw.replace(/[^\x20-\x7E\n\r]/g, ' ');
+}
+
 async function extractAndAnalyze(base64: string) {
-  const prompt = `Extract resume text from base64 PDF and score it. Return JSON only: {"valid":true,"text":"","score":0-100,"ats_score":0-100,"strengths":[],"weaknesses":[],"improvements":[]}. If not a resume, return {"valid":false}.`;
+  const prompt = `Extract resume text from base64 PDF, evaluate, and optimize. Return JSON only: {"valid":true,"text":"","score":0-100,"strengths":[],"weaknesses":[],"improvements":[],"optimized_resume":""}. If not a resume, return {"valid":false}.`;
 
   const res = await fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
@@ -115,10 +157,9 @@ async function extractAndAnalyze(base64: string) {
     valid: parsed.valid !== false,
     text: parsed.text || '',
     score: parsed.score || 0,
-    ats_score: parsed.ats_score || 0,
     strengths: Array.isArray(parsed.strengths) ? parsed.strengths : [],
     weaknesses: Array.isArray(parsed.weaknesses) ? parsed.weaknesses : [],
-    missing_keywords: Array.isArray(parsed.missing_keywords) ? parsed.missing_keywords : [],
-    improvements: Array.isArray(parsed.improvements) ? parsed.improvements : []
+    improvements: Array.isArray(parsed.improvements) ? parsed.improvements : [],
+    optimized_resume: parsed.optimized_resume || ''
   };
 }

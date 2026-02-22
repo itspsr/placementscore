@@ -14,19 +14,25 @@ import {
 } from 'lucide-react';
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
 import Link from 'next/link';
-import { getSupabaseBrowser } from '@/lib/supabaseClient';
 import { useSupabaseSession } from '@/lib/useSupabaseSession';
+import { AtsMeter } from '@/components/AtsMeter';
 
 // --- Types ---
 type AppState = 'landing' | 'analyzing' | 'result' | 'payment';
 
 type ResumeAnalysis = {
   score: number;
-  ats_score: number;
-  strengths: string[];
-  weaknesses: string[];
-  missing_keywords: string[];
-  improvements: string[];
+  ats_score?: number;
+  strengths?: string[];
+  weaknesses?: string[];
+  missing_keywords?: string[];
+  improvements?: string[];
+  plan?: 'free' | 'pro';
+  locked?: boolean;
+  message?: string;
+  optimizedResume?: string;
+  originalText?: string;
+  baseScore?: number;
 };
 
 export default function HomeClient() {
@@ -34,6 +40,7 @@ export default function HomeClient() {
   const [view, setView] = useState<AppState>('landing');
   const [file, setFile] = useState<File | null>(null);
   const [result, setResult] = useState<ResumeAnalysis | null>(null);
+  const [countdown, setCountdown] = useState(24 * 60 * 60);
   const [paymentStep, setPaymentStep] = useState(1);
   const [utr, setUtr] = useState("");
   const [transactionId, setTransactionId] = useState("");
@@ -93,6 +100,13 @@ export default function HomeClient() {
       clearTimeout(popupTimer);
     };
   }, [isPaid, view]);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCountdown(prev => (prev > 0 ? prev - 1 : 24 * 60 * 60));
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   // --- Actions ---
 
@@ -161,8 +175,12 @@ export default function HomeClient() {
       const response = await fetch('/api/scan-resume', { method: 'POST', body: formData });
       const data = await response.json();
       await minimumWait;
-      if (!response.ok || !data.success) throw new Error(data.error || data.message);
-      setResult(data.analysis);
+      if (!response.ok) throw new Error(data.error || data.message);
+      if (data.locked) {
+        setResult({ score: data.score, plan: data.plan, locked: true, message: data.message });
+      } else {
+        setResult({ score: data.score, baseScore: data.baseScore, plan: data.plan, locked: false, optimizedResume: data.optimizedResume, originalText: data.originalText });
+      }
       setView('result');
     } catch (err: any) {
       setView('landing');
@@ -573,120 +591,79 @@ export default function HomeClient() {
 
         {view === 'result' && (
           <motion.div key="result" className="pt-24 md:pt-40 pb-20 md:pb-32 px-4 md:px-6 max-w-7xl mx-auto relative z-10 text-center">
-             <div className="bg-[#0A0A0A] p-8 md:p-20 rounded-[40px] md:rounded-[70px] border border-white/5 flex flex-col xl:flex-row gap-12 md:gap-24 shadow-2xl backdrop-blur-fix">
-                <div className="text-center space-y-8 md:space-y-10 xl:w-[400px] mx-auto">
-                   <div className="relative inline-block">
-                      <div className="absolute -inset-4 bg-blue-600/20 rounded-full blur-2xl animate-pulse" />
-                      <div className="w-48 h-48 md:w-64 md:h-64 rounded-full border-[10px] md:border-[15px] border-blue-600 flex items-center justify-center relative z-10 bg-black shadow-inner">
-                         <span className="text-7xl md:text-9xl font-[1000] italic tracking-tighter leading-none">{result.ats_score ?? result.score}</span>
-                      </div>
-                   </div>
-                   <div className="space-y-4">
-                      <p className="font-black text-[10px] uppercase tracking-[0.5em] text-white/20">ATS Compatibility Index</p>
-                      <button onClick={resetAnalysis} className="flex items-center gap-2 mx-auto px-6 md:px-8 py-3 bg-white/5 hover:bg-white/10 border border-white/5 rounded-full text-blue-500 font-black uppercase tracking-widest text-[9px] md:text-[10px] transition-all">
-                         <Upload className="w-3 h-3" /> Scan New Resume
-                      </button>
-                   </div>
+            <div className="bg-[#0A0A0A] p-8 md:p-20 rounded-[40px] md:rounded-[70px] border border-white/5 flex flex-col xl:flex-row gap-12 md:gap-24 shadow-2xl backdrop-blur-fix">
+              <div className="text-center space-y-8 md:space-y-10 xl:w-[420px] mx-auto">
+                <div className="relative inline-block">
+                  <div className="absolute -inset-4 bg-blue-600/20 rounded-full blur-2xl animate-pulse" />
+                  <AtsMeter score={result?.score || 0} />
                 </div>
-                
-                <div className="flex-1 space-y-12 md:space-y-16">
-                   <div className="space-y-4 text-center xl:text-left">
-                      <h2 className="text-4xl md:text-6xl font-[1000] tracking-tighter italic uppercase flex flex-col xl:flex-row items-center gap-4 leading-none text-balance">
-                         AI Audit Report 
-                         <span className={`text-[10px] uppercase font-black tracking-[0.2em] px-4 py-2 rounded-full ring-1 ${isPaid ? 'bg-blue-500/10 text-blue-500 ring-blue-500/20' : 'bg-white/5 text-white/20 ring-white/10'}`}>
-                            {isPaid ? selectedPlan?.tier : 'LOCKED'}
-                         </span>
-                      </h2>
-                      <p className="text-white/20 font-bold uppercase tracking-widest text-[10px] md:text-xs italic">Hiring benchmarks analysis complete</p>
-                   </div>
-
-                   <div className="space-y-6 md:space-y-8">
-                      {/* PREVIEW: Show 3 strengths, blur rest if not paid */}
-                      <div className="p-6 md:p-10 bg-green-500/[0.03] rounded-[30px] md:rounded-[40px] border border-green-500/10 transition-all">
-                        <h4 className="text-lg md:text-xl font-black text-green-400 mb-6 uppercase tracking-widest flex items-center justify-center md:justify-start gap-3 italic underline underline-offset-8"><CheckCircle className="w-4 h-4 md:w-5 md:h-5" /> Strengths</h4>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-left">
-                           {result.strengths.slice(0, isPaid ? undefined : 3).map((s:any) => <div key={s} className="p-4 bg-green-500/5 rounded-2xl border border-green-500/5 text-xs md:text-sm font-bold text-white/60 flex items-center gap-3">✓ {s}</div>)}
-                        </div>
-                        {!isPaid && (
-                           <div className="mt-4 text-center">
-                              <p className="text-[10px] font-bold text-white/20 uppercase tracking-widest italic">+ {result.strengths.length - 3} more hidden strengths</p>
-                           </div>
-                        )}
-                      </div>
-
-                      {/* WEAKNESSES: Locked/Blurred if not paid */}
-                      <div className={`p-6 md:p-10 bg-red-500/[0.03] rounded-[30px] md:rounded-[40px] border border-red-500/10 text-left relative overflow-hidden ${!isPaid ? 'select-none' : ''}`}>
-                        <h4 className="text-lg md:text-xl font-black text-red-400 mb-6 uppercase tracking-widest flex items-center gap-3 italic underline underline-offset-8"><AlertCircle className="w-4 h-4 md:w-5 md:h-5" /> Critical Weaknesses</h4>
-                        <div className={`grid grid-cols-1 gap-4 transition-all ${!isPaid ? 'blur-md opacity-40' : ''}`}>
-                           {result.weaknesses.slice(0, 3).map((w:any) => (
-                             <div key={w} className="p-4 bg-red-500/5 rounded-2xl border border-red-500/5 text-xs md:text-sm font-bold text-white/60 flex items-center gap-3">⚠ {w}</div>
-                           ))}
-                        </div>
-                        {!isPaid && (
-                           <div className="absolute inset-0 flex items-center justify-center bg-black/10 backdrop-blur-[2px]">
-                              <div className="flex items-center gap-2 px-4 py-2 bg-black/80 rounded-full border border-red-500/30 shadow-2xl">
-                                 <Lock className="w-3 h-3 text-red-500" />
-                                 <span className="text-[9px] font-black uppercase text-red-400 tracking-widest">Locked</span>
-                              </div>
-                           </div>
-                        )}
-                      </div>
-
-                      {(isPaid && (selectedPlan?.tier === 'ELITE' || selectedPlan?.tier === 'EXPERT')) ? (
-                         <div className="p-6 md:p-10 bg-amber-500/[0.03] rounded-[30px] md:rounded-[40px] border border-amber-500/10 text-left">
-                           <h4 className="text-lg md:text-xl font-black text-amber-400 mb-6 uppercase tracking-widest flex items-center gap-3 italic underline underline-offset-8"><Target className="w-4 h-4 md:w-5 md:h-5" /> Missing Keywords</h4>
-                           <div className="flex flex-wrap gap-2 md:gap-4">
-                              {result.missing_keywords.map((k:any) => <span key={k} className="px-4 md:px-6 py-2 md:py-3 bg-amber-500/10 rounded-full border border-amber-500/10 text-xs md:text-sm font-black text-amber-500/80 uppercase italic tracking-widest">{k}</span>)}
-                           </div>
-                         </div>
-                      ) : isPaid ? null : (
-                         <div className="p-6 md:p-10 bg-white/[0.02] rounded-[30px] md:rounded-[40px] border border-white/5 blur-sm opacity-20 select-none text-center lg:text-left relative">
-                            <h4 className="text-lg md:text-xl font-black mb-4 italic uppercase tracking-tighter">Elite Gap Analysis...</h4>
-                            <div className="absolute inset-0 flex items-center justify-center">
-                               <Lock className="w-8 h-8 text-white/20" />
-                            </div>
-                         </div>
-                      )}
-                   </div>
-
-                   {!isPaid && (
-                      <div className="space-y-12 pt-8 md:pt-12 border-t border-white/5">
-                         <div className="text-center space-y-4">
-                            <Lock className="w-12 h-12 md:w-16 md:h-16 mx-auto mb-4 md:mb-6 text-white/10" />
-                            <h3 className="text-3xl md:text-4xl font-[1000] italic uppercase tracking-tighter leading-none">Upgrade to Unlock Report</h3>
-                         </div>
-                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 md:gap-8">
-                            <button onClick={() => { setSelectedPlan({ tier: 'BASE', price: 99 }); setView('payment'); }} className="p-6 md:p-10 rounded-[30px] md:rounded-[40px] bg-[#0A0A0A] border border-white/10 hover:border-blue-500 transition-all text-center">
-                               <div className="text-3xl font-black italic">₹99</div>
-                               <h4 className="text-[9px] font-black uppercase tracking-widest text-white/20 mt-2">Base</h4>
-                            </button>
-                            <button onClick={() => { setSelectedPlan({ tier: 'ELITE', price: 199 }); setView('payment'); }} className="p-6 md:p-10 rounded-[30px] md:rounded-[40px] bg-blue-600/20 border border-blue-500 hover:scale-105 transition-all text-center">
-                               <div className="text-3xl font-black italic">₹199</div>
-                               <h4 className="text-[9px] font-black uppercase tracking-widest text-blue-400 mt-2">Elite</h4>
-                            </button>
-                            <button onClick={() => { setSelectedPlan({ tier: 'EXPERT', price: 399 }); setView('payment'); }} className="p-6 md:p-10 rounded-[30px] md:rounded-[40px] bg-[#0A0A0A] border border-white/10 hover:border-indigo-500 transition-all text-center relative overflow-hidden">
-                               <div className="absolute top-2 right-2 bg-blue-500 text-[8px] font-black px-2 py-0.5 rounded-full text-white uppercase italic">AI</div>
-                               <div className="text-3xl font-black italic">₹399</div>
-                               <h4 className="text-[9px] font-black uppercase tracking-widest text-white/20 mt-2">Expert</h4>
-                            </button>
-                         </div>
-                      </div>
-                   )}
-
-                   {(isPaid && selectedPlan?.tier === 'EXPERT') && (
-                      <div className="p-8 md:p-12 rounded-[40px] md:rounded-[50px] bg-gradient-to-br from-indigo-600/20 via-blue-600/10 to-transparent border border-white/10 space-y-10 relative overflow-hidden backdrop-blur-fix text-center md:text-left">
-                         <div className="relative z-10 space-y-6">
-                            <h3 className="text-3xl md:text-4xl font-[1000] italic uppercase tracking-tighter leading-none text-balance">Improvement Suggestions <Sparkles className="inline text-indigo-400 animate-pulse" /></h3>
-                            <div className="grid grid-cols-1 gap-4">
-                              {result.improvements.slice(0, 5).map((s:any) => (
-                                <div key={s} className="p-4 bg-white/5 rounded-2xl border border-white/10 text-sm font-bold text-white/70">→ {s}</div>
-                              ))}
-                            </div>
-                         </div>
-                      </div>
-                   )}
+                <div className="space-y-4">
+                  <p className="font-black text-[10px] uppercase tracking-[0.5em] text-white/20">ATS Compatibility Index</p>
+                  <button onClick={resetAnalysis} className="flex items-center gap-2 mx-auto px-6 md:px-8 py-3 bg-white/5 hover:bg-white/10 border border-white/5 rounded-full text-blue-500 font-black uppercase tracking-widest text-[9px] md:text-[10px] transition-all">
+                    <Upload className="w-3 h-3" /> Scan New Resume
+                  </button>
                 </div>
-             </div>
+              </div>
+
+              <div className="flex-1 space-y-10 md:space-y-12">
+                {result?.locked ? (
+                  <>
+                    <div className="space-y-4 text-center xl:text-left">
+                      <h2 className="text-4xl md:text-6xl font-[1000] tracking-tighter italic uppercase">Upgrade to Pro</h2>
+                      <p className="text-white/30 font-bold uppercase tracking-widest text-[10px] md:text-xs italic">{result?.message}</p>
+                    </div>
+
+                    <div className="p-6 md:p-10 bg-white/[0.02] rounded-[30px] md:rounded-[40px] border border-white/5 text-left relative overflow-hidden">
+                      <div className="blur-sm opacity-40">
+                        <h4 className="text-lg md:text-xl font-black mb-4 italic uppercase tracking-tighter">Optimized Resume Preview</h4>
+                        <p className="text-sm text-white/40 leading-relaxed">Your optimized resume will appear here after upgrading to Pro.</p>
+                      </div>
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <Lock className="w-10 h-10 text-white/20" />
+                      </div>
+                    </div>
+
+                    <div className="grid md:grid-cols-3 gap-4 text-[10px] font-black uppercase tracking-widest text-white/30">
+                      <div className="p-4 rounded-2xl bg-white/5 border border-white/10">Only {25 - new Date().getHours()} Pro optimizations left today</div>
+                      <div className="p-4 rounded-2xl bg-white/5 border border-white/10">24h reset in {Math.floor(countdown/3600)}h {Math.floor((countdown%3600)/60)}m</div>
+                      <div className="p-4 rounded-2xl bg-white/5 border border-white/10">17 resumes being optimized right now</div>
+                    </div>
+
+                    <button
+                      onClick={() => { setSelectedPlan({ tier: 'EXPERT', price: 399 }); setView('payment'); }}
+                      className="w-full py-6 md:py-7 bg-blue-600 text-white rounded-2xl md:rounded-3xl font-[1000] text-xl md:text-2xl shadow-2xl shadow-blue-500/30 uppercase italic animate-[shake_0.8s_infinite]"
+                    >
+                      Unlock AI Optimization — ₹399
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <div className="space-y-4 text-center xl:text-left">
+                      <h2 className="text-4xl md:text-6xl font-[1000] tracking-tighter italic uppercase">Pro Optimized</h2>
+                      <p className="text-white/30 font-bold uppercase tracking-widest text-[10px] md:text-xs italic">AI optimization unlocked</p>
+                    </div>
+
+                    <div className="grid md:grid-cols-2 gap-6">
+                      <div className="p-6 md:p-8 bg-white/[0.02] rounded-[30px] md:rounded-[40px] border border-white/5 text-left">
+                        <p className="text-[10px] font-black uppercase tracking-widest text-white/30 mb-3">Original Resume</p>
+                        <p className="text-sm text-white/50 whitespace-pre-wrap">{result?.originalText || 'Original resume text extracted.'}</p>
+                        <div className="mt-4 text-[10px] font-black uppercase tracking-widest text-white/20">Original Score: {result?.baseScore ?? 0}</div>
+                      </div>
+                      <div className="p-6 md:p-8 bg-green-500/5 rounded-[30px] md:rounded-[40px] border border-green-500/20 text-left">
+                        <p className="text-[10px] font-black uppercase tracking-widest text-green-400 mb-3">Optimized Resume</p>
+                        <p className="text-sm text-white/60 whitespace-pre-wrap">{result?.optimizedResume || 'Optimized resume generated.'}</p>
+                        <div className="mt-4 flex items-center gap-3 text-[10px] font-black uppercase tracking-widest text-green-400">
+                          <span>New Score: {result?.score}</span>
+                          <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-green-500/10 border border-green-500/30">
+                            +{Math.max(0, (result?.score || 0) - (result?.baseScore ?? 0))} ATS Boost
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
           </motion.div>
         )}
 

@@ -1,22 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
-const getSupabase = () => {
-  const supabaseUrl = process.env.SUPABASE_URL;
-  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE;
-  if (!supabaseUrl || !supabaseServiceKey) return null;
-  return createClient(supabaseUrl, supabaseServiceKey);
-};
-
 export async function GET(req: NextRequest) {
+  if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE) {
+    return new Response(
+      JSON.stringify({ success: false, reason: "missing-env" }),
+      { status: 500 }
+    );
+  }
+
+  const supabase = createClient(
+    process.env.SUPABASE_URL,
+    process.env.SUPABASE_SERVICE_ROLE
+  );
+
   const email = req.nextUrl.searchParams.get("email");
   if (!email) return NextResponse.json({ error: "Email required" }, { status: 400 });
-
-  const supabase = getSupabase();
-  if (!supabase) {
-    console.warn("Supabase not configured; returning safe-mode subscription false.");
-    return NextResponse.json({ isExpert: false, safeMode: true });
-  }
 
   const { data, error } = await supabase
     .from("subscriptions")

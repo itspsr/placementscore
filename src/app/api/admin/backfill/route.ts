@@ -1,17 +1,25 @@
-
 import { NextResponse } from 'next/server';
+import { createClient } from '@supabase/supabase-js';
 import { generateBlogArticle } from '@/lib/blogEngine';
-import { getRouteHandlerSupabase, isAdminEmail } from '@/lib/adminAuth';
-import { getSupabaseAdmin } from '@/lib/supabaseClient';
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(req: Request) {
   try {
-    const auth = getRouteHandlerSupabase();
-    const { data } = await auth.auth.getUser();
-    const email = data?.user?.email;
-    if (!isAdminEmail(email)) {
+    if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE) {
+      return new Response(
+        JSON.stringify({ success: false, reason: "missing-env" }),
+        { status: 500 }
+      );
+    }
+
+    const supabase = createClient(
+      process.env.SUPABASE_URL,
+      process.env.SUPABASE_SERVICE_ROLE
+    );
+
+    const authHeader = req.headers.get('authorization');
+    if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -27,14 +35,6 @@ export async function POST(req: Request) {
     
     if (!generated) {
       return NextResponse.json({ error: 'Generation failed' }, { status: 500 });
-    }
-
-    let supabase;
-    try {
-      supabase = getSupabaseAdmin();
-    } catch {
-      console.warn("Supabase not configured; skipping backfill.");
-      return NextResponse.json({ success: false, safeMode: true }, { status: 200 });
     }
 
     // Insert with specific date

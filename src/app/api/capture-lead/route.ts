@@ -1,29 +1,23 @@
-
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
-const getSupabase = () => {
-  const url = process.env.SUPABASE_URL;
-  const key = process.env.SUPABASE_SERVICE_ROLE;
-  if (!url || !key) return null;
-  return createClient(url, key);
-};
-
 export async function POST(req: Request) {
   try {
+    if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE) {
+      return new Response(JSON.stringify({ success: false, reason: "missing-env" }), { status: 500 });
+    }
+
+    const supabase = createClient(
+      process.env.SUPABASE_URL,
+      process.env.SUPABASE_SERVICE_ROLE
+    );
+
     const { email, source } = await req.json();
     
     if (!email) {
       return NextResponse.json({ error: 'Email is required' }, { status: 400 });
     }
 
-    const supabase = getSupabase();
-    if (!supabase) {
-      console.warn("Supabase not configured; skipping lead capture.");
-      return NextResponse.json({ success: true, safeMode: true });
-    }
-
-    // Upsert into leads table
     const { error } = await supabase
       .from('leads')
       .upsert({ 

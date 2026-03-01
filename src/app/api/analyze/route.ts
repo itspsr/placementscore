@@ -1,16 +1,53 @@
 import { NextResponse } from 'next/server';
+import pdf from 'pdf-parse';
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { getServerSession } from "next-auth";
+import { createClient } from "@supabase/supabase-js";
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
-const OPENAI_MODEL = process.env.OPENAI_MODEL || 'gpt-4o-mini';
+type AIAnalysis = {
+  score: number;
+  strengths: string[];
+  weaknesses: string[];
+  keyword_gaps: string[];
+};
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
+function trimText(text: string) {
+  return text.replace(/\s+/g, " ").slice(0, 6000);
+}
 
 export async function POST(req: Request) {
   try {
+    if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE) {
+      return new Response(
+        JSON.stringify({ success: false, reason: "missing-env" }),
+        { status: 500 }
+      );
+    }
+
+    const { authOptions } = await import("@/lib/auth");
+
+    const supabase = createClient(
+      process.env.SUPABASE_URL,
+      process.env.SUPABASE_SERVICE_ROLE
+    );
+
+    const session = await getServerSession(authOptions);
+    const userEmail = session?.user?.email;
+
+    let userPlan = "FREE";
+    if (userEmail) {
+      const { data } = await supabase
+        .from("subscriptions")
+        .select("plan")
+        .eq("email", userEmail)
+        .eq("status", "active")
+        .single();
+      if (data) userPlan = data.plan;
+    }
+
     const formData = await req.formData();
     const file = formData.get('file') as File;
 
@@ -18,43 +55,39 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "No file provided" }, { status: 400 });
     }
 
-    if (file.type !== 'application/pdf') {
-      return NextResponse.json({ error: "Only PDF files are allowed" }, { status: 400 });
-    }
-
-    if (file.size > 5 * 1024 * 1024) {
-      return NextResponse.json({ error: "File too large (max 5MB)" }, { status: 400 });
-    }
-
-    // 1. Extract Text from PDF using OpenAI (Vercel-safe)
-    if (!OPENAI_API_KEY && !process.env.GEMINI_API_KEY) {
-      return NextResponse.json({ success: false, error: "AI disabled" }, { status: 200 });
-    }
-
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
-    const base64 = buffer.toString('base64');
-
-    if (Buffer.byteLength(base64, 'utf8') > 5 * 1024 * 1024) {
-      return NextResponse.json({ error: "File too large (base64 > 5MB)" }, { status: 400 });
+    
+    let text = "";
+    try {
+      const data = await pdf(buffer);
+      text = data.text || "";
+    } catch (parseError) {
+      console.error("PDF Parse Error:", parseError);
+      return NextResponse.json({ 
+        success: false, 
+        error: "Unreadable PDF. Please ensure the file is not password protected or an image scan."
+      }, { status: 422 });
     }
 
-    const text = await extractText(base64);
+    const cleanText = trimText(text);
 
-    if (text.trim().length < 50) {
+    if (cleanText.trim().length < 50) {
       return NextResponse.json({ 
         success: false, 
         error: "Resume too short or unreadable. Please upload a standard text-based PDF."
       }, { status: 422 });
     }
 
-    // 2. AI Analysis (Prefer OpenAI if configured to avoid Gemini rate limits)
-    try {
-      const ai = OPENAI_API_KEY
-        ? await analyzeWithOpenAI(text)
-        : await analyzeWithGemini(text);
+    if (userPlan !== "ELITE") {
+      console.log(`Non-ELITE user (${userPlan}), using heuristic analysis.`);
+      return heuristicAnalysis(cleanText);
+    }
 
-      if (!ai) return heuristicAnalysis(text);
+    try {
+      const ai = await analyzeWithGemini(cleanText);
+
+      if (!ai) return heuristicAnalysis(cleanText);
 
       return NextResponse.json({
         success: true,
@@ -67,9 +100,15 @@ export async function POST(req: Request) {
           rewrite_suggestions: ["See full report for details"],
         },
       });
-    } catch (aiError) {
-      console.error("AI Analysis Failed, reverting to heuristic:", aiError);
-      return heuristicAnalysis(text);
+    } catch (aiError: any) {
+      console.error("AI Analysis Failed:", aiError.message);
+      if (aiError.message === "ai-rate-limit") {
+        return NextResponse.json({
+          success: false,
+          reason: "ai-rate-limit"
+        }, { status: 200 });
+      }
+      return heuristicAnalysis(cleanText);
     }
 
   } catch (error) {
@@ -81,101 +120,18 @@ export async function POST(req: Request) {
   }
 }
 
-type AIAnalysis = {
-  score: number;
-  strengths: string[];
-  weaknesses: string[];
-  keyword_gaps: string[];
-};
-
-async function extractText(base64: string) {
-  if (!OPENAI_API_KEY) return '';
-  const prompt = `Extract readable text from the base64-encoded PDF. Return JSON only: {"text":""}.`;
-
-  const res = await fetch("https://api.openai.com/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": `Bearer ${OPENAI_API_KEY}`,
-    },
-    body: JSON.stringify({
-      model: OPENAI_MODEL,
-      temperature: 0,
-      max_tokens: 600,
-      response_format: { type: "json_object" },
-      messages: [
-        { role: "system", content: "Return JSON only." },
-        { role: "user", content: `${prompt}\nPDF_BASE64:\n${base64}` }
-      ],
-    }),
-  });
-
-  const raw = await res.text();
-  if (!res.ok) throw new Error(`OpenAI API error: ${res.status} ${raw}`);
-
-  const data = JSON.parse(raw);
-  const content = data?.choices?.[0]?.message?.content;
-  const parsed = content ? JSON.parse(content) : { text: "" };
-  return parsed.text || "";
-}
-
-async function analyzeWithOpenAI(text: string): Promise<AIAnalysis | null> {
-  if (!OPENAI_API_KEY) return null;
-
-  const resumeText = text.slice(0, 12000).replace(/"/g, "'");
-
-  const prompt = `Analyze this resume text for an ATS (Applicant Tracking System) score (0-100).\nTarget Role: General Software/Tech Industry.\n\nResume Text:\n"${resumeText}"\n\nReturn a JSON object ONLY:\n{\n  "score": number,\n  "strengths": ["string"],\n  "keyword_gaps": ["string"],\n  "weaknesses": ["string"]\n}`;
-
-  try {
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${OPENAI_API_KEY}`,
-      },
-      body: JSON.stringify({
-        model: OPENAI_MODEL,
-        temperature: 0.4,
-        max_tokens: 800,
-        response_format: { type: "json_object" },
-        messages: [
-          { role: "system", content: "Return ONLY valid JSON. No markdown. No backticks." },
-          { role: "user", content: prompt },
-        ],
-      }),
-    });
-
-    const raw = await response.text();
-    if (!response.ok) throw new Error(`OpenAI API error: ${response.status} ${raw}`);
-
-    const data = JSON.parse(raw);
-    const content = data?.choices?.[0]?.message?.content;
-    if (!content) return null;
-
-    const parsed = JSON.parse(content);
-    return {
-      score: Number(parsed.score ?? 0),
-      strengths: Array.isArray(parsed.strengths) ? parsed.strengths.slice(0, 3) : [],
-      weaknesses: Array.isArray(parsed.weaknesses) ? parsed.weaknesses.slice(0, 3) : [],
-      keyword_gaps: Array.isArray(parsed.keyword_gaps) ? parsed.keyword_gaps.slice(0, 5) : [],
-    };
-  } catch (e) {
-    console.error("OpenAI analysis failed:", e);
-    return null;
-  }
-}
-
 async function analyzeWithGemini(text: string): Promise<AIAnalysis | null> {
   if (!process.env.GEMINI_API_KEY) return null;
 
   try {
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
+    const model = genAI.getGenerativeModel({ model: "google/gemini-flash-lite-latest" });
     const prompt = `
       Analyze this resume text for an ATS (Applicant Tracking System) score (0-100).
       Target Role: General Software/Tech Industry.
 
       Resume Text:
-      "${text.slice(0, 8000).replace(/"/g, "'")}"
+      "${text.replace(/"/g, "'")}"
 
       Return a JSON object ONLY:
       {
@@ -186,7 +142,15 @@ async function analyzeWithGemini(text: string): Promise<AIAnalysis | null> {
       }
     `;
 
-    const result = await model.generateContent(prompt);
+    const result = await model.generateContent({
+      contents: [{ role: "user", parts: [{ text: prompt }] }],
+      generationConfig: {
+        temperature: 0.4,
+        maxOutputTokens: 600,
+        topP: 0.9
+      }
+    });
+
     const response = await result.response;
     const jsonText = response.text().replace(/```json/g, "").replace(/```/g, "").trim();
     const parsed = JSON.parse(jsonText);
@@ -197,13 +161,16 @@ async function analyzeWithGemini(text: string): Promise<AIAnalysis | null> {
       weaknesses: Array.isArray(parsed.weaknesses) ? parsed.weaknesses.slice(0, 3) : [],
       keyword_gaps: Array.isArray(parsed.keyword_gaps) ? parsed.keyword_gaps.slice(0, 5) : [],
     };
-  } catch (e) {
+  } catch (e: any) {
     console.error("Gemini analysis failed:", e);
+    const errText = String(e).toLowerCase();
+    if (errText.includes("rate limit") || errText.includes("quota") || errText.includes("429")) {
+      throw new Error("ai-rate-limit");
+    }
     return null;
   }
 }
 
-// Fallback Heuristic Logic (Legacy)
 function heuristicAnalysis(text: string) {
     const lowerText = text.toLowerCase();
     const keywords = ["react", "javascript", "python", "java", "sql", "aws", "node", "typescript", "git", "docker", "communication", "leadership"];
@@ -213,7 +180,7 @@ function heuristicAnalysis(text: string) {
     const verbCount = verbs.filter(v => lowerText.includes(v)).length;
     
     let score = 40 + (kwCount * 4) + (verbCount * 3);
-    score = Math.min(85, Math.max(40, score)); // Cap between 40-85 for heuristic
+    score = Math.min(85, Math.max(40, score));
 
     return NextResponse.json({ 
       success: true, 

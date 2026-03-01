@@ -2,14 +2,8 @@ import { NextResponse } from 'next/server';
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { createClient } from '@supabase/supabase-js';
 
-const getSupabase = () => {
-  const url = process.env.SUPABASE_URL;
-  const key = process.env.SUPABASE_SERVICE_ROLE;
-  if (!url || !key) return null;
-  return createClient(url, key);
-};
+export const dynamic = 'force-dynamic';
 
-// Simple In-Memory Rate Limiter
 const rateLimitMap = new Map<string, { count: number; lastReset: number }>();
 const RATE_LIMIT_WINDOW = 3600 * 1000; // 1 hour
 const MAX_REQUESTS = 10;
@@ -32,106 +26,113 @@ function checkRateLimit(identifier: string) {
   return true;
 }
 
+function trimText(text: string) {
+  return text.replace(/\s+/g, " ").slice(0, 6000);
+}
+
 export async function POST(req: Request) {
   try {
-    const body = await req.json();
-    const { userId, plan, originalResumeText, targetRole, experienceLevel, keySkills } = body;
+    if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE) {
+      return new Response(
+        JSON.stringify({ success: false, reason: "missing-env" }),
+        { status: 500 }
+      );
+    }
 
-    // 0. Rate Limiting Check
+    const supabase = createClient(
+      process.env.SUPABASE_URL,
+      process.env.SUPABASE_SERVICE_ROLE
+    );
+
+    const body = await req.json();
+    const { userId, originalResumeText, targetRole, experienceLevel, keySkills } = body;
+
     const ip = req.headers.get('x-forwarded-for') || 'anonymous';
     if (!checkRateLimit(userId || ip)) {
       return NextResponse.json({ error: "Rate limit exceeded. Try again in an hour." }, { status: 429 });
     }
 
-    // 1. Verify Expert Plan via Supabase
     if (!userId) return NextResponse.json({ error: "User ID required" }, { status: 400 });
 
-    // Allow admin bypass
-    if (userId !== "admin@placementscore.online") {
-        const supabase = getSupabase();
-        if (!supabase) {
-          console.warn("Supabase not configured; denying expert access in safe mode.");
-          return NextResponse.json({ error: "Access Denied. Subscription check unavailable." }, { status: 403 });
-        }
-        const { data: sub, error } = await supabase
-            .from('subscriptions')
-            .select('status, plan')
-            .eq('email', userId)
-            .eq('status', 'active')
-            .single();
+    const { data: sub } = await supabase
+        .from('subscriptions')
+        .select('status, plan')
+        .eq('email', userId)
+        .eq('status', 'active')
+        .single();
 
-        if (error || !sub || sub.plan !== 'expert') {
-             return NextResponse.json({ error: "Access Denied. Active Expert Subscription Required." }, { status: 403 });
-        }
+    if (!sub || sub.plan !== 'ELITE') {
+         return NextResponse.json({ error: "Access Denied. Active ELITE Subscription Required." }, { status: 403 });
     }
 
     if (!process.env.GEMINI_API_KEY) {
-      console.warn("GEMINI_API_KEY is missing; AI disabled.");
-      return NextResponse.json({ message: "AI disabled" }, { status: 200 });
+      console.error("GEMINI_API_KEY is missing");
+      return NextResponse.json({ error: "AI service configuration error" }, { status: 500 });
     }
 
-    // 2. Call Gemini API
-    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const cleanResume = trimText(originalResumeText);
 
-    const prompt = `
-You are a professional ATS resume optimization engine used by top MNC recruiters.
+    try {
+      const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
+      const model = genAI.getGenerativeModel({ model: "google/gemini-flash-lite-latest" });
 
-Rewrite the following resume to maximize ATS compatibility.
+      const prompt = `
+  You are a professional ATS resume optimization engine used by top MNC recruiters.
 
-Requirements:
-- Use quantified achievements (%, ₹, numbers)
-- Use strong action verbs
-- Optimize keyword density for the target role
-- Maintain clean ATS-friendly formatting
-- Avoid tables or columns
-- Keep sections clearly labeled
+  Rewrite the following resume to maximize ATS compatibility.
 
-Target Role: ${targetRole}
-Experience Level: ${experienceLevel}
-Key Skills to emphasize: ${keySkills}
+  Requirements:
+  - Use quantified achievements (%, ₹, numbers)
+  - Use strong action verbs
+  - Optimize keyword density for the target role
+  - Maintain clean ATS-friendly formatting
+  - Avoid tables or columns
+  - Keep sections clearly labeled
 
-Resume:
-${originalResumeText}
+  Target Role: ${targetRole}
+  Experience Level: ${experienceLevel}
+  Key Skills to emphasize: ${keySkills}
 
-Return exactly in the following JSON format:
-{
-  "optimizedResumeText": "The full text of the optimized resume",
-  "suggestedImprovements": ["improvement 1", "improvement 2"],
-  "atsScoreEstimate": 95
-}
+  Resume:
+  ${cleanResume}
 
-Return JSON only. No markdown formatting like \`\`\`json.
-`;
+  Return exactly in the following JSON format:
+  {
+    "optimizedResumeText": "The full text of the optimized resume",
+    "suggestedImprovements": ["improvement 1", "improvement 2"],
+    "atsScoreEstimate": 95
+  }
 
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    const text = response.text();
-    
-    // Clean up response in case Gemini adds markdown blocks
-    const jsonString = text.replace(/```json/g, "").replace(/```/g, "").trim();
-    const resultJson = JSON.parse(jsonString);
+  Return JSON only. No markdown formatting like \`\`\`json.
+  `;
 
-    // 3. (Mock) Database Store
-    // In a real app, you'd call your DB client here
-    console.log("Storing AI Generated Resume for User:", userId);
-    /*
-    await db.ai_generated_resumes.create({
-      data: {
-        user_id: userId,
-        original_text: originalResumeText,
-        optimized_text: resultJson.optimizedResumeText,
-        target_role: targetRole,
-        ats_score_estimate: resultJson.atsScoreEstimate
+      const result = await model.generateContent({
+        contents: [{ role: "user", parts: [{ text: prompt }] }],
+        generationConfig: {
+          temperature: 0.4,
+          maxOutputTokens: 600,
+          topP: 0.9
+        }
+      });
+
+      const response = await result.response;
+      const text = response.text();
+      const jsonString = text.replace(/```json/g, "").replace(/```/g, "").trim();
+      const resultJson = JSON.parse(jsonString);
+
+      return NextResponse.json({ 
+        success: true, 
+        ...resultJson,
+        message: "Your ATS-Optimized Resume is Ready 🚀"
+      });
+    } catch (e: any) {
+      console.error("AI Build Resume Gemini Error:", e);
+      const errText = String(e).toLowerCase();
+      if (errText.includes("rate limit") || errText.includes("quota") || errText.includes("429")) {
+        return NextResponse.json({ success: false, reason: "ai-rate-limit" }, { status: 200 });
       }
-    });
-    */
-
-    return NextResponse.json({ 
-      success: true, 
-      ...resultJson,
-      message: "Your ATS-Optimized Resume is Ready 🚀"
-    });
+      throw e;
+    }
 
   } catch (error) {
     console.error("Gemini AI Error:", error);

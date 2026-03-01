@@ -2,16 +2,20 @@ import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
 import { createClient } from "@supabase/supabase-js";
 
-// Initialize Supabase Admin Client (safe mode)
-const getSupabase = () => {
-  const supabaseUrl = process.env.SUPABASE_URL;
-  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE;
-  if (!supabaseUrl || !supabaseServiceKey) return null;
-  return createClient(supabaseUrl, supabaseServiceKey);
-};
-
 export async function POST(req: NextRequest) {
   try {
+    if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE) {
+      return new Response(
+        JSON.stringify({ success: false, reason: "missing-env" }),
+        { status: 500 }
+      );
+    }
+
+    const supabase = createClient(
+      process.env.SUPABASE_URL,
+      process.env.SUPABASE_SERVICE_ROLE
+    );
+
     const text = await req.text();
     const signature = req.headers.get("x-razorpay-signature");
     const secret = process.env.RAZORPAY_WEBHOOK_SECRET;
@@ -20,7 +24,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Missing signature or secret" }, { status: 400 });
     }
 
-    // Verify Signature
     const expectedSignature = crypto
       .createHmac("sha256", secret)
       .update(text)
@@ -32,7 +35,6 @@ export async function POST(req: NextRequest) {
 
     const event = JSON.parse(text);
 
-    // Handle Payment Captured
     if (event.event === "payment.captured") {
       const payment = event.payload.payment.entity;
       const email = payment.email;
@@ -40,13 +42,7 @@ export async function POST(req: NextRequest) {
       
       console.log(`Payment verified for ${email} (Order: ${orderId})`);
 
-      const supabase = getSupabase();
-      if (!supabase) {
-        console.warn("Supabase not configured; skipping subscription update.");
-        return NextResponse.json({ status: "ok", safeMode: true });
-      }
-
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from("subscriptions")
         .upsert({ 
           email: email,
@@ -61,13 +57,6 @@ export async function POST(req: NextRequest) {
       if (error) {
         console.error("Failed to update subscription:", error);
         return NextResponse.json({ error: "Database update failed" }, { status: 500 });
-      }
-
-      const users: any = await supabase.auth.admin.listUsers({ page: 1, perPage: 1000 });
-      const user = users.data?.users?.find((u: any) => u.email === email);
-      const userId = user?.id || null;
-      if (userId) {
-        await supabase.from('users').upsert({ id: userId, plan: 'pro' });
       }
     }
 

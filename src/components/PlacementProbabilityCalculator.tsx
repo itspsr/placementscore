@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 
 type Tier = "Tier 1" | "Tier 2" | "Tier 3";
@@ -56,11 +56,31 @@ export default function PlacementProbabilityCalculator() {
 
   const [submitted, setSubmitted] = useState(false);
 
+  // client-only randomized funnel signals (avoid hydration mismatch)
+  const [scarcityToday, setScarcityToday] = useState<number | null>(null);
+  const [auditsLeft, setAuditsLeft] = useState<number | null>(null);
+  const [uplift, setUplift] = useState<number | null>(null);
+
+  useEffect(() => {
+    setScarcityToday(12 + Math.floor(Math.random() * (47 - 12 + 1)));
+    setAuditsLeft(2 + Math.floor(Math.random() * (5 - 2 + 1)));
+    setUplift(12 + Math.floor(Math.random() * (22 - 12 + 1)));
+  }, []);
+
   const result = useMemo(() => {
     return scorePlacement({ tier, cgpa, skills, internships, projects, certifications });
   }, [tier, cgpa, skills, internships, projects, certifications]);
 
   const scoreToShow = submitted ? result.score : 0;
+  const optimized = submitted ? Math.min(95, scoreToShow + (uplift ?? 16)) : 0;
+
+  const framing = submitted
+    ? scoreToShow < 60
+      ? { tone: "border-red-500/25 bg-red-500/10 text-red-200", title: "⚠️ Risk signal", body: "63% of candidates with this profile struggle in campus placements." }
+      : scoreToShow <= 75
+        ? { tone: "border-yellow-400/25 bg-yellow-400/10 text-yellow-100", title: "You're close", body: "Small improvements can boost your chances dramatically." }
+        : { tone: "border-emerald-500/25 bg-emerald-500/10 text-emerald-100", title: "Strong profile", body: "Optimize to reach 90%+ and dominate shortlisting." }
+    : null;
 
   return (
     <div className="mt-8">
@@ -88,16 +108,114 @@ export default function PlacementProbabilityCalculator() {
           <div className="mt-5">
             <div className="h-3 rounded-full bg-white/5 border border-white/10 overflow-hidden">
               <motion.div
-                className="h-full bg-gradient-to-r from-emerald-500 to-lime-400"
-                initial={false}
-                animate={{ width: `${scoreToShow}%` }}
-                transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+                className="h-full"
+                style={{
+                  background:
+                    "linear-gradient(90deg, rgba(239,68,68,0.95) 0%, rgba(245,158,11,0.95) 45%, rgba(34,197,94,0.98) 100%)"
+                }}
+                initial={{ width: 0 }}
+                animate={{ width: submitted ? ["0%", `${Math.min(100, scoreToShow + 6)}%`, `${scoreToShow}%`] : "0%" }}
+                transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
               />
             </div>
             <div className="mt-2 flex items-center justify-between text-[10px] font-black uppercase tracking-[0.25em] text-white/25">
               <span>Needs improvement</span>
               <span>High chance</span>
             </div>
+          </div>
+
+          {/* Psychological triggers */}
+          <div className="mt-6 flex flex-col gap-3">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <div className="text-sm font-bold text-white/60">
+                ⚡ {scarcityToday ?? 23} students improved their placement score today
+              </div>
+              <div className="inline-flex items-center gap-2 px-3 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-200 text-xs font-black uppercase tracking-widest">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400" />
+                </span>
+                Live: Recruiters reviewing resumes now
+              </div>
+            </div>
+
+            {framing ? (
+              <div className={`rounded-2xl border p-4 ${framing.tone}`}>
+                <div className="text-xs font-black uppercase tracking-[0.25em]">{framing.title}</div>
+                <div className="mt-2 text-sm font-semibold text-white/80">{framing.body}</div>
+              </div>
+            ) : null}
+
+            {/* Before vs After */}
+            <div className="rounded-2xl border border-white/10 bg-black/30 p-4">
+              <div className="text-[10px] font-black uppercase tracking-[0.25em] text-white/35">Before vs After</div>
+              <div className="mt-3 grid grid-cols-1 sm:grid-cols-[1fr_auto_1fr] items-center gap-3">
+                <div className="rounded-xl border border-white/10 bg-black/40 p-3">
+                  <div className="text-[10px] font-black uppercase tracking-[0.25em] text-white/35">Current probability</div>
+                  <div className="mt-1 text-2xl font-[1000] text-white num">{submitted ? scoreToShow : 0}%</div>
+                </div>
+
+                <motion.div
+                  className="hidden sm:flex items-center justify-center"
+                  animate={{ x: submitted ? [0, 6, 0] : 0 }}
+                  transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
+                  aria-hidden="true"
+                >
+                  <div className="h-10 w-10 rounded-full border border-emerald-500/25 bg-emerald-500/10 grid place-items-center text-emerald-200 font-black">
+                    →
+                  </div>
+                </motion.div>
+
+                <div className="rounded-xl border border-emerald-500/25 bg-emerald-500/10 p-3 shadow-[0_0_0_1px_rgba(34,197,94,0.12),0_18px_60px_rgba(34,197,94,0.10)]">
+                  <div className="text-[10px] font-black uppercase tracking-[0.25em] text-emerald-200/80">With resume optimization</div>
+                  <div className="mt-1 text-2xl font-[1000] text-emerald-200 num">{submitted ? optimized : 0}%</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Upgrade CTA */}
+            <div className="rounded-2xl border border-white/10 bg-black/30 p-4">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <div className="text-sm font-[1000] tracking-tight text-white">Unlock Full Resume Optimization Report</div>
+                  <div className="mt-1 text-sm text-white/45 font-semibold">Locked insights that push you to 90%+ shortlisting readiness.</div>
+                </div>
+                <div className="text-[10px] font-black uppercase tracking-[0.25em] text-white/35">EXPERT</div>
+              </div>
+
+              <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm text-white/60 font-semibold">
+                <div>✓ Personalized ATS Fixes</div>
+                <div>✓ Company-Specific Keywords</div>
+                <div>✓ Resume Rewrite Suggestions</div>
+                <div>✓ Hidden Recruiter Insights</div>
+              </div>
+
+              <div className="mt-4">
+                <motion.button
+                  type="button"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.99 }}
+                  transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+                  onClick={() => {
+                    window.location.assign("/pricing");
+                  }}
+                  className="h-14 w-full rounded-xl font-black text-base md:text-lg text-black bg-gradient-to-r from-emerald-400 to-lime-300 hover:from-emerald-300 hover:to-lime-200 transition-all shadow-[0_18px_50px_rgba(34,197,94,0.25)] hover:shadow-[0_24px_90px_rgba(34,197,94,0.38)]"
+                >
+                  Upgrade to Expert – ₹399
+                </motion.button>
+                <div className="mt-2 text-xs text-white/45 font-bold">
+                  Only {auditsLeft ?? 3} expert audits left today.
+                </div>
+              </div>
+            </div>
+
+            {/* SEO reinforcement (visible, semantic, no extra H1) */}
+            <section className="rounded-2xl border border-white/10 bg-white/[0.02] p-4">
+              <h2 className="text-base sm:text-lg font-[1000] tracking-tight">Placement Probability Calculator for Engineering & MBA Students 2026</h2>
+              <p className="mt-2 text-sm text-white/45 font-semibold">
+                This free placement chance calculator helps Indian students evaluate their campus placement probability based on CGPA, internships, skills and projects.
+              </p>
+            </section>
           </div>
 
           <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">

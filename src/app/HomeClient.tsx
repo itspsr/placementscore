@@ -17,6 +17,7 @@ import Link from 'next/link';
 import { useAuth } from '@/lib/authProvider';
 import { getSupabaseBrowser } from '@/lib/supabaseClient';
 import { AtsMeter } from '@/components/AtsMeter';
+import ResultRadialGauge from '@/components/ResultRadialGauge';
 import ExampleDemo from '@/components/ExampleDemo';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import PlacementProbabilityCalculator from '@/components/PlacementProbabilityCalculator';
@@ -58,6 +59,7 @@ export default function HomeClient() {
   const [transactionId, setTransactionId] = useState("");
   const [paymentError, setPaymentError] = useState("");
   const [isPaid, setIsPaid] = useState(false);
+  const [unicornSlotsLeft, setUnicornSlotsLeft] = useState<number | null>(null);
     const [isGenerating, setIsGenerating] = useState(false);
   const [isGenerated, setIsGenerated] = useState(false);
   const [activeFaq, setActiveFaq] = useState<number | null>(null);
@@ -74,6 +76,7 @@ export default function HomeClient() {
 
   // --- Persistence & Query Params ---
   useEffect(() => {
+    setUnicornSlotsLeft(3 + Math.floor(Math.random() * (6 - 3 + 1)));
     const params = new URLSearchParams(window.location.search);
     const planParam = params.get('plan');
     const viewParam = params.get('view');
@@ -864,10 +867,21 @@ export default function HomeClient() {
             <motion.div key="result" className="pt-24 md:pt-40 pb-20 md:pb-32 px-4 md:px-6 max-w-7xl mx-auto relative z-10 text-center">
             <div className="bg-[#0A0A0A] p-8 md:p-20 rounded-[40px] md:rounded-[70px] border border-white/5 flex flex-col xl:flex-row gap-12 md:gap-24 shadow-2xl backdrop-blur-fix">
               <div className="text-center space-y-8 md:space-y-10 xl:w-[420px] mx-auto">
-                <div className="relative inline-block">
-                  <div className="absolute -inset-4 bg-blue-600/20 rounded-full blur-2xl animate-pulse" />
-                  <AtsMeter score={result?.score} />
+                <div className="text-center space-y-8 md:space-y-10 xl:w-[420px] mx-auto">
+                <ResultRadialGauge score={result?.score ?? 0} />
+                <div className="space-y-4">
+                  <p className="font-black text-[10px] uppercase tracking-[0.5em] text-white/20">ATS Compatibility Index</p>
+                  {scanCompleted && score !== null && (
+                    <div className="mt-4 space-y-2 text-sm">
+                      <p className="text-gray-400">Recruiters shortlist top 25% candidates only.</p>
+                      <p className="text-blue-400">Optimize now before applying.</p>
+                    </div>
+                  )}
+                  <button onClick={resetAnalysis} className="flex items-center gap-2 mx-auto px-6 md:px-8 py-3 bg-white/5 hover:bg-white/10 border border-white/5 rounded-full text-blue-500 font-black uppercase tracking-widest text-[9px] md:text-[10px] transition-all">
+                    <Upload className="w-3 h-3" /> Scan New Resume
+                  </button>
                 </div>
+              </div>
                 <div className="space-y-4">
                   <p className="font-black text-[10px] uppercase tracking-[0.5em] text-white/20">ATS Compatibility Index</p>
                   {scanCompleted && score !== null && (
@@ -889,32 +903,117 @@ export default function HomeClient() {
                 {result?.locked ? (
                   <>
                     <div className="space-y-4 text-center xl:text-left">
-                      <h2 className="text-4xl md:text-6xl font-[1000] tracking-tighter italic uppercase">Upgrade to Pro</h2>
-                      <p className="text-white/30 font-bold uppercase tracking-widest text-[10px] md:text-xs italic">{result?.message}</p>
+                      <h2 className="text-4xl md:text-6xl font-[1000] tracking-tighter italic uppercase">Your Result</h2>
+                      <p className="text-white/30 font-bold uppercase tracking-widest text-[10px] md:text-xs italic">Premium optimization is locked — unlock to beat 78% of candidates</p>
                     </div>
 
-                    <div className="p-6 md:p-10 bg-white/[0.02] rounded-[30px] md:rounded-[40px] border border-white/5 text-left relative overflow-hidden">
-                      <div className="blur-sm opacity-40">
-                        <h4 className="text-lg md:text-xl font-black mb-4 italic uppercase tracking-tighter">Optimized Resume Preview</h4>
-                        <p className="text-sm text-white/40 leading-relaxed">Your optimized resume will appear here after upgrading to Pro.</p>
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+                      <div className="space-y-6">
+                        <div className="grid grid-cols-1 gap-4">
+                          <div className="rounded-[30px] md:rounded-[40px] border border-white/10 bg-white/[0.03] backdrop-blur-xl p-6 md:p-8 relative overflow-hidden">
+                            <div className="absolute inset-0 bg-gradient-to-br from-blue-600/10 via-indigo-600/10 to-transparent" />
+                            <div className="relative">
+                              <div className="flex items-center justify-between">
+                                <div>
+                                  <div className="text-[10px] font-black uppercase tracking-[0.25em] text-white/35">Optimization status</div>
+                                  <div className="mt-2 text-2xl font-[1000] tracking-tighter">AI Optimization Locked</div>
+                                </div>
+                                <Lock className="w-6 h-6 text-white/20" />
+                              </div>
+                              <div className="mt-4 rounded-2xl border border-white/10 bg-black/30 p-4">
+                                <div className="blur-sm opacity-50">
+                                  <div className="text-sm text-white/70 font-bold">Preview</div>
+                                  <div className="mt-2 text-sm text-white/40">Your resume rewrite blueprint will appear here with recruiter notes and keyword gaps.</div>
+                                  <div className="mt-3 text-sm text-white/35 space-y-1">
+                                    <div>• Company-specific keywords</div>
+                                    <div>• ATS formatting fixes</div>
+                                    <div>• Recruiter signals</div>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="rounded-[30px] md:rounded-[40px] border border-white/10 bg-white/[0.03] backdrop-blur-xl p-6 md:p-8">
+                            <div className="text-[10px] font-black uppercase tracking-[0.25em] text-white/35">Live activity</div>
+                            <div className="mt-3 space-y-2 text-sm font-bold text-white/70">
+                              <div>• 17 resumes optimized in last hour</div>
+                              <div>• {unicornSlotsLeft ?? 4} pro slots left today</div>
+                              <div>• Reset in {Math.floor(countdown/3600)}h {Math.floor((countdown%3600)/60)}m</div>
+                            </div>
+                          </div>
+
+                          <div className="rounded-[30px] md:rounded-[40px] border border-white/10 bg-white/[0.03] backdrop-blur-xl p-6 md:p-8">
+                            <div className="text-[10px] font-black uppercase tracking-[0.25em] text-white/35">Recruiter insight</div>
+                            <div className="mt-3 text-sm font-bold text-white/70">Recruiters shortlist top 25% candidates only.</div>
+                            <div className="mt-4 space-y-2">
+                              <div className="flex items-center justify-between text-xs font-black uppercase tracking-widest text-white/35">
+                                <span>You</span><span>45%</span>
+                              </div>
+                              <div className="h-2 rounded-full bg-white/5 border border-white/10 overflow-hidden">
+                                <div className="h-full bg-blue-500" style={{ width: '45%' }} />
+                              </div>
+                              <div className="flex items-center justify-between text-xs font-black uppercase tracking-widest text-white/35">
+                                <span>Top candidates</span><span>78%</span>
+                              </div>
+                              <div className="h-2 rounded-full bg-white/5 border border-white/10 overflow-hidden">
+                                <div className="h-full bg-emerald-500" style={{ width: '78%' }} />
+                              </div>
+                            </div>
+                          </div>
+                        </div>
                       </div>
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <Lock className="w-10 h-10 text-white/20" />
+
+                      <div className="space-y-6">
+                        <div className="rounded-[30px] md:rounded-[40px] border border-white/10 bg-white/[0.03] backdrop-blur-xl p-6 md:p-8">
+                          <div className="text-[10px] font-black uppercase tracking-[0.25em] text-white/35">Before vs After impact</div>
+                          <div className="mt-4 grid grid-cols-1 sm:grid-cols-[1fr_auto_1fr] items-center gap-3">
+                            <div className="rounded-2xl bg-black/30 border border-white/10 p-4">
+                              <div className="text-[10px] font-black uppercase tracking-[0.25em] text-white/35">Current resume score</div>
+                              <div className="mt-1 text-4xl font-[1000] tracking-tight text-white">45%</div>
+                            </div>
+                            <motion.div className="hidden sm:flex items-center justify-center" animate={{ x: [0, 8, 0] }} transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }} aria-hidden="true">
+                              <div className="h-10 w-10 rounded-full border border-emerald-500/25 bg-emerald-500/10 grid place-items-center text-emerald-200 font-black">→</div>
+                            </motion.div>
+                            <div className="rounded-2xl bg-emerald-500/10 border border-emerald-500/25 p-4 shadow-[0_18px_70px_rgba(34,197,94,0.12)]">
+                              <div className="text-[10px] font-black uppercase tracking-[0.25em] text-emerald-200/80">Optimized resume score</div>
+                              <div className="mt-1 text-4xl font-[1000] tracking-tight text-emerald-200">82%</div>
+                            </div>
+                          </div>
+                          <div className="mt-4 text-center text-sm font-[1000] text-emerald-200">+37% improvement potential</div>
+                        </div>
+
+                        <div className="rounded-[30px] md:rounded-[40px] border border-white/10 bg-gradient-to-br from-white/[0.06] to-white/[0.02] p-6 md:p-10 shadow-2xl">
+                          <div className="text-2xl md:text-3xl font-[1000] tracking-tighter">Unlock AI Optimization & Beat 78% of Candidates</div>
+                          <div className="mt-2 text-sm md:text-base text-white/45 font-semibold">Get detailed ATS fixes, recruiter insights & rewrite blueprint.</div>
+                          <motion.button
+                            whileHover={{ scale: 1.04 }}
+                            whileTap={{ scale: 0.99 }}
+                            transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+                            onClick={() => { setSelectedPlan({ tier: 'EXPERT', price: 399 }); setView('payment'); }}
+                            className="mt-6 w-full py-6 md:py-7 rounded-2xl md:rounded-3xl font-[1000] text-xl md:text-2xl text-black bg-gradient-to-r from-emerald-400 to-lime-300 shadow-[0_24px_90px_rgba(34,197,94,0.30)] hover:shadow-[0_30px_120px_rgba(34,197,94,0.42)] uppercase italic"
+                          >
+                            UNLOCK AI OPTIMIZATION — ₹399
+                          </motion.button>
+                          <div className="mt-3 text-center text-xs font-black uppercase tracking-[0.25em] text-white/35">Only {unicornSlotsLeft ?? 4} optimizations left today</div>
+
+                          <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div className="p-4 rounded-2xl bg-black/30 border border-white/10 text-center">
+                              <div className="text-[10px] font-black uppercase tracking-[0.25em] text-white/35">Used by</div>
+                              <div className="mt-1 text-sm font-[1000] text-white">12,000+ students</div>
+                            </div>
+                            <div className="p-4 rounded-2xl bg-black/30 border border-white/10 text-center">
+                              <div className="text-[10px] font-black uppercase tracking-[0.25em] text-white/35">Avg improvement</div>
+                              <div className="mt-1 text-sm font-[1000] text-emerald-200">+28%</div>
+                            </div>
+                            <div className="p-4 rounded-2xl bg-black/30 border border-white/10 text-center">
+                              <div className="text-[10px] font-black uppercase tracking-[0.25em] text-white/35">Trust</div>
+                              <div className="mt-1 text-sm font-[1000] text-white">Tier 1–3 colleges</div>
+                            </div>
+                          </div>
+                        </div>
                       </div>
                     </div>
-
-                    <div className="grid md:grid-cols-3 gap-4 text-[10px] font-black uppercase tracking-widest text-white/30">
-                      <div className="p-4 rounded-2xl bg-white/5 border border-white/10">Only {25 - new Date().getHours()} Pro optimizations left today</div>
-                      <div className="p-4 rounded-2xl bg-white/5 border border-white/10">24h reset in {Math.floor(countdown/3600)}h {Math.floor((countdown%3600)/60)}m</div>
-                      <div className="p-4 rounded-2xl bg-white/5 border border-white/10">17 resumes being optimized right now</div>
-                    </div>
-
-                    <button
-                      onClick={() => { setSelectedPlan({ tier: 'EXPERT', price: 399 }); setView('payment'); }}
-                      className="w-full py-6 md:py-7 bg-blue-600 text-white rounded-2xl md:rounded-3xl font-[1000] text-xl md:text-2xl shadow-2xl shadow-blue-500/30 uppercase italic animate-[shake_0.8s_infinite]"
-                    >
-                      Unlock AI Optimization — ₹399
-                    </button>
 
                     {!hasPlan('expert') && (
                       <div className="mt-10">

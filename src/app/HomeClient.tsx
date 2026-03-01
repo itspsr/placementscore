@@ -864,180 +864,156 @@ export default function HomeClient() {
 
         {view === 'result' && (
           <ErrorBoundary>
-            <motion.div key="result" className="pt-24 md:pt-40 pb-20 md:pb-32 px-4 md:px-6 max-w-7xl mx-auto relative z-10 text-center">
-            <div className="bg-[#0A0A0A] p-8 md:p-20 rounded-[40px] md:rounded-[70px] border border-white/5 flex flex-col xl:flex-row gap-12 md:gap-24 shadow-2xl backdrop-blur-fix">
-              <div className="text-center space-y-8 md:space-y-10 xl:w-[420px] mx-auto">
-                <div className="text-center space-y-8 md:space-y-10 xl:w-[420px] mx-auto">
-                <ResultRadialGauge score={result?.score ?? 0} />
-                <div className="space-y-4">
-                  <p className="font-black text-[10px] uppercase tracking-[0.5em] text-white/20">ATS Compatibility Index</p>
-                  {scanCompleted && score !== null && (
-                    <div className="mt-4 space-y-2 text-sm">
-                      <p className="text-gray-400">Recruiters shortlist top 25% candidates only.</p>
-                      <p className="text-blue-400">Optimize now before applying.</p>
-                    </div>
-                  )}
-                  <button onClick={resetAnalysis} className="flex items-center gap-2 mx-auto px-6 md:px-8 py-3 bg-white/5 hover:bg-white/10 border border-white/5 rounded-full text-blue-500 font-black uppercase tracking-widest text-[9px] md:text-[10px] transition-all">
-                    <Upload className="w-3 h-3" /> Scan New Resume
-                  </button>
-                </div>
-              </div>
-                <div className="space-y-4">
-                  <p className="font-black text-[10px] uppercase tracking-[0.5em] text-white/20">ATS Compatibility Index</p>
-                  {scanCompleted && score !== null && (
-                    <div className="mt-4 space-y-2 text-sm">
-                      {score < 60 && <p className="text-red-400">High rejection risk detected.</p>}
-                      {score >= 60 && score < 75 && <p className="text-yellow-400">Moderate improvement needed.</p>}
-                      {score >= 75 && <p className="text-green-400">You're close to top tier candidates.</p>}
-                      <p className="text-gray-400">Recruiters reject 78% resumes below 80 score.</p>
-                      <p className="text-blue-400">Improve now before applying.</p>
-                    </div>
-                  )}
-                  <button onClick={resetAnalysis} className="flex items-center gap-2 mx-auto px-6 md:px-8 py-3 bg-white/5 hover:bg-white/10 border border-white/5 rounded-full text-blue-500 font-black uppercase tracking-widest text-[9px] md:text-[10px] transition-all">
-                    <Upload className="w-3 h-3" /> Scan New Resume
-                  </button>
-                </div>
-              </div>
-
-              <div className="flex-1 space-y-10 md:space-y-12">
+            <motion.div key="result" className="pt-24 md:pt-40 pb-20 md:pb-32 px-4 md:px-6 max-w-[1200px] mx-auto relative z-10">
+              <div className="bg-[#0A0A0A] p-6 md:p-12 rounded-[32px] md:rounded-[56px] border border-white/10 shadow-2xl backdrop-blur-fix">
                 {result?.locked ? (
                   <>
-                    <div className="space-y-4 text-center xl:text-left">
-                      <h2 className="text-4xl md:text-6xl font-[1000] tracking-tighter italic uppercase">Your Result</h2>
-                      <p className="text-white/30 font-bold uppercase tracking-widest text-[10px] md:text-xs italic">Premium optimization is locked — unlock to beat 78% of candidates</p>
-                    </div>
+                    {/* Row 1 */}
+                    <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 md:gap-8 items-stretch">
+                      <div className="lg:col-span-2">
+                        <div className="h-full rounded-[28px] md:rounded-[40px] border border-white/10 bg-white/[0.03] backdrop-blur-xl p-6 md:p-8 shadow-2xl">
+                          <div className="text-center">
+                            <ResultRadialGauge score={result?.score ?? 0} />
+                            <div className="mt-5 text-sm font-semibold text-white/55">Recruiters shortlist only top 25% candidates.</div>
+                          </div>
+                        </div>
+                      </div>
 
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
-                      <div className="space-y-6">
-                        <div className="grid grid-cols-1 gap-4">
-                          <div className="rounded-[30px] md:rounded-[40px] border border-white/10 bg-white/[0.03] backdrop-blur-xl p-6 md:p-8 relative overflow-hidden">
+                      <div className="lg:col-span-3">
+                        <div className="h-full flex flex-col gap-4">
+                          <div className="flex-1 rounded-[28px] md:rounded-[40px] border border-white/10 bg-white/[0.03] backdrop-blur-xl p-6 md:p-8 shadow-2xl relative overflow-hidden">
                             <div className="absolute inset-0 bg-gradient-to-br from-blue-600/10 via-indigo-600/10 to-transparent" />
                             <div className="relative">
                               <div className="flex items-center justify-between">
                                 <div>
-                                  <div className="text-[10px] font-black uppercase tracking-[0.25em] text-white/35">Optimization status</div>
-                                  <div className="mt-2 text-2xl font-[1000] tracking-tighter">AI Optimization Locked</div>
+                                  <div className="text-[10px] font-black uppercase tracking-[0.25em] text-white/35">AI Optimization Locked</div>
+                                  <div className="mt-2 text-2xl md:text-3xl font-[1000] tracking-tighter">Unlock the rewrite blueprint</div>
+                                  <div className="mt-2 text-sm text-white/45 font-semibold">Personalized ATS fixes + recruiter signals + keyword map.</div>
                                 </div>
                                 <Lock className="w-6 h-6 text-white/20" />
                               </div>
                               <div className="mt-4 rounded-2xl border border-white/10 bg-black/30 p-4">
-                                <div className="blur-sm opacity-50">
+                                <div className="blur-[1.5px] opacity-70">
                                   <div className="text-sm text-white/70 font-bold">Preview</div>
-                                  <div className="mt-2 text-sm text-white/40">Your resume rewrite blueprint will appear here with recruiter notes and keyword gaps.</div>
-                                  <div className="mt-3 text-sm text-white/35 space-y-1">
+                                  <div className="mt-2 text-sm text-white/45">Keyword gaps, recruiter notes, and a section-by-section rewrite plan.</div>
+                                  <div className="mt-3 text-sm text-white/40 space-y-1">
                                     <div>• Company-specific keywords</div>
                                     <div>• ATS formatting fixes</div>
-                                    <div>• Recruiter signals</div>
+                                    <div>• Impact metrics rewrite</div>
                                   </div>
                                 </div>
                               </div>
                             </div>
                           </div>
 
-                          <div className="rounded-[30px] md:rounded-[40px] border border-white/10 bg-white/[0.03] backdrop-blur-xl p-6 md:p-8">
-                            <div className="text-[10px] font-black uppercase tracking-[0.25em] text-white/35">Live activity</div>
-                            <div className="mt-3 space-y-2 text-sm font-bold text-white/70">
+                          <div className="flex-1 rounded-[28px] md:rounded-[40px] border border-white/10 bg-white/[0.03] backdrop-blur-xl p-6 md:p-8 shadow-2xl">
+                            <div className="text-[10px] font-black uppercase tracking-[0.25em] text-white/35">Gap analysis snapshot</div>
+                            <div className="mt-3 text-sm font-bold text-white/70">You vs Top Candidates</div>
+                            <div className="mt-4 space-y-3">
+                              <div>
+                                <div className="flex items-center justify-between text-xs font-black uppercase tracking-widest text-white/35"><span>You</span><span>45%</span></div>
+                                <div className="mt-2 h-2 rounded-full bg-white/5 border border-white/10 overflow-hidden"><div className="h-full bg-blue-500" style={{ width: '45%' }} /></div>
+                              </div>
+                              <div>
+                                <div className="flex items-center justify-between text-xs font-black uppercase tracking-widest text-white/35"><span>Top candidates</span><span>78%</span></div>
+                                <div className="mt-2 h-2 rounded-full bg-white/5 border border-white/10 overflow-hidden"><div className="h-full bg-emerald-500" style={{ width: '78%' }} /></div>
+                              </div>
+                            </div>
+                            <div className="mt-4 text-sm text-white/45 font-semibold">Bridge the gap with keyword density + measurable impact lines.</div>
+                          </div>
+
+                          <div className="flex-1 rounded-[28px] md:rounded-[40px] border border-white/10 bg-white/[0.03] backdrop-blur-xl p-6 md:p-8 shadow-2xl">
+                            <div className="flex items-center justify-between">
+                              <div className="text-[10px] font-black uppercase tracking-[0.25em] text-white/35">Live activity</div>
+                              <div className="inline-flex items-center gap-2 text-emerald-200 text-xs font-black uppercase tracking-widest">
+                                <span className="relative flex h-2 w-2">
+                                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400" />
+                                </span>
+                                Live
+                              </div>
+                            </div>
+                            <div className="mt-4 space-y-2 text-sm font-bold text-white/70">
                               <div>• 17 resumes optimized in last hour</div>
-                              <div>• {unicornSlotsLeft ?? 4} pro slots left today</div>
+                              <div>• {Math.min(5, Math.max(2, unicornSlotsLeft ?? 4))} expert audits left today</div>
                               <div>• Reset in {Math.floor(countdown/3600)}h {Math.floor((countdown%3600)/60)}m</div>
-                            </div>
-                          </div>
-
-                          <div className="rounded-[30px] md:rounded-[40px] border border-white/10 bg-white/[0.03] backdrop-blur-xl p-6 md:p-8">
-                            <div className="text-[10px] font-black uppercase tracking-[0.25em] text-white/35">Recruiter insight</div>
-                            <div className="mt-3 text-sm font-bold text-white/70">Recruiters shortlist top 25% candidates only.</div>
-                            <div className="mt-4 space-y-2">
-                              <div className="flex items-center justify-between text-xs font-black uppercase tracking-widest text-white/35">
-                                <span>You</span><span>45%</span>
-                              </div>
-                              <div className="h-2 rounded-full bg-white/5 border border-white/10 overflow-hidden">
-                                <div className="h-full bg-blue-500" style={{ width: '45%' }} />
-                              </div>
-                              <div className="flex items-center justify-between text-xs font-black uppercase tracking-widest text-white/35">
-                                <span>Top candidates</span><span>78%</span>
-                              </div>
-                              <div className="h-2 rounded-full bg-white/5 border border-white/10 overflow-hidden">
-                                <div className="h-full bg-emerald-500" style={{ width: '78%' }} />
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="space-y-6">
-                        <div className="rounded-[30px] md:rounded-[40px] border border-white/10 bg-white/[0.03] backdrop-blur-xl p-6 md:p-8">
-                          <div className="text-[10px] font-black uppercase tracking-[0.25em] text-white/35">Before vs After impact</div>
-                          <div className="mt-4 grid grid-cols-1 sm:grid-cols-[1fr_auto_1fr] items-center gap-3">
-                            <div className="rounded-2xl bg-black/30 border border-white/10 p-4">
-                              <div className="text-[10px] font-black uppercase tracking-[0.25em] text-white/35">Current resume score</div>
-                              <div className="mt-1 text-4xl font-[1000] tracking-tight text-white">45%</div>
-                            </div>
-                            <motion.div className="hidden sm:flex items-center justify-center" animate={{ x: [0, 8, 0] }} transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }} aria-hidden="true">
-                              <div className="h-10 w-10 rounded-full border border-emerald-500/25 bg-emerald-500/10 grid place-items-center text-emerald-200 font-black">→</div>
-                            </motion.div>
-                            <div className="rounded-2xl bg-emerald-500/10 border border-emerald-500/25 p-4 shadow-[0_18px_70px_rgba(34,197,94,0.12)]">
-                              <div className="text-[10px] font-black uppercase tracking-[0.25em] text-emerald-200/80">Optimized resume score</div>
-                              <div className="mt-1 text-4xl font-[1000] tracking-tight text-emerald-200">82%</div>
-                            </div>
-                          </div>
-                          <div className="mt-4 text-center text-sm font-[1000] text-emerald-200">+37% improvement potential</div>
-                        </div>
-
-                        <div className="rounded-[30px] md:rounded-[40px] border border-white/10 bg-gradient-to-br from-white/[0.06] to-white/[0.02] p-6 md:p-10 shadow-2xl">
-                          <div className="text-2xl md:text-3xl font-[1000] tracking-tighter">Unlock AI Optimization & Beat 78% of Candidates</div>
-                          <div className="mt-2 text-sm md:text-base text-white/45 font-semibold">Get detailed ATS fixes, recruiter insights & rewrite blueprint.</div>
-                          <motion.button
-                            whileHover={{ scale: 1.04 }}
-                            whileTap={{ scale: 0.99 }}
-                            transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
-                            onClick={() => { setSelectedPlan({ tier: 'EXPERT', price: 399 }); setView('payment'); }}
-                            className="mt-6 w-full py-6 md:py-7 rounded-2xl md:rounded-3xl font-[1000] text-xl md:text-2xl text-black bg-gradient-to-r from-emerald-400 to-lime-300 shadow-[0_24px_90px_rgba(34,197,94,0.30)] hover:shadow-[0_30px_120px_rgba(34,197,94,0.42)] uppercase italic"
-                          >
-                            UNLOCK AI OPTIMIZATION — ₹399
-                          </motion.button>
-                          <div className="mt-3 text-center text-xs font-black uppercase tracking-[0.25em] text-white/35">Only {unicornSlotsLeft ?? 4} optimizations left today</div>
-
-                          <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div className="p-4 rounded-2xl bg-black/30 border border-white/10 text-center">
-                              <div className="text-[10px] font-black uppercase tracking-[0.25em] text-white/35">Used by</div>
-                              <div className="mt-1 text-sm font-[1000] text-white">12,000+ students</div>
-                            </div>
-                            <div className="p-4 rounded-2xl bg-black/30 border border-white/10 text-center">
-                              <div className="text-[10px] font-black uppercase tracking-[0.25em] text-white/35">Avg improvement</div>
-                              <div className="mt-1 text-sm font-[1000] text-emerald-200">+28%</div>
-                            </div>
-                            <div className="p-4 rounded-2xl bg-black/30 border border-white/10 text-center">
-                              <div className="text-[10px] font-black uppercase tracking-[0.25em] text-white/35">Trust</div>
-                              <div className="mt-1 text-sm font-[1000] text-white">Tier 1–3 colleges</div>
                             </div>
                           </div>
                         </div>
                       </div>
                     </div>
 
+                    {/* Row 2 */}
+                    <div className="mt-8 rounded-[28px] md:rounded-[40px] border border-white/10 bg-gradient-to-r from-white/[0.06] via-white/[0.03] to-emerald-500/10 p-6 md:p-10 shadow-2xl text-center">
+                      <div className="text-[10px] font-black uppercase tracking-[0.25em] text-white/35">Before vs After impact</div>
+                      <div className="mt-5 flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6">
+                        <div className="text-4xl md:text-6xl font-[1000] tracking-tighter text-white">45%</div>
+                        <motion.div animate={{ x: [0, 10, 0] }} transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }} className="text-emerald-200 text-3xl md:text-4xl font-black">→</motion.div>
+                        <div className="text-4xl md:text-6xl font-[1000] tracking-tighter text-emerald-200 drop-shadow-[0_0_18px_rgba(34,197,94,0.25)]">82%</div>
+                      </div>
+                      <div className="mt-3 text-lg md:text-xl font-[1000] text-emerald-200">+37% improvement potential</div>
+                    </div>
+
+                    {/* Row 3 */}
+                    <div className="mt-8 rounded-[28px] md:rounded-[40px] border border-white/10 bg-white/[0.03] backdrop-blur-xl p-6 md:p-12 shadow-2xl text-center">
+                      <div className="text-2xl md:text-4xl font-[1000] tracking-tighter">Unlock AI Optimization & Beat 78% of Candidates</div>
+                      <div className="mt-3 text-sm md:text-base text-white/45 font-semibold">Get detailed ATS fixes, recruiter insights & rewrite blueprint.</div>
+                      <motion.button
+                        whileHover={{ scale: 1.04 }}
+                        whileTap={{ scale: 0.99 }}
+                        transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+                        onClick={() => { setSelectedPlan({ tier: 'EXPERT', price: 399 }); setView('payment'); }}
+                        className="mt-7 h-16 w-full rounded-2xl md:rounded-3xl font-[1000] text-xl md:text-2xl text-black bg-gradient-to-r from-emerald-400 to-lime-300 shadow-[0_26px_100px_rgba(34,197,94,0.32)] hover:shadow-[0_34px_140px_rgba(34,197,94,0.44)] uppercase italic"
+                      >
+                        UNLOCK AI OPTIMIZATION — ₹399
+                      </motion.button>
+                      <div className="mt-4 text-xs font-black uppercase tracking-[0.25em] text-white/35">Only {Math.min(5, Math.max(2, unicornSlotsLeft ?? 4))} expert audits left today</div>
+
+                      <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="p-4 rounded-2xl bg-black/30 border border-white/10">
+                          <div className="text-[10px] font-black uppercase tracking-[0.25em] text-white/35">Used by</div>
+                          <div className="mt-2 text-sm font-[1000] text-white">12,000+ students</div>
+                        </div>
+                        <div className="p-4 rounded-2xl bg-black/30 border border-white/10">
+                          <div className="text-[10px] font-black uppercase tracking-[0.25em] text-white/35">Avg improvement</div>
+                          <div className="mt-2 text-sm font-[1000] text-emerald-200">+28%</div>
+                        </div>
+                        <div className="p-4 rounded-2xl bg-black/30 border border-white/10">
+                          <div className="text-[10px] font-black uppercase tracking-[0.25em] text-white/35">Trusted</div>
+                          <div className="mt-2 text-sm font-[1000] text-white">Tier 1–3 colleges</div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Row 4 */}
                     {!hasPlan('expert') && (
                       <div className="mt-10">
-                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <div className="max-w-5xl mx-auto flex flex-col lg:flex-row justify-center gap-8">
                           {!hasPlan('base') && (
-                            <PricingCard file={file} setView={setView} setSelectedPlan={setSelectedPlan} setPricingLoading={setPricingLoading} pricingLoading={pricingLoading} tier="BASE" price="99" perks={['Real ATS Score', 'Formatting Audit', '30-Day Storage']} />
+                            <div className="w-full lg:w-1/3"><PricingCard file={file} setView={setView} setSelectedPlan={setSelectedPlan} setPricingLoading={setPricingLoading} pricingLoading={pricingLoading} tier="BASE" price="99" perks={['Real ATS Score', 'Formatting Audit', '30-Day Storage']} /></div>
                           )}
                           {!hasPlan('elite') && (
-                            <PricingCard file={file} setView={setView} setSelectedPlan={setSelectedPlan} setPricingLoading={setPricingLoading} pricingLoading={pricingLoading} tier="ELITE" price="199" perks={['Everything in Base', 'Detailed Insight Report', 'Keyword Gap Analysis', 'Improvement Plan']} />
+                            <div className="w-full lg:w-1/3"><PricingCard file={file} setView={setView} setSelectedPlan={setSelectedPlan} setPricingLoading={setPricingLoading} pricingLoading={pricingLoading} tier="ELITE" price="199" perks={['Everything in Base', 'Detailed Insight Report', 'Keyword Gap Analysis', 'Improvement Plan']} /></div>
                           )}
-                          <PricingCard file={file} setView={setView} setSelectedPlan={setSelectedPlan} setPricingLoading={setPricingLoading} pricingLoading={pricingLoading} tier="EXPERT" price="399" popular perks={['Everything in Elite', 'AI Resume Rearchitect', 'Unlimited PDF Downloads', 'Priority Support']} />
+                          <div className="w-full lg:w-1/3"><PricingCard file={file} setView={setView} setSelectedPlan={setSelectedPlan} setPricingLoading={setPricingLoading} pricingLoading={pricingLoading} tier="EXPERT" price="399" popular perks={['Everything in Elite', 'AI Resume Rearchitect', 'Unlimited PDF Downloads', 'Priority Support']} /></div>
                         </div>
                       </div>
                     )}
+
+                    <div className="mt-10 flex justify-center">
+                      <button onClick={resetAnalysis} className="px-8 py-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-full text-white/70 font-black uppercase tracking-widest text-[10px] transition-all">
+                        Scan New Resume
+                      </button>
+                    </div>
                   </>
                 ) : (
-                  
                   <>
                     <div className="space-y-4 text-center xl:text-left">
                       <h2 className="text-4xl md:text-6xl font-[1000] tracking-tighter italic uppercase">Pro Optimized</h2>
                       <p className="text-white/30 font-bold uppercase tracking-widest text-[10px] md:text-xs italic">AI optimization unlocked</p>
                     </div>
 
-                    <div className="grid md:grid-cols-2 gap-6">
+                    <div className="mt-8 grid md:grid-cols-2 gap-6">
                       <LockSection required="BASE" current={selectedPlanType}><div className="p-6 md:p-8 bg-white/[0.02] rounded-[30px] md:rounded-[40px] border border-white/5 text-left">
                         <p className="text-[10px] font-black uppercase tracking-widest text-white/30 mb-3">Original Resume</p>
                         <p className="text-sm text-white/50 whitespace-pre-wrap">{result?.originalText || 'Original resume text extracted.'}</p>
@@ -1059,12 +1035,11 @@ export default function HomeClient() {
                   </>
                 )}
               </div>
-            </div>
-          </motion.div>
+            </motion.div>
           </ErrorBoundary>
         )}
 
-        {view === 'payment' && (
+{view === 'payment' && (
           <motion.div key="pay" className="pt-32 md:pt-48 pb-20 md:pb-32 px-4 md:px-6 max-w-2xl mx-auto relative z-10 text-center">
              <PaymentTimer />
              <div className="bg-[#0A0A0A] p-8 md:p-16 rounded-[40px] md:rounded-[60px] border border-white/10 space-y-10 md:space-y-12 shadow-2xl backdrop-blur-fix">

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import pdf from 'pdf-parse';
+import * as pdfParse from 'pdf-parse';
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { getServerSession } from "next-auth";
 import { createClient } from "@supabase/supabase-js";
@@ -60,7 +60,7 @@ export async function POST(req: Request) {
     
     let text = "";
     try {
-      const data = await pdf(buffer);
+      const data = await (pdfParse as any)(buffer);
       text = data.text || "";
     } catch (parseError) {
       console.error("PDF Parse Error:", parseError);

@@ -19,6 +19,7 @@ import { getSupabaseBrowser } from '@/lib/supabaseClient';
 import { AtsMeter } from '@/components/AtsMeter';
 import ExampleDemo from '@/components/ExampleDemo';
 import ErrorBoundary from '@/components/ErrorBoundary';
+import PlacementProbabilityCalculator from '@/components/PlacementProbabilityCalculator';
 
 // --- Types ---
 type AppState = 'landing' | 'analyzing' | 'result' | 'payment';
@@ -505,6 +506,9 @@ export default function HomeClient() {
                       Find Jobs Matching My Resume
                     </Link>
                   </div>
+
+                  {/* Placement Probability Calculator (below hero CTA) */}
+                  <PlacementProbabilityCalculator />
 
                   {/* Tiny proof */}
                   <div className="flex items-center gap-3 text-[11px] md:text-xs font-black uppercase tracking-[0.25em] text-white/25 pt-2">

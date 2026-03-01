@@ -73,6 +73,7 @@ export default function PlacementProbabilityCalculator() {
 
   const scoreToShow = submitted ? result.score : 0;
   const optimized = submitted ? Math.min(95, scoreToShow + (uplift ?? 16)) : 0;
+  const improvementGap = submitted ? Math.max(0, optimized - scoreToShow) : 0;
 
   const framing = submitted
     ? scoreToShow < 60
@@ -104,6 +105,29 @@ export default function PlacementProbabilityCalculator() {
               <div className="text-xs sm:text-sm font-black uppercase tracking-[0.25em] text-white/35">{submitted ? result.label : "—"}</div>
             </div>
           </div>
+
+
+          {submitted ? (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+              className="mt-5 grid grid-cols-1 sm:grid-cols-3 gap-3"
+            >
+              <div className="rounded-2xl bg-black/30 border border-white/10 p-4">
+                <div className="text-[10px] font-black uppercase tracking-[0.25em] text-white/35">Probability</div>
+                <div className="mt-1 text-3xl font-[1000] text-emerald-200 num">{scoreToShow}%</div>
+              </div>
+              <div className="rounded-2xl bg-black/30 border border-white/10 p-4">
+                <div className="text-[10px] font-black uppercase tracking-[0.25em] text-white/35">Risk level</div>
+                <div className="mt-1 text-3xl font-[1000] text-white num">{result.label}</div>
+              </div>
+              <div className="rounded-2xl bg-emerald-500/10 border border-emerald-500/20 p-4 shadow-[0_18px_70px_rgba(34,197,94,0.12)]">
+                <div className="text-[10px] font-black uppercase tracking-[0.25em] text-emerald-200/80">Improvement gap</div>
+                <div className="mt-1 text-3xl font-[1000] text-emerald-200 num">+{improvementGap}%</div>
+              </div>
+            </motion.div>
+          ) : null}
 
           <div className="mt-5">
             <div className="h-3 rounded-full bg-white/5 border border-white/10 overflow-hidden">
@@ -143,6 +167,25 @@ export default function PlacementProbabilityCalculator() {
               <div className={`rounded-2xl border p-4 ${framing.tone}`}>
                 <div className="text-xs font-black uppercase tracking-[0.25em]">{framing.title}</div>
                 <div className="mt-2 text-sm font-semibold text-white/80">{framing.body}</div>
+              </div>
+            ) : null}
+
+
+            {submitted ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="rounded-2xl border border-white/10 bg-black/30 p-4">
+                  <div className="text-sm font-bold text-white/70">⚡ {Math.max(12, Math.min(47, (scarcityToday ?? 23) - 6))} students increased their score in the last hour</div>
+                </div>
+                <div className="rounded-2xl border border-white/10 bg-black/30 p-4 flex items-center justify-between gap-3">
+                  <div className="text-sm font-bold text-white/70">Recruiters prefer candidates above <span className="text-emerald-200">75%</span></div>
+                  <div className="inline-flex items-center gap-2 text-emerald-200 text-xs font-black uppercase tracking-widest">
+                    <span className="relative flex h-2 w-2">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400" />
+                    </span>
+                    Live
+                  </div>
+                </div>
               </div>
             ) : null}
 

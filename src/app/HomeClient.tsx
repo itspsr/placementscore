@@ -20,6 +20,7 @@ import { AtsMeter } from '@/components/AtsMeter';
 import ExampleDemo from '@/components/ExampleDemo';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import PlacementProbabilityCalculator from '@/components/PlacementProbabilityCalculator';
+import LivePreviewPanel from '@/components/LivePreviewPanel';
 
 // --- Types ---
 type AppState = 'landing' | 'analyzing' | 'result' | 'payment';
@@ -461,7 +462,7 @@ export default function HomeClient() {
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} key="landing" className="relative z-10">
             {/* Hero Section */}
             <section className="pt-28 md:pt-44 pb-14 md:pb-24 px-4 md:px-6">
-              <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-10 md:gap-14 items-center">
+              <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-10 md:gap-14 items-start">
                 {/* LEFT */}
                 <div className="space-y-6 md:space-y-8">
                   {/* Micro badge */}
@@ -507,9 +508,6 @@ export default function HomeClient() {
                     </Link>
                   </div>
 
-                  {/* Placement Probability Calculator (below hero CTA) */}
-                  <PlacementProbabilityCalculator />
-
                   {/* Tiny proof */}
                   <div className="flex items-center gap-3 text-[11px] md:text-xs font-black uppercase tracking-[0.25em] text-white/25 pt-2">
                     <ShieldCheck className="w-4 h-4 text-emerald-400" /> Privacy Protected
@@ -520,84 +518,32 @@ export default function HomeClient() {
 
                 {/* RIGHT */}
                 <div className="w-full">
-                  <div className="relative mx-auto max-w-xl rounded-3xl border border-white/10 bg-white/[0.04] backdrop-blur-xl shadow-[0_30px_80px_rgba(0,0,0,0.55)] overflow-hidden">
-                    <div className="absolute inset-0 bg-gradient-to-br from-blue-600/10 via-indigo-600/10 to-transparent" />
+                  <LivePreviewPanel />
+                </div>
+              </div>
+            </section>
 
-                    <div className="relative p-6 md:p-8">
-                      <div className="flex items-start justify-between gap-6">
-                        <div>
-                          <p className="text-xs font-black uppercase tracking-[0.25em] text-white/40">Placement Score</p>
-                          <p className="text-4xl md:text-5xl font-[1000] tracking-tight text-white">74%</p>
-                          <p className="text-sm text-white/40 mt-1">Mock preview • real score comes from your resume</p>
-                        </div>
 
-                        {/* Circular meter */}
-                        <div className="relative w-24 h-24 md:w-28 md:h-28">
-                          <div className="absolute inset-0 rounded-full bg-white/5 border border-white/10" />
-                          <svg className="absolute inset-0 w-full h-full -rotate-90">
-                            <circle cx="50%" cy="50%" r="42%" stroke="rgba(255,255,255,0.12)" strokeWidth="10" fill="transparent" />
-                            <circle
-                              cx="50%"
-                              cy="50%"
-                              r="42%"
-                              stroke="url(#score-grad)"
-                              strokeWidth="10"
-                              fill="transparent"
-                              strokeDasharray="264"
-                              strokeDashoffset={264 - (264 * 0.74)}
-                              strokeLinecap="round"
-                              className="drop-shadow-[0_0_10px_rgba(59,130,246,0.35)]"
-                            />
-                            <defs>
-                              <linearGradient id="score-grad" x1="0" y1="0" x2="1" y2="1">
-                                <stop offset="0%" stopColor="#22c55e" />
-                                <stop offset="55%" stopColor="#3b82f6" />
-                                <stop offset="100%" stopColor="#4f46e5" />
-                              </linearGradient>
-                            </defs>
-                          </svg>
-                          <motion.div
-                            animate={{ scale: [1, 1.04, 1] }}
-                            transition={{ repeat: Infinity, duration: 3.8 }}
-                            className="absolute inset-0 flex items-center justify-center"
-                          >
-                            <span className="text-sm font-black text-white/80">74</span>
-                          </motion.div>
-                        </div>
-                      </div>
+            {/* Placement Probability Tool (full-width below hero) */}
+            <section className="max-w-6xl mx-auto py-16 md:py-20 px-4 md:px-6">
+              <div className="text-center space-y-3">
+                <h2 className="text-3xl md:text-5xl font-[1000] italic uppercase tracking-tighter">Check Your Real Placement Probability in 2026</h2>
+                <p className="text-white/35 font-bold uppercase tracking-[0.3em] text-[10px]">Used by 10,000+ engineering students across India</p>
+              </div>
+              <div className="mt-10 flex justify-center">
+                <div className="w-full max-w-5xl">
+                  <PlacementProbabilityCalculator />
+                </div>
+              </div>
 
-                      <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div className="rounded-2xl bg-black/30 border border-white/10 p-4">
-                          <p className="text-[10px] font-black uppercase tracking-[0.25em] text-white/35">Strengths</p>
-                          <div className="mt-3 space-y-2 text-sm font-semibold">
-                            <div className="flex items-center gap-2 text-white/80"><CheckCircle className="w-4 h-4 text-emerald-400" /> SQL</div>
-                            <div className="flex items-center gap-2 text-white/80"><CheckCircle className="w-4 h-4 text-emerald-400" /> Python</div>
-                          </div>
-                        </div>
-
-                        <div className="rounded-2xl bg-black/30 border border-white/10 p-4">
-                          <p className="text-[10px] font-black uppercase tracking-[0.25em] text-white/35">Weakness</p>
-                          <div className="mt-3 flex items-center gap-2 text-sm font-semibold text-white/75">
-                            <span className="text-white/40">•</span> Power BI
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Blur lock */}
-                      <div className="mt-6 relative overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03]">
-                        <div className="p-4">
-                          <p className="text-[10px] font-black uppercase tracking-[0.25em] text-white/35">Recruiter report</p>
-                          <p className="mt-2 text-sm text-white/40">Unlock keyword gaps, role-fit score, and interview talking points.</p>
-                        </div>
-                        <div className="absolute inset-0 backdrop-blur-md bg-black/40" />
-                        <div className="absolute inset-0 flex items-center justify-center">
-                          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 border border-white/15 text-white/80 font-black text-xs">
-                            <Lock className="w-4 h-4" /> Unlock Full Recruiter Report
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+              <div className="mt-10 rounded-2xl border border-white/10 bg-white/[0.02] px-4 py-4 md:px-6 md:py-5">
+                <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-3 text-[10px] md:text-[11px] font-black uppercase tracking-[0.25em] text-white/35">
+                  <span className="text-white/30">Trusted by students from:</span>
+                  <span className="inline-flex items-center gap-2"><span className="w-6 h-6 rounded-lg bg-white/5 border border-white/10" /> IIT</span>
+                  <span className="inline-flex items-center gap-2"><span className="w-6 h-6 rounded-lg bg-white/5 border border-white/10" /> NIT</span>
+                  <span className="inline-flex items-center gap-2"><span className="w-6 h-6 rounded-lg bg-white/5 border border-white/10" /> VIT</span>
+                  <span className="inline-flex items-center gap-2"><span className="w-6 h-6 rounded-lg bg-white/5 border border-white/10" /> SRM</span>
+                  <span className="inline-flex items-center gap-2"><span className="w-6 h-6 rounded-lg bg-white/5 border border-white/10" /> Tier 2</span>
                 </div>
               </div>
             </section>

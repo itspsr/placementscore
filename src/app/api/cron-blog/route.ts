@@ -9,10 +9,18 @@ export const dynamic = 'force-dynamic';
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
-    const secret = searchParams.get('secret') || req.headers.get('x-cron-secret');
+    const secret = process.env.CRON_SECRET;
+    const headerSecret = req.headers.get("x-cron-secret") || searchParams.get('secret');
+    const isVercelCron = req.headers.get("x-vercel-cron");
 
-    if (process.env.CRON_SECRET && secret !== process.env.CRON_SECRET) {
-      return NextResponse.json({ success: false, reason: "unauthorized" }, { status: 401 });
+    if (
+      headerSecret !== secret &&
+      !isVercelCron
+    ) {
+      return NextResponse.json(
+        { success: false, reason: "unauthorized" },
+        { status: 401 }
+      );
     }
 
     const supabaseUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;

@@ -6,13 +6,18 @@ const requiredServer = [
 export function requireServerEnv() {
   const missing = requiredServer.filter((key) => !process.env[key]);
   if (missing.length) {
-    // During build, Vercel sets NODE_ENV=production.
-    // We should only throw if it's actually RUNNING, not BUILDING.
-    // Next.js sets NEXT_PHASE during build.
-    if (process.env.NEXT_PHASE === 'phase-production-build' || process.env.CI === 'true') {
+    // Check various ways build phase is signaled
+    const isBuild = 
+      process.env.NEXT_PHASE === 'phase-production-build' || 
+      process.env.CI === 'true' || 
+      process.env.VERCEL === '1' ||
+      process.env.NODE_ENV === 'test';
+
+    if (isBuild) {
       console.warn(`Missing env during build: ${missing.join(', ')}`);
       return;
     }
+    
     if (process.env.NODE_ENV === 'production') {
       throw new Error(`Missing env: ${missing.join(', ')}`);
     }

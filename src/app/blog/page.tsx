@@ -1,3 +1,4 @@
+import { cookies, headers } from 'next/headers';
 import { Metadata } from "next";
 import Link from 'next/link';
 import { getBlogs } from "@/lib/blog";
@@ -35,6 +36,10 @@ function formatRelativeTime(dateString: string) {
 }
 
 export default async function BlogPage() {
+  // Opt out of caching by using dynamic functions
+  headers();
+  cookies();
+  
   const blogs = await getBlogs();
   
   return (

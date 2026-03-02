@@ -143,6 +143,12 @@ export default function RootLayout({
         <Providers>
           <AuthProvider>{children}</AuthProvider>
         </Providers>
+        {/* Global sticky CTA — appears on all non-homepage pages */}
+        <div className="fixed bottom-0 left-0 right-0 z-50 bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 px-4 flex items-center justify-between">
+          <span className="text-sm font-medium hidden sm:block">⚡ 78% of resumes below 80 ATS score get rejected in the first round</span>
+          <span className="text-sm font-medium sm:hidden">⚡ 78% of resumes get auto-rejected</span>
+          <a href="/" className="bg-white text-blue-600 text-sm font-bold px-4 py-1.5 rounded-full hover:bg-blue-50 transition whitespace-nowrap ml-4">Check Free →</a>
+        </div>
       </body>
     </html>
   );

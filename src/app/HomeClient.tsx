@@ -478,13 +478,13 @@ export default function HomeClient() {
                   </div>
 
                   {/* Headline */}
-                  <h1 className="text-4xl sm:text-6xl md:text-[72px] font-[1000] leading-[1.03] md:leading-[0.95] tracking-tighter text-balance">Free AI ATS Resume Score Checker
-                    Increase Your <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-indigo-500 italic">Placement Score</span> with AI
+                  <h1 className="text-4xl sm:text-6xl md:text-[72px] font-[1000] leading-[1.03] md:leading-[0.95] tracking-tighter text-balance">
+                    India&apos;s #1 AI ATS Resume Score Platform for 2026 Placements
                   </h1>
 
                   {/* Subheadline */}
                   <p className="text-base md:text-xl text-white/45 max-w-2xl leading-relaxed">
-                    Get ATS score, recruiter insights, and job match analysis in seconds.
+                    Built specifically for Indian campus placements, service-based MNCs, and product companies.
                   </p>
 
                   {/* Bullets */}
@@ -526,6 +526,51 @@ export default function HomeClient() {
               </div>
             </section>
 
+
+            {/* Comparison Strip */}
+            <section className="py-12 md:py-16 px-4 md:px-6 max-w-6xl mx-auto">
+              <div className="text-center mb-8">
+                <h2 className="text-2xl md:text-4xl font-[1000] italic tracking-tighter mb-2">Why <span className="text-blue-500">PlacementScore</span> vs Others?</h2>
+                <p className="text-white/30 font-bold uppercase tracking-widest text-[10px]">Built for India. Not Silicon Valley.</p>
+              </div>
+              <div className="overflow-x-auto rounded-2xl border border-white/10 bg-white/[0.01]">
+                <table className="w-full border-collapse min-w-[640px] text-sm">
+                  <thead className="bg-white/5 text-[10px] font-black uppercase tracking-widest text-white/30">
+                    <tr>
+                      <th className="p-4 text-left border-b border-white/5">Feature</th>
+                      <th className="p-4 text-center border-b border-white/5 text-blue-400">PlacementScore</th>
+                      <th className="p-4 text-center border-b border-white/5">Generic ATS</th>
+                      <th className="p-4 text-center border-b border-white/5">Intl. Tools</th>
+                      <th className="p-4 text-center border-b border-white/5">Manual Review</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-white/5">
+                    {([
+                      ['Indian placement optimized', true, false, false, 'partial'],
+                      ['Company keyword targeting', true, 'partial', false, 'partial'],
+                      ['College-specific guidance', true, false, false, false],
+                      ['ATS scoring engine', true, true, true, false],
+                      ['Recruiter benchmark modeling', true, false, false, false],
+                    ] as [string, boolean | 'partial', boolean | 'partial', boolean | 'partial', boolean | 'partial'][]).map(([feature, ps, generic, intl, manual]) => {
+                      const cell = (val: boolean | 'partial') => {
+                        if (val === true) return <span className="text-green-400 text-base">✔</span>;
+                        if (val === false) return <span className="text-red-500/50 text-base">✗</span>;
+                        return <span className="text-yellow-400 text-[10px] font-black uppercase">Partial</span>;
+                      };
+                      return (
+                        <tr key={feature} className="hover:bg-white/[0.02] transition">
+                          <td className="p-4 text-white/60 font-bold">{feature}</td>
+                          <td className="p-4 text-center bg-blue-500/5">{cell(ps)}</td>
+                          <td className="p-4 text-center">{cell(generic)}</td>
+                          <td className="p-4 text-center">{cell(intl)}</td>
+                          <td className="p-4 text-center">{cell(manual)}</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </section>
 
             {/* Placement Probability Tool (full-width below hero) */}
             <section className="max-w-6xl mx-auto py-16 md:py-20 px-4 md:px-6">
@@ -1150,6 +1195,13 @@ export default function HomeClient() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Sticky Bottom CTA Bar */}
+      <div className="fixed bottom-0 left-0 right-0 z-[90] bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 px-4 flex items-center justify-between">
+        <span className="text-sm font-medium hidden sm:block">⚡ 78% of resumes below 80 ATS score get rejected in the first round</span>
+        <span className="text-sm font-medium sm:hidden">⚡ 78% of resumes get auto-rejected</span>
+        <a href="#upload" onClick={(e) => { e.preventDefault(); document.getElementById('upload')?.scrollIntoView({ behavior: 'smooth' }); }} className="bg-white text-blue-600 text-sm font-bold px-4 py-1.5 rounded-full hover:bg-blue-50 transition whitespace-nowrap ml-4">Check Free →</a>
+      </div>
     </main>
   );
 }

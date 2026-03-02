@@ -2,9 +2,9 @@ import { MetadataRoute } from 'next';
 import { getBlogs } from '@/lib/blog';
 import { companies, roles, colleges } from '@/data/seo-grid';
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = 'https://placementscore.online';
-  const blogs = getBlogs();
+  const blogs = await getBlogs();
 
   const staticRoutes = [
     '',

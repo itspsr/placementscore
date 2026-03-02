@@ -22,24 +22,12 @@ export async function getBlogs() {
       .order('created_at', { ascending: false });
 
     if (!error && data && data.length > 0) {
-      const mapped = data.map(blog => ({
+      return data.map(blog => ({
         ...blog,
         metaDescription: blog.meta_description,
         createdAt: blog.created_at,
         faqSchema: blog.faq_schema
       }));
-
-      // Remove duplicate same-day entries (same title + day)
-      const seen = new Set<string>();
-      const deduped = [] as any[];
-      for (const b of mapped) {
-        const day = new Date(b.createdAt).toISOString().slice(0, 10);
-        const key = `${b.title}::${day}`;
-        if (seen.has(key)) continue;
-        seen.add(key);
-        deduped.push(b);
-      }
-      return deduped;
     }
   }
 

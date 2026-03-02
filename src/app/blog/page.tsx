@@ -6,6 +6,7 @@ import { BackButton } from "@/components/BackButton";
 
 // Without this, Next.js may pre-render and serve a stale list until the next deploy.
 export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 export const metadata: Metadata = {
   title: "Career Blog & Placement Guides | PlacementScore.online",

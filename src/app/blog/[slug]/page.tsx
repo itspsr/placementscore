@@ -7,6 +7,7 @@ import ReactMarkdown from 'react-markdown';
 import { BackButton } from "@/components/BackButton";
 
 export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
   try {

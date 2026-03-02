@@ -24,35 +24,31 @@ export async function GET(req: Request) {
       process.env.SUPABASE_SERVICE_ROLE
     );
 
+    const isForceBackfill = req.headers.get('x-force-backfill') === 'true' || searchParams.get('force') === 'true';
+
     const now = new Date();
     const startOfYear = new Date(now.getFullYear(), 0, 1);
     const diff = now.getTime() - startOfYear.getTime();
     const currentDayOfYear = Math.floor(diff / (1000 * 60 * 60 * 24));
 
-    // --- Part 6: Auto Backfill ---
-    // We want one blog for every day from Jan 1 to today
-    const { count: blogCount } = await supabase
-      .from('blogs')
-      .select('*', { count: 'exact', head: true });
-
-    const targetCount = currentDayOfYear + 1;
     const insertedSlugs: string[] = [];
 
-    if ((blogCount || 0) < targetCount) {
-      console.log(`Backfilling blogs: ${blogCount} existing, ${targetCount} target`);
+    if (isForceBackfill) {
+      console.log(`Force backfill triggered. Checking all days from Jan 1 to day ${currentDayOfYear}`);
       
       for (let day = 0; day <= currentDayOfYear; day++) {
-        const date = new Date(now.getFullYear(), 0, 1 + day);
+        const date = new Date(now.getFullYear(), 0, 1);
+        date.setDate(date.getDate() + day);
+        
         const topicIndex = day % BLOG_TOPICS.length;
         const topic = BLOG_TOPICS[topicIndex];
         const blogData = generateBlog(topic, date);
 
-        // Check if slug exists in DB
         const { data: existing } = await supabase
           .from('blogs')
           .select('slug')
           .eq('slug', blogData.slug)
-          .single();
+          .maybeSingle();
 
         if (!existing) {
           const { error } = await supabase.from('blogs').insert([{
@@ -63,32 +59,67 @@ export async function GET(req: Request) {
 
           if (!error) {
             insertedSlugs.push(blogData.slug);
-          } else {
-            console.error(`Error inserting blog for day ${day}:`, error);
           }
         }
       }
     } else {
-      // Just normal daily generation if not backfilling
-      const topicIndex = currentDayOfYear % BLOG_TOPICS.length;
-      const topic = BLOG_TOPICS[topicIndex];
-      const blogData = generateBlog(topic, now);
-
-      const { data: existing } = await supabase
+      // Normal flow or existing auto-backfill check
+      const { count: blogCount } = await supabase
         .from('blogs')
-        .select('slug')
-        .eq('slug', blogData.slug)
-        .single();
+        .select('*', { count: 'exact', head: true });
 
-      if (!existing) {
-        const { error } = await supabase.from('blogs').insert([{
-          ...blogData,
-          published: true,
-          keywords: [topic, "placements 2026", "ATS resume"],
-        }]);
+      const targetCount = currentDayOfYear + 1;
 
-        if (!error) {
-          insertedSlugs.push(blogData.slug);
+      if ((blogCount || 0) < targetCount) {
+        // ... (existing auto-backfill logic but fixed to be robust)
+        for (let day = 0; day <= currentDayOfYear; day++) {
+          const date = new Date(now.getFullYear(), 0, 1);
+          date.setDate(date.getDate() + day);
+          
+          const topicIndex = day % BLOG_TOPICS.length;
+          const topic = BLOG_TOPICS[topicIndex];
+          const blogData = generateBlog(topic, date);
+
+          const { data: existing } = await supabase
+            .from('blogs')
+            .select('slug')
+            .eq('slug', blogData.slug)
+            .maybeSingle();
+
+          if (!existing) {
+            const { error } = await supabase.from('blogs').insert([{
+              ...blogData,
+              published: true,
+              keywords: [topic, "placements 2026", "ATS resume"],
+            }]);
+
+            if (!error) {
+              insertedSlugs.push(blogData.slug);
+            }
+          }
+        }
+      } else {
+        // Just today
+        const topicIndex = currentDayOfYear % BLOG_TOPICS.length;
+        const topic = BLOG_TOPICS[topicIndex];
+        const blogData = generateBlog(topic, now);
+
+        const { data: existing } = await supabase
+          .from('blogs')
+          .select('slug')
+          .eq('slug', blogData.slug)
+          .maybeSingle();
+
+        if (!existing) {
+          const { error } = await supabase.from('blogs').insert([{
+            ...blogData,
+            published: true,
+            keywords: [topic, "placements 2026", "ATS resume"],
+          }]);
+
+          if (!error) {
+            insertedSlugs.push(blogData.slug);
+          }
         }
       }
     }

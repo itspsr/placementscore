@@ -5,13 +5,6 @@ import { companies, roles, colleges } from '@/data/seo-grid';
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = 'https://placementscore.online';
   
-  let blogs: any[] = [];
-  try {
-    blogs = await getBlogs();
-  } catch (err) {
-    console.error("Sitemap: error fetching blogs", err);
-  }
-
   const staticRoutes = [
     '',
     '/blog',
@@ -24,15 +17,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     '/salary-estimator',
     '/cover-letter',
     '/linkedin-analyzer',
-    // New keyword hubs
     '/ats-resume-score-india',
     '/placement-resume-checker',
     '/ai-resume-optimization-india',
-    // New feature pages
     '/placement-benchmark-report-2026',
     '/live-placement-activity',
     '/resume-score-leaderboard',
     '/why-placementscore',
+    '/ultimate-ats-resume-guide-2026',
   ].map((route) => ({
     url: `${baseUrl}${route}`,
     lastModified: new Date(),
@@ -40,32 +32,39 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: route === '' ? 1 : 0.8,
   }));
 
-  const blogRoutes = blogs.map((blog: any) => ({
-    url: `${baseUrl}/blog/${blog.slug}`,
-    lastModified: new Date(blog.createdAt),
-    changeFrequency: 'weekly' as const,
-    priority: 0.9,
-  }));
+  // Fetch all blogs
+  let blogRoutes: any[] = [];
+  try {
+    const blogs = await getBlogs();
+    blogRoutes = blogs.map((blog: any) => ({
+      url: `${baseUrl}/blog/${blog.slug}`,
+      lastModified: new Date(blog.createdAt),
+      changeFrequency: 'weekly' as const,
+      priority: 0.7,
+    }));
+  } catch (err) {
+    console.error("Sitemap: Failed to fetch blogs", err);
+  }
 
   const companyRoutes = companies.map((c) => ({
     url: `${baseUrl}/company/${c.slug}`,
     lastModified: new Date(),
     changeFrequency: 'monthly' as const,
-    priority: 0.85,
+    priority: 0.6,
   }));
 
   const roleRoutes = roles.map((r) => ({
     url: `${baseUrl}/role/${r.slug}`,
     lastModified: new Date(),
     changeFrequency: 'monthly' as const,
-    priority: 0.8,
+    priority: 0.6,
   }));
 
   const collegeRoutes = colleges.map((c) => ({
     url: `${baseUrl}/college/${c.slug}`,
     lastModified: new Date(),
     changeFrequency: 'monthly' as const,
-    priority: 0.8,
+    priority: 0.6,
   }));
 
   return [
@@ -73,6 +72,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...blogRoutes,
     ...companyRoutes,
     ...roleRoutes,
-    ...collegeRoutes
+    ...collegeRoutes,
   ];
 }

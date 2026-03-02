@@ -1,4 +1,3 @@
-import { cookies, headers } from 'next/headers';
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getBlogBySlug, getBlogs } from "@/lib/blog";
@@ -60,10 +59,6 @@ function formatRelativeTime(dateString: string) {
 }
 
 export default async function BlogPost({ params }: { params: { slug: string } }) {
-  // Opt out of caching
-  headers();
-  cookies();
-
   try {
     const blog = await getBlogBySlug(params.slug);
     if (!blog) return notFound();

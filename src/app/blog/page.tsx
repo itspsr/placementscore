@@ -36,11 +36,6 @@ function formatRelativeTime(dateString: string) {
 export default async function BlogPage() {
   const blogs = await getBlogs();
   
-  // Sort if they came from JSON (Supabase query already sorts)
-  const sortedBlogs = blogs.sort((a: any, b: any) => 
-    new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-  );
-
   return (
     <main className="min-h-screen bg-[#050505] text-white p-6 pt-32">
       <div className="max-w-6xl mx-auto space-y-12">
@@ -53,7 +48,7 @@ export default async function BlogPage() {
         </div>
         
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-10">
-          {sortedBlogs.map((blog: any) => (
+          {blogs.map((blog: any) => (
             <Link key={blog.slug} href={`/blog/${blog.slug}`}>
               <article className="h-full p-8 bg-[#0A0A0A] rounded-[40px] border border-white/5 hover:border-blue-500/50 transition-all space-y-6 group flex flex-col">
                 <div className="space-y-2">

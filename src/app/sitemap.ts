@@ -1,12 +1,11 @@
 import { MetadataRoute } from 'next';
 import { getBlogs } from '@/lib/blog';
-import { getProgrammaticPages } from '@/lib/programmatic';
+import { companies, roles, colleges } from '@/data/seo-grid';
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl = 'https://placementscore.online';
   const blogs = getBlogs();
-  const pages = getProgrammaticPages();
-  
+
   const staticRoutes = [
     '',
     '/blog',
@@ -19,16 +18,20 @@ export default function sitemap(): MetadataRoute.Sitemap {
     '/salary-estimator',
     '/cover-letter',
     '/linkedin-analyzer',
-    '/company-score/tcs',
-    '/company-score/infosys',
-    '/company-score/accenture',
-    '/company-score/deloitte',
-    '/company-score/google',
+    // New keyword hubs
+    '/ats-resume-score-india',
+    '/placement-resume-checker',
+    '/ai-resume-optimization-india',
+    // New feature pages
+    '/placement-benchmark-report-2026',
+    '/live-placement-activity',
+    '/resume-score-leaderboard',
+    '/why-placementscore',
   ].map((route) => ({
     url: `${baseUrl}${route}`,
     lastModified: new Date(),
     changeFrequency: 'daily' as const,
-    priority: route === '' ? 1 : 0.8,
+    priority: route === '' ? 1 : route.includes('ats-resume-score') || route.includes('placement-resume') ? 0.95 : 0.8,
   }));
 
   const blogRoutes = blogs.map((blog: any) => ({
@@ -38,12 +41,26 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.9,
   }));
 
-  const dynamicRoutes = pages.map((page: any) => ({
-    url: `${baseUrl}/${page.slug}`,
-    lastModified: new Date(page.createdAt),
+  const companyRoutes = companies.map((c) => ({
+    url: `${baseUrl}/company/${c.slug}`,
+    lastModified: new Date(),
     changeFrequency: 'monthly' as const,
-    priority: 0.7,
+    priority: 0.85,
   }));
 
-  return [...staticRoutes, ...blogRoutes, ...dynamicRoutes];
+  const roleRoutes = roles.map((r) => ({
+    url: `${baseUrl}/role/${r.slug}`,
+    lastModified: new Date(),
+    changeFrequency: 'monthly' as const,
+    priority: 0.8,
+  }));
+
+  const collegeRoutes = colleges.map((c) => ({
+    url: `${baseUrl}/college/${c.slug}`,
+    lastModified: new Date(),
+    changeFrequency: 'monthly' as const,
+    priority: 0.8,
+  }));
+
+  return [...staticRoutes, ...blogRoutes, ...companyRoutes, ...roleRoutes, ...collegeRoutes];
 }

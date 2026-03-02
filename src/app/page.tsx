@@ -36,6 +36,7 @@ export default function Home() {
   const [analyzeCount, setAnalyzeCount] = useState(2437);
   const [scrolled, setScrolled] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
+  const [showExitIntent, setShowExitIntent] = useState(false);
 
   // --- Persistence & Query Params ---
   useEffect(() => {
@@ -62,6 +63,17 @@ export default function Home() {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  // --- Exit Intent ---
+  useEffect(() => {
+    const handleMouseLeave = (e: MouseEvent) => {
+      if (e.clientY <= 0 && !isPaid && view === 'landing') {
+        setShowExitIntent(true);
+      }
+    };
+    document.addEventListener('mouseleave', handleMouseLeave);
+    return () => document.removeEventListener('mouseleave', handleMouseLeave);
+  }, [isPaid, view]);
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'instant' });
@@ -245,9 +257,12 @@ export default function Home() {
                     <Sparkles className="w-3 h-3" /> 🔥 {analyzeCount.toLocaleString()}+ Resumes Analysed
                   </motion.div>
                   <h1 className="text-4xl sm:text-6xl md:text-[80px] font-[1000] leading-[1] md:leading-[0.9] tracking-tighter">
-                    Get Your Real <br /> <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-indigo-500 italic">Placement Score.</span>
+                    India&apos;s #1 AI ATS Resume Score Platform for 2026 Placements
                   </h1>
-                  <p className="text-lg md:text-xl text-white/40 max-w-2xl lg:mx-0 mx-auto font-medium leading-relaxed text-balance">
+                  <p className="text-lg md:text-xl text-white/60 max-w-2xl lg:mx-0 mx-auto font-medium leading-relaxed text-balance">
+                    Built specifically for Indian campus placements, service-based MNCs, and product companies.
+                  </p>
+                  <p className="text-base md:text-lg text-white/40 max-w-2xl lg:mx-0 mx-auto font-medium leading-relaxed text-balance">
                     Check Your Resume Score in 30 Seconds. Secure your future by bypassing the 6-second ATS rejection cycle instantly.
                   </p>
                   
@@ -289,6 +304,53 @@ export default function Home() {
                   <div className="flex items-center justify-center gap-2 md:gap-3"><Zap className="w-4 h-4 text-blue-500" /> AI Powered</div>
                   <div className="flex items-center justify-center gap-2 md:gap-3"><Users className="w-4 h-4 text-blue-500" /> used by 1k+</div>
                </div>
+            </section>
+
+            {/* Comparison Strip */}
+            <section className="py-16 md:py-24 px-4 md:px-6 max-w-7xl mx-auto">
+              <div className="text-center mb-10">
+                <h2 className="text-3xl md:text-5xl font-[1000] italic tracking-tighter uppercase leading-tight mb-3">
+                  Why Choose <span className="text-blue-500">PlacementScore?</span>
+                </h2>
+                <p className="text-white/30 font-bold uppercase tracking-widest text-[10px]">Built for India. Not for Silicon Valley.</p>
+              </div>
+              <div className="overflow-x-auto no-scrollbar rounded-3xl border border-white/10 bg-white/[0.01]">
+                <table className="w-full border-collapse min-w-[700px] text-sm">
+                  <thead className="bg-white/5 text-[10px] font-black uppercase tracking-widest text-white/30">
+                    <tr>
+                      <th className="p-5 text-left border-b border-white/5">Feature</th>
+                      <th className="p-5 text-center border-b border-white/5 text-blue-400">PlacementScore</th>
+                      <th className="p-5 text-center border-b border-white/5">Generic ATS Checkers</th>
+                      <th className="p-5 text-center border-b border-white/5">International Tools</th>
+                      <th className="p-5 text-center border-b border-white/5">Manual Reviews</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-white/5">
+                    {[
+                      ['Indian placement optimized', true, false, false, 'partial'],
+                      ['Company keyword targeting', true, 'partial', false, 'partial'],
+                      ['College-specific guidance', true, false, false, false],
+                      ['ATS scoring engine', true, true, true, false],
+                      ['Recruiter benchmark modeling', true, false, false, false],
+                    ].map(([feature, ps, generic, intl, manual]) => {
+                      const cell = (val: boolean | string) => {
+                        if (val === true) return <span className="text-green-400 text-lg">✔</span>;
+                        if (val === false) return <span className="text-red-500/60 text-lg">✗</span>;
+                        return <span className="text-yellow-400 text-xs font-bold uppercase">Partial</span>;
+                      };
+                      return (
+                        <tr key={String(feature)} className="hover:bg-white/[0.02] transition">
+                          <td className="p-5 text-white/60 font-bold">{String(feature)}</td>
+                          <td className="p-5 text-center bg-blue-500/5">{cell(ps)}</td>
+                          <td className="p-5 text-center">{cell(generic)}</td>
+                          <td className="p-5 text-center">{cell(intl)}</td>
+                          <td className="p-5 text-center">{cell(manual)}</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
             </section>
 
             {/* Paid Tools Section */}
@@ -654,18 +716,44 @@ export default function Home() {
       {/* Scroll-based CTA Popup */}
       <AnimatePresence>
         {showPopup && (
-          <motion.div initial={{ y: 100, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 100, opacity: 0 }} className="fixed bottom-10 left-10 right-10 md:left-auto md:right-10 z-[110] md:max-w-md w-full">
+          <motion.div initial={{ y: 100, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 100, opacity: 0 }} className="fixed bottom-20 left-10 right-10 md:left-auto md:right-10 z-[110] md:max-w-md w-full">
              <div className="bg-blue-600 p-8 rounded-[40px] shadow-2xl border border-white/20 relative overflow-hidden group">
                 <button onClick={() => setShowPopup(false)} className="absolute top-4 right-4 p-2 bg-black/20 rounded-full hover:bg-black/40 transition-colors"><X className="w-4 h-4" /></button>
                 <div className="space-y-6 relative z-10">
                    <h4 className="text-2xl font-[1000] italic uppercase tracking-tighter leading-tight text-white">Secure Your Placement <br /> Before 2026 Ends.</h4>
-                   <p className="text-white/80 font-bold italic text-sm text-balance">Don't let a generic resume kill your dream job. Get your AI-powered ATS Audit report instantly.</p>
+                   <p className="text-white/80 font-bold italic text-sm text-balance">Don&apos;t let a generic resume kill your dream job. Get your AI-powered ATS Audit report instantly.</p>
                    <button onClick={() => { setShowPopup(false); scrollToSection('upload'); }} className="w-full py-4 bg-white text-blue-600 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-black hover:text-white transition-all shadow-xl">Check My Score Now</button>
                 </div>
              </div>
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Exit Intent Modal */}
+      <AnimatePresence>
+        {showExitIntent && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[200] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+            <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.8, opacity: 0 }} className="bg-[#0A0A0A] border border-white/10 rounded-[40px] p-10 max-w-lg w-full relative shadow-2xl">
+              <button onClick={() => setShowExitIntent(false)} className="absolute top-4 right-4 p-2 bg-white/5 rounded-full hover:bg-white/10 transition"><X className="w-5 h-5" /></button>
+              <div className="text-center space-y-6">
+                <div className="text-5xl mb-4">🚨</div>
+                <h3 className="text-3xl font-[1000] italic uppercase tracking-tighter leading-tight">Before you leave — check your placement probability</h3>
+                <p className="text-white/50 leading-relaxed">78% of resumes are rejected before a human ever reads them. Your score could be the reason. It takes 30 seconds and it&apos;s free.</p>
+                <button onClick={() => { setShowExitIntent(false); scrollToSection('upload'); }} className="w-full py-5 bg-blue-600 text-white rounded-2xl font-black uppercase tracking-widest text-sm hover:bg-blue-500 transition shadow-xl shadow-blue-500/20">
+                  Check My ATS Score Free →
+                </button>
+                <button onClick={() => setShowExitIntent(false)} className="text-white/20 text-xs font-bold hover:text-white/50 transition">No thanks, I&apos;ll risk it</button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Sticky Bottom CTA Bar */}
+      <div className="fixed bottom-0 left-0 right-0 z-[90] bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 px-4 flex items-center justify-between">
+        <span className="text-sm font-medium">⚡ 78% of resumes below 80 ATS score get rejected in the first round</span>
+        <a href="#upload" onClick={(e) => { e.preventDefault(); scrollToSection('upload'); }} className="bg-white text-blue-600 text-sm font-bold px-4 py-1.5 rounded-full hover:bg-blue-50 transition whitespace-nowrap ml-4">Check Free →</a>
+      </div>
     </main>
   );
 }

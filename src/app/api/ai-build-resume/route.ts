@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
+export const dynamic = 'force-dynamic';
 
 export async function POST(req: Request) {
   try {
@@ -18,7 +18,8 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "AI service configuration error" }, { status: 500 });
     }
 
-    // 2. Call Gemini API
+    // 2. Call Gemini API (lazy init inside handler — safe for build)
+    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
     const prompt = `

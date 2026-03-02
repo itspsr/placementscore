@@ -551,8 +551,9 @@ export default function HomeClient() {
                       ['College-specific guidance', true, false, false, false],
                       ['ATS scoring engine', true, true, true, false],
                       ['Recruiter benchmark modeling', true, false, false, false],
-                    ] as [string, boolean | 'partial', boolean | 'partial', boolean | 'partial', boolean | 'partial'][]).map(([feature, ps, generic, intl, manual]) => {
-                      const cell = (val: boolean | 'partial') => {
+                    ]).map((row: any) => {
+                      const [feature, ps, generic, intl, manual] = row;
+                      const cell = (val: any) => {
                         if (val === true) return <span className="text-green-400 text-base">✔</span>;
                         if (val === false) return <span className="text-red-500/50 text-base">✗</span>;
                         return <span className="text-yellow-400 text-[10px] font-black uppercase">Partial</span>;

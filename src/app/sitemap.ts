@@ -4,7 +4,13 @@ import { companies, roles, colleges } from '@/data/seo-grid';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = 'https://placementscore.online';
-  const blogs = await getBlogs();
+  
+  let blogs: any[] = [];
+  try {
+    blogs = await getBlogs();
+  } catch (err) {
+    console.error("Sitemap: error fetching blogs", err);
+  }
 
   const staticRoutes = [
     '',
@@ -31,7 +37,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     url: `${baseUrl}${route}`,
     lastModified: new Date(),
     changeFrequency: 'daily' as const,
-    priority: route === '' ? 1 : route.includes('ats-resume-score') || route.includes('placement-resume') ? 0.95 : 0.8,
+    priority: route === '' ? 1 : 0.8,
   }));
 
   const blogRoutes = blogs.map((blog: any) => ({
@@ -62,5 +68,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.8,
   }));
 
-  return [...staticRoutes, ...blogRoutes, ...companyRoutes, ...roleRoutes, ...collegeRoutes];
+  return [
+    ...staticRoutes,
+    ...blogRoutes,
+    ...companyRoutes,
+    ...roleRoutes,
+    ...collegeRoutes
+  ];
 }

@@ -6,21 +6,23 @@ const requiredServer = [
 export function requireServerEnv() {
   const missing = requiredServer.filter((key) => !process.env[key]);
   if (missing.length) {
-    // Check various ways build phase is signaled
+    // Extensive build detection to prevent build crashes
     const isBuild = 
       process.env.NEXT_PHASE === 'phase-production-build' || 
       process.env.CI === 'true' || 
       process.env.VERCEL === '1' ||
-      process.env.NODE_ENV === 'test';
+      process.env.GITHUB_ACTIONS === 'true' ||
+      process.env.NODE_ENV === 'test' ||
+      (process.env.NODE_ENV === 'production' && !process.env.VERCEL_URL); // Vercel sets VERCEL_URL in runtime
 
     if (isBuild) {
-      console.warn(`Missing env during build: ${missing.join(', ')}`);
+      console.warn(`[Build Safety] Missing env vars: ${missing.join(', ')}`);
       return;
     }
     
     if (process.env.NODE_ENV === 'production') {
-      throw new Error(`Missing env: ${missing.join(', ')}`);
+      throw new Error(`CRITICAL: Missing environment variables: ${missing.join(', ')}`);
     }
-    console.warn(`Missing env: ${missing.join(', ')}`);
+    console.warn(`Warning: Missing env: ${missing.join(', ')}`);
   }
 }

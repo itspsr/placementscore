@@ -6,7 +6,8 @@ const DATA_PATH = path.join(process.cwd(), 'src/data/blogs.json');
 
 const getSupabase = () => {
   try {
-    return getSupabaseAdmin();
+    const client = getSupabaseAdmin();
+    return client || null;
   } catch {
     return null;
   }
@@ -62,7 +63,7 @@ export async function getBlogBySlug(slug: string) {
       .from('blogs')
       .select('*')
       .eq('slug', slug)
-      .single();
+      .maybeSingle(); // Better than .single() which throws if not found
     
     if (!error && data) {
       return {

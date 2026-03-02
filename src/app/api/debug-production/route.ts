@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { BLOG_TOPICS } from '@/lib/blogTopics';
 
 export const dynamic = 'force-dynamic';
 
@@ -40,7 +41,7 @@ export async function GET() {
       blogCount: count,
       latestBlog: latest[0] || null,
       currentDayOfYear,
-      expectedTopicToday: require('@/lib/blogTopics').BLOG_TOPICS[currentDayOfYear % 465],
+      expectedTopicToday: BLOG_TOPICS[currentDayOfYear % BLOG_TOPICS.length],
       timestamp: new Date().toISOString()
     });
 

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/Providers";
+import { AuthProvider } from "@/lib/authProvider";
 import Script from "next/script";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -81,7 +82,6 @@ export default function RootLayout({
   return (
     <html lang="en" className="scroll-smooth">
       <head>
-        <link rel="canonical" href="https://placementscore.online" />
         {/* Google Analytics 4 */}
         <Script
           src={`https://www.googletagmanager.com/gtag/js?id=G-YOUR_GA4_ID`}
@@ -96,12 +96,53 @@ export default function RootLayout({
           `}
         </Script>
       </head>
-      <body className={`${inter.className} bg-[#050505] antialiased selection:bg-blue-500/30 pb-16`}>
-        <Providers>{children}</Providers>
-        <div className="fixed bottom-0 left-0 right-0 z-50 bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 px-4 flex items-center justify-between">
-          <span className="text-sm font-medium">⚡ 78% of resumes below 80 ATS score get rejected in the first round</span>
-          <a href="/" className="bg-white text-blue-600 text-sm font-bold px-4 py-1.5 rounded-full hover:bg-blue-50 transition whitespace-nowrap ml-4">Check Free →</a>
-        </div>
+      <body className={`${inter.className} bg-[#050505] antialiased selection:bg-blue-500/30`}>
+        <Script
+          id="organization-schema"
+          type="application/ld+json"
+          strategy="beforeInteractive"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "Organization",
+              "name": "PlacementScore.online",
+              "url": "https://placementscore.online",
+              "logo": "https://placementscore.online/logo.png",
+              "sameAs": [
+                "https://twitter.com/placementscore",
+                "https://www.linkedin.com/company/placementscore"
+              ],
+              "contactPoint": {
+                "@type": "ContactPoint",
+                "telephone": "+91-1234567890",
+                "contactType": "customer service",
+                "areaServed": "IN",
+                "availableLanguage": "en"
+              }
+            })
+          }}
+        />
+        <Script
+          id="website-schema"
+          type="application/ld+json"
+          strategy="beforeInteractive"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "WebSite",
+              "name": "PlacementScore.online",
+              "url": "https://placementscore.online",
+              "potentialAction": {
+                "@type": "SearchAction",
+                "target": "https://placementscore.online/blog?query={search_term_string}",
+                "query-input": "required name=search_term_string"
+              }
+            })
+          }}
+        />
+        <Providers>
+          <AuthProvider>{children}</AuthProvider>
+        </Providers>
       </body>
     </html>
   );

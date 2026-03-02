@@ -8,6 +8,13 @@ create table if not exists public.profiles (
   created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
+-- 1b. Users plan table
+create table if not exists public.users (
+  id uuid references auth.users on delete cascade primary key,
+  plan text default 'free'
+);
+alter table public.users add column if not exists plan text default 'free';
+
 -- 2. Resumes table
 create table if not exists public.resumes (
   id uuid default gen_random_uuid() primary key,
@@ -34,6 +41,40 @@ create table if not exists public.payments (
   created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
+-- 4. Blogs table (AI Generated)
+create table if not exists public.blogs (
+  id uuid default gen_random_uuid() primary key,
+  title text not null,
+  slug text unique not null,
+  meta_description text,
+  content text not null,
+  keywords text,
+  cluster text,
+  faq_schema text,
+  source text,
+  published boolean default true,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
 -- RLS (Row Level Security) - Basic setup
 alter table public.resumes enable row level security;
 create policy "Users can view their own resumes" on public.resumes for select using (auth.uid() = user_id);
+
+alter table public.blogs enable row level security;
+create policy "Anyone can read published blogs" on public.blogs for select using (published = true);
+
+-- Resume Reports
+create table if not exists resume_reports (
+  id uuid default gen_random_uuid() primary key,
+  user_id uuid,
+  ats_score int,
+  strengths text[] default '{}',
+  weaknesses text[] default '{}',
+  missing_keywords text[] default '{}',
+  improvements text[] default '{}',
+  raw_text text,
+  created_at timestamptz default now()
+);
+
+create index if not exists resume_reports_user_id_idx on resume_reports (user_id);
+create index if not exists resume_reports_created_at_idx on resume_reports (created_at);

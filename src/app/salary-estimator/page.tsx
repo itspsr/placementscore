@@ -8,11 +8,11 @@ import {
   Calculator
 } from 'lucide-react';
 import Link from 'next/link';
-import { useSession } from "next-auth/react";
+import { useAuth } from "@/lib/authProvider";
 import { ExpertGate } from "@/components/ExpertGate";
 
 export default function SalaryEstimator() {
-  const { data: session, status } = useSession();
+  const { session } = useAuth();
   const [role, setRole] = useState("Software Engineer");
   const [experience, setExperience] = useState(0);
   const [city, setCity] = useState("Bangalore");

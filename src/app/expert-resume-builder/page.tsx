@@ -8,12 +8,12 @@ import {
   Trash2, Copy, Check
 } from 'lucide-react';
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
-import { useSession } from "next-auth/react";
+import { useAuth } from "@/lib/authProvider";
 import Link from 'next/link';
 import { ExpertGate } from "@/components/ExpertGate";
 
 export default function ExpertResumeBuilder() {
-  const { data: session, status } = useSession();
+  const { session } = useAuth();
   const [originalText, setOriginalText] = useState("");
   const [targetRole, setTargetRole] = useState("");
   const [experienceLevel, setExperienceLevel] = useState("Fresher / Entry Level");
@@ -21,8 +21,20 @@ export default function ExpertResumeBuilder() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [result, setResult] = useState<any>(null);
   const [isCopied, setIsCopied] = useState(false);
+  const [isExpert, setIsExpert] = useState(false);
 
-  const isExpert = session?.user?.email === "admin@placementscore.online";
+  React.useEffect(() => {
+    if (session?.user?.email) {
+      if (session.user.email === "admin@placementscore.online") {
+        setIsExpert(true);
+      } else {
+        fetch(`/api/check-subscription?email=${session.user.email}`)
+          .then(res => res.json())
+          .then(data => setIsExpert(data.isExpert))
+          .catch(() => setIsExpert(false));
+      }
+    }
+  }, [session]);
 
   const handleGenerate = async () => {
     if (!session) return alert("Please sign in.");
@@ -97,8 +109,6 @@ export default function ExpertResumeBuilder() {
     setIsCopied(true);
     setTimeout(() => setIsCopied(false), 2000);
   };
-
-  if (status === "loading") return <div className="min-h-screen bg-black flex items-center justify-center font-black italic animate-pulse">Checking credentials...</div>;
 
   return (
     <div className="min-h-screen bg-[#050505] text-white p-6 pt-32 relative overflow-hidden">

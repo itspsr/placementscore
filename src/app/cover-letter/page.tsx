@@ -9,11 +9,11 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
-import { useSession } from "next-auth/react";
+import { useAuth } from "@/lib/authProvider";
 import { ExpertGate } from "@/components/ExpertGate";
 
 export default function CoverLetterGenerator() {
-  const { data: session } = useSession();
+  const { session } = useAuth();
   const [role, setRole] = useState("");
   const [company, setCompany] = useState("");
   const [experience, setExperience] = useState("Entry Level");

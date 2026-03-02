@@ -2,6 +2,32 @@
 @tailwind components;
 @tailwind utilities;
 
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-3px); }
+  40% { transform: translateX(3px); }
+  60% { transform: translateX(-2px); }
+  80% { transform: translateX(2px); }
+}
+
+.blurred-content {
+  position: relative;
+  filter: blur(6px);
+  pointer-events: none;
+  opacity: 0.6;
+}
+
+.overlay-lock {
+  position: absolute;
+  inset: 0;
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  background: rgba(0,0,0,0.4);
+}
+
 :root {
   --foreground-rgb: 255, 255, 255;
   --background-rgb: 5, 5, 5;

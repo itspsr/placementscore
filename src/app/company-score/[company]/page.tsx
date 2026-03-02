@@ -8,11 +8,11 @@ import {
   ChevronRight, ArrowRight, ShieldCheck, Star
 } from 'lucide-react';
 import Link from 'next/link';
-import { useSession } from "next-auth/react";
+import { useAuth } from "@/lib/authProvider";
 import { ExpertGate } from "@/components/ExpertGate";
 
 export default function CompanyScore({ params }: { params: { company: string } }) {
-  const { data: session } = useSession();
+  const { session } = useAuth();
   const company = params.company;
   const [file, setFile] = useState<File | null>(null);
   const [isLoading, setIsLoading] = useState(false);

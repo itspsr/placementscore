@@ -88,5 +88,14 @@
     "cluster": "Resume Format Templates",
     "createdAt": "2026-02-13T10:45:00Z",
     "content": "# Ultimate Resume Template for CSE Students (ATS Optimized)\n\nComputer Science students need a resume that highlights their coding proficiency and project impact above all else.\n\n## The CSE Blueprint\n- **Languages:** Proficient in Java, Python, C++.\n- **Tools:** Git, Jenkins, Postman, VS Code.\n- **Frameworks:** React, Node.js, Django.\n- **Cloud:** AWS (EC2, S3), Docker.\n\n## Project Highlighting\nAlways link your GitHub repo. A verified link to a working project is the best trust signal you can provide.\n\n## The Results\nStudents using this template on our platform report a 70% increase in interview callbacks from startups and MNCs alike."
+  },
+  {
+    "id": 11,
+    "title": "How to Get Hired at Google in 2026: The Ultimate ATS Strategy",
+    "slug": "get-hired-google-2026-ats-strategy",
+    "metaDescription": "Master the Google ATS with our 2026 hiring guide. Learn the exact keywords and formatting needed to land an SDE role at Google.",
+    "cluster": "Company Specific Resume Guides",
+    "createdAt": "2026-02-15T03:50:00Z",
+    "content": "# How to Get Hired at Google in 2026: The Ultimate ATS Strategy\n\nGoogle receives over 3 million applications a year. To stand out, your resume needs more than just a high CGPA—it needs to be architected for Google's internal 'gHire' system.\n\n## The Google Resume Philosophy\nGoogle recruiters look for 'Googliness', but the ATS looks for 'Impact'. In 2026, the focus has shifted from what you know to what you've delivered.\n\n## Key Optimization Pillars\n1. **The Google XYZ Formula:** Instead of 'I built an app', use 'Accomplished [X] as measured by [Y], by doing [Z]'. \n2. **Technical Depth:** Ensure you mention specific technical challenges you solved, not just a list of languages.\n3. **Formatting Simplicity:** Google's parsers are robust but they prefer clean, sans-serif fonts and zero tables.\n\n## FAQ\n**Q: Is a one-page resume mandatory for Google?**\n**A:** For freshers and junior roles, yes. It shows you can prioritize information.\n\n**Q: Should I include hobbies?**\n**A:** Only if they demonstrate leadership or technical passion (e.g., contributing to Open Source)."
   }
 ]

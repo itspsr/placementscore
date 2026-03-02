@@ -14,6 +14,8 @@ const getSupabase = () => {
 
 export async function getBlogs() {
   const supabase = getSupabase();
+  let supabaseBlogs: any[] = [];
+
   if (supabase) {
     const { data, error } = await supabase
       .from('blogs')
@@ -21,8 +23,8 @@ export async function getBlogs() {
       .eq('published', true)
       .order('created_at', { ascending: false });
 
-    if (!error && data && data.length > 0) {
-      return data.map(blog => ({
+    if (!error && data) {
+      supabaseBlogs = data.map(blog => ({
         ...blog,
         metaDescription: blog.meta_description,
         createdAt: blog.created_at,
@@ -31,7 +33,26 @@ export async function getBlogs() {
     }
   }
 
-  return [];
+  // Fallback to blogs.json
+  let jsonBlogs: any[] = [];
+  try {
+    const fileContent = fs.readFileSync(DATA_PATH, 'utf8');
+    jsonBlogs = JSON.parse(fileContent);
+  } catch (error) {
+    jsonBlogs = [];
+  }
+
+  // Merge and deduplicate by slug
+  const allBlogs = [...supabaseBlogs, ...jsonBlogs];
+  const seenSlugs = new Set();
+  const deduped = allBlogs.filter(blog => {
+    if (seenSlugs.has(blog.slug)) return false;
+    seenSlugs.add(blog.slug);
+    return true;
+  });
+
+  // Final sort by date
+  return deduped.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 }
 
 export async function getBlogBySlug(slug: string) {

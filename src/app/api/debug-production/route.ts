@@ -30,10 +30,17 @@ export async function GET() {
 
     if (latestError) throw latestError;
 
+    const now = new Date();
+    const startOfYear = new Date(now.getFullYear(), 0, 1);
+    const diff = now.getTime() - startOfYear.getTime();
+    const currentDayOfYear = Math.floor(diff / (1000 * 60 * 60 * 24));
+
     return NextResponse.json({
       supabaseUrl: supabaseUrl.replace(/(https:\/\/).*(.supabase.co)/, "$1***$2"),
       blogCount: count,
       latestBlog: latest[0] || null,
+      currentDayOfYear,
+      expectedTopicToday: require('@/lib/blogTopics').BLOG_TOPICS[currentDayOfYear % 465],
       timestamp: new Date().toISOString()
     });
 

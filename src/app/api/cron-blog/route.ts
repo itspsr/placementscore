@@ -15,14 +15,14 @@ export async function GET(req: Request) {
       return NextResponse.json({ success: false, reason: "unauthorized" }, { status: 401 });
     }
 
-    if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE) {
+    const supabaseUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE || process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+    if (!supabaseUrl || !supabaseKey) {
       return NextResponse.json({ success: false, reason: "missing-env" }, { status: 500 });
     }
 
-    const supabase = createClient(
-      process.env.SUPABASE_URL,
-      process.env.SUPABASE_SERVICE_ROLE
-    );
+    const supabase = createClient(supabaseUrl, supabaseKey);
 
     const isForceBackfill = req.headers.get('x-force-backfill') === 'true' || searchParams.get('force') === 'true';
 

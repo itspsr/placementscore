@@ -1,3 +1,4 @@
+// Vercel Force Deploy: March 2 14:58
 import type { Metadata } from 'next';
 import Script from 'next/script';
 import HomeClient from './HomeClient';
